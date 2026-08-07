@@ -1,0 +1,1402 @@
+[
+  {
+    "id": "Q001",
+    "question": "What are the three main anatomical divisions of the larynx?",
+    "answer": "The larynx consists of the supraglottic, glottic, and subglottic regions.",
+    "difficulty": "simple",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q002",
+    "question": "What are the major goals when treating carcinoma of the larynx?",
+    "answer": "curing cancer, optimizing patients' adaptation to disease consequences (improving quality of life), returning patients to a productive lifestyle, and using organ-sparing strategies combining chemoradiation.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q003",
+    "question": "Which threshold of distant recurrence risk is often used to recommend systemic adjuvant chemotherapy in early stage breast cancer?",
+    "answer": "Stage III disease is often used to recommend systemic adjuvant chemotherapy in early stage breast cancer.",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q004",
+    "question": "What do the 'ABCDEs' of early malignant melanoma diagnosis stand for?",
+    "answer": "The ABCDE rules:\n- A symmetry: The border should be symmetrical.\n- B border irregularity: The edges often have an uneven, notched appearance.\n- C color variation: Change in color from one area to another within the same growth is common. Melanomas can appear brown, tan, black, red, white, or blue.\n- D diameter greater than 6mm (or about the size of a pencil eraser): Most melanomas are larger than normal skin lesions and often have diameters between 5\u20136 mm at their widest point when first noticed.",
+    "difficulty": "simple",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q005",
+    "question": "What is Xeroderma pigmentosum?",
+    "answer": "Xeroderma pigmentosum is an autosomal recessive disease characterized by extreme photosensitivity, premature aging of skin, and neoplasia of skin and other organs. It results from inability to repair DNA damage caused by ultraviolet light.",
+    "difficulty": "moderate",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q006",
+    "question": "Which imaging modalities are used to evaluate the extent of local involvement and regional nodal basins for high-risk squamous cell carcinoma (SCC)?",
+    "answer": "Computed tomography, magnetic resonance imaging, and ultrasonography are used to evaluate the extent of local involvement and regional nodal basins for high-risk SCC.",
+    "difficulty": "moderate",
+    "category": "Staging"
+  },
+  {
+    "id": "Q007",
+    "question": "Activating point mutations in which gene are seen in 85% to 95% of patients with gastrointestinal stromal tumors (GISTs)?",
+    "answer": "KIT gene",
+    "difficulty": "complex",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q008",
+    "question": "What is the most common presenting symptom for head and neck cancers?",
+    "answer": "Persistent mouth ulcers, painful ulcerative lesion on the lip, or exophytic growth lasting >3wk.",
+    "difficulty": "simple",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q009",
+    "question": "What pathological features at the primary tumor site are associated with worse prognosis in head and neck cancers?",
+    "answer": "Higher stage, HPV-negative tumors, and presence of lymph node metastasis are associated with worse prognosis in head and neck cancers.",
+    "difficulty": "moderate",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q010",
+    "question": "What is the mainstay of treatment for early-stage head and neck cancer?",
+    "answer": "The mainstay of treatment for early-stage head and neck cancer includes surgery or radiotherapy alone, depending on the site of the tumor. Retrospective data suggest results achieved by surgery or radiotherapy alone are equivalent, although side effect profiles differ.",
+    "difficulty": "simple",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q011",
+    "question": "Why is it necessary to rule out a parotid malignancy in a patient with sudden facial nerve paralysis?",
+    "answer": "Facial nerve weakness associated with a parotid or submandibular tumor, especially if accompanied by mass and/or pain, indicates concern for malignancy. Even benign tumors can cause compromise leading to nerve function issues that suggest cancer. Parotid gland cancers often result in facial nerve paralysis in 10-20% of patients; those with pain have a worse prognosis.",
+    "difficulty": "complex",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q012",
+    "question": "What neurological symptoms comprise Pancoast syndrome in lung cancer patients?",
+    "answer": "Pancoast's tumors can cause lower brachial plexopathy, Horner's syndrome, and shoulder pain.",
+    "difficulty": "moderate",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q013",
+    "question": "How common are paraneoplastic syndromes in lung cancer patients?",
+    "answer": "710% of lung cancer patients overall.",
+    "difficulty": "simple",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q014",
+    "question": "Which specific paraneoplastic symptom is strongly suggestive of a thymoma?",
+    "answer": "Myasthenia gravis is the commonest paraneoplastic effect; occurs in 15\u201325% of patients with thymoma.",
+    "difficulty": "moderate",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q015",
+    "question": "What environmental and dietary risk factors are associated with esophageal squamous cell carcinoma?",
+    "answer": "Tobacco use, alcohol use, low intake of fruits and vegetables, hot beverages ingestion, fermented foods consumption.",
+    "difficulty": "complex",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q016",
+    "question": "What physical sign usually indicates friability of an esophageal tumor or invasion into major vessels?",
+    "answer": "Dull retrosternal pain resulting from invasion of mediastinal structures, cough, hoarseness due to paratracheal nodal or recurrent laryngeal nerve involvement. Occasionally tracheoesophageal fistula or exsanguinating hemorrhage due to erosion of the esophageal neoplasm into major vessels.",
+    "difficulty": "moderate",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q017",
+    "question": "What is the recommended initial evaluation for patients suspected of having gastric adenocarcinoma?",
+    "answer": "The document does not provide specific information on the recommended initial evaluation for patients suspected of having gastric adenocarcinoma.",
+    "difficulty": "moderate",
+    "category": "Staging"
+  },
+  {
+    "id": "Q018",
+    "question": "What defines the threshold for recommending palliative therapy in gastric cancer?",
+    "answer": "The minimum of 15 examined lymph nodes is recommended for adequate surgical staging to define the threshold for potentially resectable disease.",
+    "difficulty": "simple",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q019",
+    "question": "What tests are included in the clinical evaluation of carcinoma of the colon?",
+    "answer": "thorough history, physical exam, lab screening (CBC, liver function tests, serum creatinine, urinalysis), chest radiography, PSA for men, mammogram for women.",
+    "difficulty": "moderate",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q020",
+    "question": "What is the primary determinant of 5-year survival in colon cancer?",
+    "answer": "The 5-year survival rate for colon cancer varies with disease stage and treatment, not a single factor like anatomic distribution or gender.",
+    "difficulty": "simple",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q021",
+    "question": "Which congenital disease is associated with an increased risk of cholangiocarcinoma?",
+    "answer": "Choledochal cysts or Caroli's disease are associated with an increased risk of cholangiocarcinoma.",
+    "difficulty": "moderate",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q022",
+    "question": "Which genetic syndrome is strongly associated with clear cell renal cell carcinomas?",
+    "answer": "Hereditary clear cell carcinoma (germline alteration in chromosome 3 without other features of vHL)",
+    "difficulty": "moderate",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q023",
+    "question": "What is the classic triad of symptoms for renal cell carcinoma, and how often does it occur?",
+    "answer": "The classic triad of hematuria, abdominal mass, and costovertebral pain occurs in only 20% or fewer cases and is often associated with advanced disease.",
+    "difficulty": "moderate",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q024",
+    "question": "In what percentage of ovarian cancer cases is the CA-125 marker elevated?",
+    "answer": "80%",
+    "difficulty": "simple",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q025",
+    "question": "What is the strongest independent predictor of prolonged survival in ovarian cancer?",
+    "answer": "Cisplatin sensitivity and bulk of disease are best predictors for progression-free survival.",
+    "difficulty": "moderate",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q026",
+    "question": "When is cervical cancer staging typically performed?",
+    "answer": "Cervical cancer staging should be based on careful clinical examination and specific radiologic studies before any definitive therapy is administered.",
+    "difficulty": "complex",
+    "category": "Staging"
+  },
+  {
+    "id": "Q027",
+    "question": "How quickly are the majority of recurrent cervical cancer cases diagnosed?",
+    "answer": "Within 3 months after radiation therapy.",
+    "difficulty": "moderate",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q028",
+    "question": "What is the typical radiographic appearance of a spinal hemangioma?",
+    "answer": "The text does not provide information about the typical radiographic appearance of a spinal hemangioma.",
+    "difficulty": "simple",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q029",
+    "question": "What is the therapeutic goal when evaluating patients with Cancer of Unknown Primary (CUP)?",
+    "answer": "The optimal treatment as of today cannot be determined. For most patients without an identified treatable primary tumor, empirical chemotherapy using current drugs and schedules should be a matter of frank discussion between patient and physician.",
+    "difficulty": "moderate",
+    "category": "General"
+  },
+  {
+    "id": "Q030",
+    "question": "What imaging modality is recommended for women with isolated axillary lymph node metastases and suspected occult breast carcinoma?",
+    "answer": "MRI of the breast has been recommended in some studies. Specifically:\n\n- Schorn C et al. (1999) suggested that MRI of the breast should be considered for patients who have axillary lymph node involvement with adenocarcinoma. However, it's important to note that this is not a universal recommendation and other imaging modalities like PET scans or magnetic resonance imaging may also play a role in identifying occult breast cancer. Routine use of these procedures before initial diagnosis is still under investigation and further study is necessary.",
+    "difficulty": "moderate",
+    "category": "Investigation"
+  },
+  {
+    "id": "Q031",
+    "question": "What marker aids in the diagnosis of hepatocellular cancer in patients presenting with liver-only metastatic disease?",
+    "answer": "Hep par 1 is an antigen whose expression is confined to benign and malignant hepatocytes and aids in the diagnosis of hepatocellular carcinoma in patients presenting with liver-only metastatic disease.",
+    "difficulty": "simple",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q032",
+    "question": "What does 'neoadjuvant treatment' refer to in oncology?",
+    "answer": "Neoadjuvant treatment refers to the administration of therapy before the primary treatment for a disease or condition. In oncology, this typically means administering chemotherapy, radiation, immunotherapy, etc., prior to surgery (such as radical cystectomy) or other definitive treatments like curative-intent surgery.",
+    "difficulty": "simple",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q033",
+    "question": "What proportion of patients with any stage of cancer experience significant pain?",
+    "answer": "65% to 85% of patients with advanced cancer experience significant pain. For those receiving active anticancer therapy, it is approximately 42%",
+    "difficulty": "simple",
+    "category": "Side_effects"
+  },
+  {
+    "id": "Q034",
+    "question": "How does early detection affect observed survival rates via lead-time bias?",
+    "answer": "Lead-time bias results in an apparent lengthening of survival due to earlier diagnosis, but it doesn't reflect actual improvements; slow-growing cancers may contribute to the success seen.",
+    "difficulty": "complex",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q035",
+    "question": "What enzyme helps cancer cells maintain immortality by replenishing chromosome ends?",
+    "answer": "Telomerase helps cancer cells maintain immortality by replenishing chromosome ends.",
+    "difficulty": "moderate",
+    "category": "Mechanism"
+  },
+  {
+    "id": "Q036",
+    "question": "When is chemotherapy generally postponed regarding patient status?",
+    "answer": "Chemotherapy is generally postponed if a patient has had 4 to 6 months of treatment and has stable or responsive disease.",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q037",
+    "question": "What does 'palliation' mean in the context of incurable cancer treatment?",
+    "answer": "Palliation means treating symptoms to improve quality of life for patients with incurable cancer.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q038",
+    "question": "What percentage of white plaques (leukoplakia) in the head and neck may be cancer in situ?",
+    "answer": "Less than 5% probability of subsequent malignant change for leukoplakia without underlying dysplastic changes. For leukoplakia with underlying epithelial hyperplasia, there is a \u22645% chance of subsequent malignant change. In cases with erythroplakia and dysplasia, it can be associated with carcinoma in situ or frank malignancy in nearly 40% of lesions.",
+    "difficulty": "simple",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q039",
+    "question": "Which cranial nerve is usually the first to be affected by nasopharyngeal tumors spreading to the cavernous sinus?",
+    "answer": "Cranial nerve II (optic) is usually the first to be affected by nasopharyngeal tumors spreading to the cavernous sinus.",
+    "difficulty": "complex",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q040",
+    "question": "In lung cancer staging, what is the significance of a mediastinal lymph node measuring 1.5 cm on a CT scan?",
+    "answer": "A mediastinal lymph node measuring 1.5 cm on a CT scan should be considered abnormal and requires further evaluation as it exceeds the threshold for normal nodes (>1 cm). Further staging is needed to determine if there are metastatic disease, which may require invasive techniques like mediastinoscopy or PET scanning.",
+    "difficulty": "moderate",
+    "category": "Staging"
+  },
+  {
+    "id": "Q041",
+    "question": "What percentage of patients with Small Cell Lung Cancer (SCLC) have neurologically asymptomatic brain metastases?",
+    "answer": "Approximately 10-20% of SCLC patients may present with neurologically asymptomatic brain metastases.",
+    "difficulty": "moderate",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q042",
+    "question": "What role does involuntary weight loss play as a prognostic factor in cancer?",
+    "answer": "Involuntary weight loss, often associated with cachexia, is considered an important prognostic factor for both early-stage (I-II) and advanced-stage (III-IV) lung cancer patients. It correlates strongly with poor survival outcomes independent of other factors like tumor size and lymph node involvement in early-stage disease. In advanced stages, it remains one of the most significant pretreatment prognostic indicators along with performance status and weight loss.",
+    "difficulty": "simple",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q043",
+    "question": "What are the three grave prognostic signs for gastric cancer post-surgery?",
+    "answer": "Pain and peritonism are grave signs and indicate the need for consideration of an urgent intervention.",
+    "difficulty": "moderate",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q044",
+    "question": "What allelic loss in colorectal cancer indicates a significantly worse prognosis?",
+    "answer": "Allelic loss on chromosome 18q indicates a significantly worse prognosis for patients with colon cancer. Specifically, the study mentioned shows that patients whose tumor exhibited no evidence of chromosome 18q allelic loss had better disease-free and overall survival rates compared to those whose tumors demonstrated such loss. Patients with stage II disease who did not have an allelic loss on chromosome 18q showed a 5-year disease-free survival rate of 96%, while the corresponding rate for patients with stage II disease and chromosome 18q allelic loss was only 54%.",
+    "difficulty": "complex",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q045",
+    "question": "What percentage of patients treated with mastectomy or RT for breast cancer have evidence of tumor at autopsy regardless of cause of death?",
+    "answer": "64% of women who had axillary disease identified a primary tumor at mastectomy, but this proportion varies. No specific percentage is provided for autopsies regardless of cause of death. [LOW CONFIDENCE]",
+    "difficulty": "moderate",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q046",
+    "question": "What tumor markers are useful for monitoring the response to therapy in advanced breast cancer?",
+    "answer": "PSA, AFP, beta-HCG, CA 125, and CEA. Few studies have examined serological tumor markers in patients with CUP. With the exception of AFP, the tumor markers (CEA, CA 19-9, CA 15-3, CA 125, and beta-HCG) were elevated in most of the patients.",
+    "difficulty": "simple",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q047",
+    "question": "What is the typical presentation of testicular cancer?",
+    "answer": "A painless or painful hard testicular lump, often mistaken for epididymitis. Presentation may include metastatic disease with symptoms like back pain, coughing, dyspnea, SVCO, or CNS signs.",
+    "difficulty": "simple",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q048",
+    "question": "In renal cell carcinoma, which histologic pattern is associated with a poor prognosis?",
+    "answer": "Papillary and sarcomatoid patterns are associated with a poor prognosis in renal cell carcinoma.",
+    "difficulty": "moderate",
+    "category": "Pathology"
+  },
+  {
+    "id": "Q049",
+    "question": "What is the risk of progression for Carcinoma In Situ (CIS) of the bladder if left untreated?",
+    "answer": "up to 60%",
+    "difficulty": "moderate",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q050",
+    "question": "What does a high nuclear grade (Fuhrman's system) indicate in renal cell carcinoma?",
+    "answer": "High nuclear grade (Fuhrman's method) indicates tumor with nuclear grade 3 or 4.",
+    "difficulty": "complex",
+    "category": "Pathology"
+  },
+  {
+    "id": "Q051",
+    "question": "How does prostate specific antigen (PSA) levels help in diagnosing prostate cancer?",
+    "answer": "Prostate-specific antigen (PSA) levels are crucial for the early detection of prostate cancer. PSA is a protein produced by both healthy and diseased prostates, including those affected by benign conditions like BPH or prostate cancer.\nFor PSA levels between 4.0 ng/mL and 10 ng/mL, the positive predictive value of detecting clinically significant prostate cancer (defined by grade and volume) is approximately 20% to 30%. Levels exceeding 10 ng/mL increase this probability to around 42% to 71.4%.\nThe use of both serum PSA levels and Digital Rectal Examination (DRE) together improves the detection rate compared to using either alone.\nMost cancers detected by PSA are clinically significant, meaning they have a high likelihood of being grade 3 or higher. However, up to 40% of cancers identified through PSA and DRE may show evidence of extracapsular extension (ECE), which is usually indicated by capsular penetration.\nUsing age-specific reference ranges can improve the sensitivity in younger men with less BPH and specificity in older men who are more likely to have higher PSA levels due to BPH. PSA Density attempts to correct for elevated PSA levels caused by benign prostatic hyperplasia (BPH) by dividing total serum PSA level by prostate gland volume measured via TRUS, though its utility is limited and not universally superior compared to standard PSA testing alone.\nIn summary, while PSA tests are valuable in detecting prostate cancer, their interpretation requires considering factors like age-specific reference ranges and the potential impact of BPH. Combining these with DRE can enhance diagnostic accuracy for early detection and management of prostate cancer.",
+    "difficulty": "moderate",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q052",
+    "question": "What type of headaches are characteristically associated with fast-growing CNS tumors?",
+    "answer": "Fast-growing CNS tumors may be associated with new onset or exacerbation following coughing, sneezing, head movement, or exertion.",
+    "difficulty": "moderate",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q053",
+    "question": "What symptom is typically associated with a tumor in the parietal lobe?",
+    "answer": "Tumors impinging on either parietal lobe can produce a decrease in the perception of cortical sensory stimuli that may vary from mild sensory extinction, observable only by testing, to a more severe sensory loss.",
+    "difficulty": "complex",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q054",
+    "question": "What proportion of palpable 'cold' thyroid nodules prove to be cancer?",
+    "answer": "25% to 61% of palpable cold thyroid nodules at presentation have involvement of clinically apparent cervical lymph nodes. For follicular thyroid cancers, the incidence is much lower at 5-20%, with a median around 10%. ",
+    "difficulty": "simple",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q055",
+    "question": "What triad of symptoms is highly suggestive of sellar (pituitary) metastases?",
+    "answer": "Hematuria, abdominal mass, and costovertebral pain",
+    "difficulty": "complex",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q056",
+    "question": "Which immunosuppressive drug is associated with cutaneous SCC and lymphoma?",
+    "answer": "",
+    "difficulty": "moderate",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q057",
+    "question": "What defines the Stewart-Treves syndrome?",
+    "answer": "The Stewart-Treves syndrome is characterized by lymphangiosarcoma developing in chronically lymphedematous arms of women who have been treated for breast cancer with radical mastectomy and, often, axillary irradiation.",
+    "difficulty": "moderate",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q058",
+    "question": "What is the most important factor in predicting the behavior of a soft tissue sarcoma?",
+    "answer": "Histologic grade is the most important factor in predicting the behavior of a soft tissue sarcoma.",
+    "difficulty": "moderate",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q059",
+    "question": "What indicates poor survival in neuroblastoma stages III and IV?",
+    "answer": "residual disease or positive lymph nodes; addition of radiation therapy improves this prognosis.",
+    "difficulty": "complex",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q060",
+    "question": "What is the typical presentation of a Wilms tumor?",
+    "answer": "Wilms tumors typically present as an abdominal mass, smooth or lobulated, arising in the loin. Pain, hematuria, fever, and weight loss may also be present at diagnosis. Hypertension occurs in about 25% of cases.",
+    "difficulty": "simple",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q061",
+    "question": "Which chemotherapy regimen is most commonly given for rhabdomyosarcoma?",
+    "answer": "Doxorubicin\u2013ifosfamide-based regimens.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q062",
+    "question": "What does a sudden appearance of multiple seborrheic keratoses (Leser-Tr\u00e9lat sign) typically indicate?",
+    "answer": "A sudden appearance of multiple seborrheic keratoses typically indicates the presence or recurrence of cancer, often lung and gastric cancer.",
+    "difficulty": "complex",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q063",
+    "question": "What is the main objective of primary prevention in oncology?",
+    "answer": "The main objective of early clinical trials of chemopreventive agents is to establish tolerability and side effects of candidate compounds.",
+    "difficulty": "simple",
+    "category": "General"
+  },
+  {
+    "id": "Q064",
+    "question": "How is Disease Free Survival (DFS) defined?",
+    "answer": "Disease-free survival refers to patients surviving and free of disease (%) as a population characteristic of interest in survival analysis.",
+    "difficulty": "moderate",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q065",
+    "question": "When is curative chemotherapy used?",
+    "answer": "Curative chemotherapy is used for patients who present with localized cancer for which there is an alternative but less than completely effective local treatment. It's also considered standard treatment for early-stage breast and colorectal cancer, and after surgical resection of certain cancers like anal cancer.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q066",
+    "question": "What is the goal of symptomatic treatment?",
+    "answer": "to palliate symptoms and maximize QoL for patients facing life-threatening illness.",
+    "difficulty": "simple",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q067",
+    "question": "Why is 'tailoring' or selective targeting used in modern chemotherapy?",
+    "answer": "'Tailoring' or selective targeting in modern chemotherapy uses specific molecular targets identified through biological and molecular research, allowing for more precise inhibition of cancer processes without affecting normal cells as much. This precision reduces side effects compared to nonspecific cytotoxic therapies.",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q068",
+    "question": "What are the common visual symptoms when a nasopharyngeal carcinoma ingrows into the orbit?",
+    "answer": "Frequent symptoms include nasal obstruction, pain, tinnitus, alterations in hearing (serous otitis media), and mass development in the neck. Infiltration laterally may lead to pterygoid muscle involvement and trismus. Growth into the cavernous sinus can impair cranial nerves II to VI.",
+    "difficulty": "moderate",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q069",
+    "question": "Why is cetuximab used in head and neck cancer treatment?",
+    "answer": "Cetuximab is used for locally advanced, recurrent or metastatic SCC of the head and neck, especially in patients with KRAS wild-type status.",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q070",
+    "question": "What determines the indication of adjuvant treatment after surgery in head and neck cancer?",
+    "answer": "Selection of the appropriate local therapy to be used in cancer treatment varies with individual cancer type and site involvement. Adjuvant treatments are selected based on balancing likelihood of cure against morbidity of treatment modality, often modifying surgical resection magnitude by adjuvant modalities. Integration of surgery with other therapies requires careful consideration of all effective options.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q071",
+    "question": "Which type of thyroid cancer requires adjuvant radiotherapy?",
+    "answer": "Adjuvant radiotherapy is indicated for patients with anaplastic carcinoma, as mentioned in the text:\n\n\"This is a very aggressive tumor with a median survival of less than six months. Surgery is indicated to maintain an open airway and is followed by external radiotherapy with or without chemotherapy.\" For papillary and follicular carcinomas that recur within the thyroid bed or cervical lymph nodes, surgery combined with radio-ablation is also considered the treatment of choice. However, adjuvant radiotherapy (chemoradiation) may be used in patients who have unresectable neck masses.",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q072",
+    "question": "What is the significance of the BRCA1 and BRCA2 genes in breast cancer?",
+    "answer": "BRCA1 and BRCA2 are tumor suppressor genes associated with familial forms of breast cancer. Mutations in either gene significantly increase a woman's lifetime risk of developing breast cancer, often before age 40 for pre-menopausal cancers. Women carrying these mutations have a 50-85% chance of developing breast cancer by age 70 and are at increased risk for ovarian cancer as well. Men with BRCA1 mutations face an elevated risk of prostate cancer. Both genes carry the hallmarks of tumor suppressor genes but their main function is not growth regulation; they support rather than inhibit cell proliferation, associated with DNA repair proteins.",
+    "difficulty": "simple",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q073",
+    "question": "What paraneoplastic neurological symptoms can manifest in small cell lung cancer?",
+    "answer": "Cushing's syndrome, hypercalcemia, carcinoid syndrome, gynecomastia, hypoglycemia, galactorrhea, growth hormone excess, secretion of thyroid-stimulating hormone, calcitonin secretion, myasthenic syndrome (Eaton-Lambert), ataxia from cerebellar degeneration or cerebral atrophy.",
+    "difficulty": "complex",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q074",
+    "question": "What is the main treatment method for locally advanced non-small cell lung cancer (NSCLC)?",
+    "answer": "Combined modality therapy with chemotherapy and radiation is now considered the standard of care for the treatment of locally advanced NSCLC.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q075",
+    "question": "What are the targeted therapy options for EGFR mutated NSCLC?",
+    "answer": "Targeted therapies include crizotinib, afatinib, CO-1686 (rociletinib), and cetuximab. Cetuximab is used in head and neck cancers not directly related to EGFR mutations. AFATINIB is effective for exon 19 deletions or L858R mutations. Novel third-generation TKIs like CO-1686 target T790M mutations.",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q076",
+    "question": "What defines a Krukenberg tumor?",
+    "answer": "Krukenberg tumors are rare, secondary ovarian malignancies that arise from gastrointestinal epithelium. [LOW CONFIDENCE] They typically present as ascites or ovarian masses with mucinous cystic structures on imaging and histology. [LOW CONFIDENCE] 116",
+    "difficulty": "moderate",
+    "category": "Pathology"
+  },
+  {
+    "id": "Q077",
+    "question": "What is the FLOT regimen used for?",
+    "answer": "The FLOT regimen (Fluorouracil, Leucovorin, Oxaliplatin, and Teniposide) is used in adjuvant chemotherapy for colorectal cancer.",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q078",
+    "question": "What are common symptoms of right-sided colon tumors?",
+    "answer": "Common symptoms of right-sided colon tumors include occult bleeding as opposed to obstruction; often present with palpable mass. Pain may be associated but not always linked to obstruction.",
+    "difficulty": "moderate",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q079",
+    "question": "What does a 5-year survival rate of ~40% indicate in colorectal cancer?",
+    "answer": "~40%",
+    "difficulty": "simple",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q080",
+    "question": "What is the basic surgical treatment for testicular cancer?",
+    "answer": "Radical inguinal orchiectomy using an inguinal incision to minimize local tumor recurrence and aberrant lymph spread, followed by retroperitoneal lymph node dissection.",
+    "difficulty": "simple",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q081",
+    "question": "What factors determine the prognosis of prostate cancer?",
+    "answer": "Prognosis is determined by clinical findings like positive surgical margins, Gleason score, PSA level, and lymph node involvement; pathologic factors such as tumor differentiation and number of positive surgical margins; and patient factors including anxiety. Prostate-specific antigen levels are not consistently a predictor but normalization may indicate better outcome.",
+    "difficulty": "moderate",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q082",
+    "question": "Why is TNM classification not applicable to brain tumors?",
+    "answer": "TNM system also classifies a tumor based on its histologic grade, including four levels from well-differentiated to undifferentiated, and should not be used for sarcomas, lymphomas, and carcinoids arising in the colorectum. Brain tumors are typically classified using other systems like WHO grading.",
+    "difficulty": "moderate",
+    "category": "Staging"
+  },
+  {
+    "id": "Q083",
+    "question": "What is the treatment strategy for generalized malignant melanoma with a BRAF V600 mutation?",
+    "answer": "For generalized malignant melanoma with a BRAF V600 mutation, vemurafenib or dabrafenib are well-tolerated and effective inhibitors. Combined therapy with MEK1/2 inhibitor such as trametinib can improve outcomes in patients who have developed resistance to single-agent treatment. Molecular testing for the BRAFV600 mutation is essential before starting these treatments.",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q084",
+    "question": "What is the most frequently used tumor marker for epithelial ovarian tumors?",
+    "answer": "It mentions that serum tumor markers for HCG and AFP are useful in diagnosing some germ cell tumors, but it doesn't indicate their frequency of use or specificity to epithelial ovarian cancers.",
+    "difficulty": "simple",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q085",
+    "question": "What characterizes the 'watch and wait' strategy in advanced follicular lymphoma?",
+    "answer": "The 'watch and wait' strategy involves monitoring without treatment until disease shows signs of progression, avoiding chemotherapy-based treatment initially. It remains controversial but can delay time to first chemotherapy for asymptomatic patients with delayed response benefit. For symptomatic patients, rituximab-based immunochemotherapy is associated with higher response rate, longer PFS, and OS.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q086",
+    "question": "What cytogenetic translocation is characteristic of Synovial Sarcoma?",
+    "answer": "t(X;18)(p11.2;q11.2) translocation is characteristic of synovial sarcoma. This chromosomal abnormality involves the X chromosome and chromosome 18, specifically at p11.2 (short arm of chromosome 18) and q11.2 (long arm of chromosome 18).",
+    "difficulty": "complex",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q087",
+    "question": "How does early detection of cancer influence the concept of lead-time bias?",
+    "answer": "Early detection through screening can reduce lead-time bias by allowing for earlier intervention, potentially shortening the period from initial diagnosis to death. However, if survival gains are primarily due to medical care advances rather than earlier disease detection, lead-time bias may not fully explain improvements in outcomes.",
+    "difficulty": "complex",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q088",
+    "question": "What tumor marker is useful in the diagnosis and monitoring of pancreatic cancer?",
+    "answer": "Serum CA19-9 level is a useful tumor marker for both the diagnosis and monitoring of pancreatic cancer. It has been studied as a surrogate marker for prognosis in locally advanced pancreatic cancer (LAPC) and can also be used to assess response to treatment, such as fixed-dose rate gemcitabine therapy.",
+    "difficulty": "simple",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q089",
+    "question": "Which environmental carcinogen exposure is linked to the development of angiosarcoma of the liver?",
+    "answer": "Exposure to thorotrast, arsenic, or vinyl chloride is associated with the development of angiosarcoma of the liver.",
+    "difficulty": "moderate",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q090",
+    "question": "What are the common symptoms of spinal cord tumors?",
+    "answer": "Common symptoms include gradual onset sensorimotor impairment, painful radicular syndrome, central syringomyelic dysfunction, loss of reflexes, muscle weakness, wasting, bladder function issues, and incontinence. [LOW CONFIDENCE] Pain is often present, especially on one side due to motor weakness. Sensory changes start distally in feet.",
+    "difficulty": "moderate",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q091",
+    "question": "What is the role of the p53 gene in cancer development?",
+    "answer": "The p53 gene acts as a tumor suppressor, normally regulating cell growth and division by triggering responses to DNA damage; it functions both through protein-protein interactions and regulation of transcription. When mutated, especially in sensitive regions, its function changes from suppressing tumors to promoting them, leading to enhanced genetic instability in many cancers including breast cancer. Mutations can result in loss of tumor suppressor activity or gain of tumor promotion function.",
+    "difficulty": "moderate",
+    "category": "Mechanism"
+  },
+  {
+    "id": "Q092",
+    "question": "How does alcohol act synergistically with tobacco in head and neck cancer?",
+    "answer": "Alcohol shows a strong synergy with smoking in causing OCC (oral cavity cancers) and cancers of the larynx and esophagus. For example, among men, the RR of OCC is 5 for smokers and 5 for alcohol abusers; it's about 25 for those who have both exposures.",
+    "difficulty": "moderate",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q093",
+    "question": "What are the main roles of surgery in the management of cancer?",
+    "answer": "Surgery has five main roles in the management of cancer patients: diagnosis and staging, curative surgery, palliative surgery, surgery for metastatic disease, and prophylactic surgery.",
+    "difficulty": "simple",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q094",
+    "question": "What characterizes the presentation of carcinoid tumors of the appendix?",
+    "answer": "The majority of appendiceal carcinoids are found incidentally during surgery for suspected appendicitis, with common presenting symptoms including periodic abdominal pain, intestinal obstruction, and an abdominal tumor. Metastatic carcinoids may present with symptoms related to the carcinoid syndrome such as flushing, wheezing, and diarrhea.",
+    "difficulty": "moderate",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q095",
+    "question": "What is the main driver of global cervical cancer disparities in mortality?",
+    "answer": "cervical cancer screening programs which is now widespread in developed countries, but very limited in many developing countries.",
+    "difficulty": "complex",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q096",
+    "question": "What is 'liquid biopsy' in oncology?",
+    "answer": "analysis of blood samples for genetic material released by tumors.",
+    "difficulty": "simple",
+    "category": "Investigation"
+  },
+  {
+    "id": "Q097",
+    "question": "Why is the use of systemic therapy often deferred in indolent asymptomatic cancers?",
+    "answer": "The use of systemic therapy is often deferred in indolent asymptomatic cancers due to unclear benefits compared to early intervention which can provide effective palliation.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q098",
+    "question": "Which genetic syndrome predisposes individuals to medullary thyroid cancer?",
+    "answer": "Multiple Endocrine Neoplasia Type 2 (MEN 2) syndromes, including familial medullary thyroid carcinoma.",
+    "difficulty": "complex",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q099",
+    "question": "What is the typical clinical presentation of a rhabdomyosarcoma in children?",
+    "answer": "Rhabdomyosarcoma in children typically presents with a painless soft tissue mass, most commonly found in lower limb (45%) and upper limb (15%). Head and neck involvement is 10%, retroperitoneal is also common at 15%.",
+    "difficulty": "simple",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q100",
+    "question": "What is the significance of the Philadelphia chromosome?",
+    "answer": "The Philadelphia chromosome (Ph1) t(9;22)(q34;q11) is significant as it occurs in 95% of chronic myeloid leukemia (CML) cases and involves a translocation between BCR on chromosome 22 and ABL on chromosome 9, creating the chimeric gene BCR/ABL. This fusion protein activates abnormal kinase activity leading to leukaemia. Knowledge about its pathogenesis has led to effective targeted therapeutic agents for CML.",
+    "difficulty": "moderate",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q101",
+    "question": "What is the purpose of metronomic chemotherapy?",
+    "answer": "Metronomic chemotherapy refers to frequent administration of chemotherapeutics at doses significantly below the maximum tolerated dose, with no prolonged drug-free breaks. It exerts a cytotoxic effect and antiangiogenic activity.",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q102",
+    "question": "What role does the Epstein-Barr virus (EBV) play in oncology?",
+    "answer": "Epstein-Barr virus (EBV) plays a central role in the pathogenesis of AIDS-related NHLs, including immunodeficiency-associated and those with reconstituted immune systems like centroblastic DLBCL and Burkitt lymphoma. It contributes to B-cell transformation through expression of oncogenic genes such as LMP-1, LMP-2, EBNA-1, and EBNA-2.",
+    "difficulty": "simple",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q103",
+    "question": "What is length bias in cancer screening?",
+    "answer": "Length bias occurs when slow-growing tumors are more likely to be detected by screening tests compared to fast-growing ones, leading screen-detected tumours to tend to be less aggressive and associated with a relatively good prognosis.",
+    "difficulty": "complex",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q104",
+    "question": "Which biological marker is essential to evaluate in breast cancer for predicting response to targeted therapies like Trastuzumab?",
+    "answer": "HER2 status is essential to evaluate in breast cancer for predicting response to targeted therapies like Trastuzumab",
+    "difficulty": "simple",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q105",
+    "question": "How does systemic inflammatory response, measured by CRP and albumin (Glasgow Prognostic Score), impact cancer prognosis?",
+    "answer": "Systematic inflammatory response, as measured by CRP and albumin levels using the Glasgow Prognostic Score, impacts cancer prognosis. Higher scores correlate with poorer outcomes in various cancers including breast cancer where high-dose chemotherapy yields significant tumor regression.",
+    "difficulty": "moderate",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q106",
+    "question": "What defines 'disease-free interval' (DFI) in cancer prognosis?",
+    "answer": "The DFI extends from resection of the primary tumor until pulmonary metastases are detected. A short DFI may indicate a poor prognosis because metastases may be multiple and growing rapidly. A longer DFI represents less biologically aggressive tumor and correlates with better postresection survival.",
+    "difficulty": "simple",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q107",
+    "question": "What is the typical initial imaging method for a suspected pediatric neck mass?",
+    "answer": "MRI is typically used as the primary imaging modality for evaluating many tumors of the head and neck including suspected pediatric neck masses. MRI's superior ability to image in multiple planes and detect subtle differences in soft tissue boundaries makes it valuable for staging and localizing these tumors.",
+    "difficulty": "simple",
+    "category": "Investigation"
+  },
+  {
+    "id": "Q108",
+    "question": "What causes the 'watery diarrhea-hypokalemia-achlorhydria' (WDHA) syndrome?",
+    "answer": "carcinoid tumors producing high levels of serotonin and related peptides leading to watery diarrhea, hypokalemia, and achlorhydria.",
+    "difficulty": "complex",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q109",
+    "question": "What is the primary risk factor for developing mesothelioma?",
+    "answer": "",
+    "difficulty": "simple",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q110",
+    "question": "What is an oncocytoma of the salivary gland?",
+    "answer": "An oncocytoma of the salivary gland is a benign adenomatous lesion characterized by oxyphilic histology and can be part of the monomorphic adenomas group. It occurs in older men, often in the parotid gland, and rarely undergoes malignant transformation.",
+    "difficulty": "moderate",
+    "category": "Pathology"
+  },
+  {
+    "id": "Q111",
+    "question": "What is 'tumor budding' and its significance in squamous cell carcinoma?",
+    "answer": "Tumor budding refers to the presence of small clusters of tumor cells within the stroma, significant in predicting poor prognosis for squamous cell carcinoma. [LOW CONFIDENCE]",
+    "difficulty": "complex",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q112",
+    "question": "How does human papillomavirus (HPV) status affect oropharyngeal cancer prognosis?",
+    "answer": "Human papillomavirus (HPV)-positive oropharyngeal cancers have improved disease-specific survival compared to HPV-negative tumors, especially those associated with E6 and E7 proteins. They are less likely to occur among heavy smokers and drinkers and less likely to harbor a p53 mutation.",
+    "difficulty": "moderate",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q113",
+    "question": "What is the clinical presentation of a solitary fibrous tumor (SFT) in the head and neck?",
+    "answer": "Solitary fibrous tumors in the head and neck occur most commonly in the upper airways including nasopharynx, paranasal sinuses, middle ear, mastoid, pterygopalatine fossa, and infratemporal fossa. They are typically asymptomatic but can present with a painless lump or mass.",
+    "difficulty": "moderate",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q114",
+    "question": "What kind of diet is associated with an increased risk of colorectal cancer?",
+    "answer": "A \"Western\" diet rich in saturated fat is associated with an increased risk of colon cancer.",
+    "difficulty": "simple",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q115",
+    "question": "In pediatric germ-cell tumors, why are ovarian biopsies generally contraindicated?",
+    "answer": "ovarian biopsies are generally contraindicated as current techniques available for in utero fertilization increase efforts to preserve the fallopian tube and uterus.",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q116",
+    "question": "Which cancer types most commonly metastasize to the brain?",
+    "answer": "Lung cancer, breast cancer, and melanoma. Other cancers that commonly metastasize include colorectal, kidney, prostate, testicular, ovarian cancers, and sarcomas.",
+    "difficulty": "moderate",
+    "category": "General"
+  },
+  {
+    "id": "Q117",
+    "question": "What defines a 'sporadic' cancer?",
+    "answer": "A sporadic cancer is one that occurs by chance without clear evidence of inherited genetic mutations.",
+    "difficulty": "simple",
+    "category": "Mechanism"
+  },
+  {
+    "id": "Q118",
+    "question": "What imaging study is most appropriate for assessing local tumor extent and depth of invasion in rectal cancer?",
+    "answer": "Endorectal ultrasound is most useful to measure depth of tumor invasion in early stage T1 and T2 rectal cancers. MRI of the pelvis is also considered particularly favored in Europe for accurate staging.",
+    "difficulty": "moderate",
+    "category": "Investigation"
+  },
+  {
+    "id": "Q119",
+    "question": "How do alkylating agents contribute to carcinogenesis?",
+    "answer": "Alkylating agents bind covalently to DNA via alkyl groups causing interstrand cross-links that prevent replication. They also enhance DNA repair mechanisms, leading to resistance. Mutations in tumors result from their effect on protein function and host cell behavior.",
+    "difficulty": "complex",
+    "category": "Mechanism"
+  },
+  {
+    "id": "Q120",
+    "question": "What is the role of sentinel lymph node biopsy in breast cancer management?",
+    "answer": "Sentinel lymph node biopsy aims to identify and remove the first draining lymph node for careful pathological examination, potentially avoiding axillary clearance. It reduces morbidity but has a learning curve.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q121",
+    "question": "What is the most common presenting sign of newly diagnosed breast cancer?",
+    "answer": "abnormal screening mammogram: microcalcification, mass lesion, distortion",
+    "difficulty": "simple",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q122",
+    "question": "How is Lobular Carcinoma In Situ (LCIS) defined pathologically?",
+    "answer": "Lobular carcinoma in situ (LCIS) is a solid proliferation of small cells with small, uniform, round-to-oval nuclei and variably distinct cell borders. It shows little variation histologically and is easily recognized. [LOW CONFIDENCE] LCIS is not detectable macroscopically and is always an incidental microscopic finding in breast tissue removed for another reason.",
+    "difficulty": "moderate",
+    "category": "Pathology"
+  },
+  {
+    "id": "Q123",
+    "question": "What are the three categories of endocrine responsiveness in early breast cancer?",
+    "answer": "Highly endocrine responsive (high expression of both ER and PR in a majority of tumor cells), incompletely endocrine responsive (lower expression of ER and/or PR), and endocrine nonresponsive (complete absence of both ER and PR).",
+    "difficulty": "moderate",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q124",
+    "question": "For recurrent or metastatic breast cancer patients who have failed anthracycline-based therapies, which drug class is typically preferred?",
+    "answer": "Taxanes",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q125",
+    "question": "What is the approximate male-to-female incidence ratio for head and neck cancers?",
+    "answer": "1.3",
+    "difficulty": "simple",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q126",
+    "question": "In countries like India, what is the primary risk factor for developing oral cavity cancer?",
+    "answer": "Tobacco use is also a significant risk factor.",
+    "difficulty": "simple",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q127",
+    "question": "How do immune checkpoint molecules influence the tumor microenvironment?",
+    "answer": "Immune checkpoint molecules inhibit activation of both innate and adaptive immunity cells, express on HCC cells and T cells, and their interaction with PD-L1/PD-1 results in T cell exhaustion. This contributes to escape from T cell-mediated cancer immune surveillance.",
+    "difficulty": "complex",
+    "category": "Mechanism"
+  },
+  {
+    "id": "Q128",
+    "question": "What are some significant adverse events associated with non-specific immunostimulation therapies?",
+    "answer": "Some significant adverse events associated with non-specific immunostimulation therapies include severe immune-related adverse events (irAEs), such as skin necrosis or ulceration of full-thickness dermis, generalized exfoliative dermatitis, and symptomatic macular, popular, or vesicular eruption.",
+    "difficulty": "moderate",
+    "category": "Side_effects"
+  },
+  {
+    "id": "Q129",
+    "question": "What is the lifetime risk of developing ovarian cancer for carriers of BRCA mutations?",
+    "answer": "The lifetime risk of developing ovarian cancer for a woman with a BRCA1 mutation is approximately 30% to 60%, and for a BRCA2 mutation, it's about 10% to 20%",
+    "difficulty": "simple",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q130",
+    "question": "What is the mechanism of action of PARP inhibitors in treating BRCA-mutated ovarian cancer?",
+    "answer": "PARP inhibitors work by generating double strand DNA breaks that require functional BRCA1 and BRCA2 proteins for efficient DNA repair. Cancers with dysfunctional BRCA proteins are therefore sensitive to single agent PARP inhibitor treatment.",
+    "difficulty": "complex",
+    "category": "Mechanism"
+  },
+  {
+    "id": "Q131",
+    "question": "Why is upfront surgical resection recommended for Wilms tumor in pediatric patients less than 6 months of age?",
+    "answer": "upfront surgical resection is recommended",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q132",
+    "question": "Which stages and genetic markers define high-risk neuroblastoma in patients over 18 months (547 days) of age?",
+    "answer": "Stage III and IV with amplification of the MYCN oncogene.",
+    "difficulty": "complex",
+    "category": "Staging"
+  },
+  {
+    "id": "Q133",
+    "question": "Why do patients with gastric adenocarcinoma often present with a poor prognosis?",
+    "answer": "Patients with gastric adenocarcinoma often present with a poor prognosis due to late stage onset, widespread metastases, poor performance status at diagnosis, and the disease's biologically more aggressive nature compared to distal tumors.",
+    "difficulty": "moderate",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q134",
+    "question": "What is the purpose of consolidating therapy with radiation in oncology?",
+    "answer": "Consolidating radiation after chemotherapy was initiated to show lack of survival benefit when irradiation was given after chemotherapy completion.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q135",
+    "question": "Which cranial nerve is typically the first to be affected by nasopharyngeal carcinoma spreading to the cavernous sinus?",
+    "answer": "Cranial nerve II (optic) is typically the first to be affected.",
+    "difficulty": "complex",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q136",
+    "question": "What is the World Health Organization's specific target incidence rate for eliminating cervical cancer?",
+    "answer": "The document does not provide information about WHO's specific target incidence rate for eliminating cervical cancer.",
+    "difficulty": "simple",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q137",
+    "question": "What is the projected global increase in patients requiring first-course chemotherapy between 2018 and 2040?",
+    "answer": "",
+    "difficulty": "moderate",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q138",
+    "question": "What proportion of the population in lower- and middle-income countries (LMICs) lacks access to safe and affordable cancer surgery?",
+    "answer": "Not provided in context",
+    "difficulty": "simple",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q139",
+    "question": "What second-line targeted therapies may be considered for NSCLC patients who progress after first-line treatment?",
+    "answer": "Docetaxel and gefitinib are second-line targeted therapies that may be considered for NSCLC patients who progress after first-line treatment.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q140",
+    "question": "What viral infection is strongly associated with the development of nasopharyngeal carcinoma?",
+    "answer": "Human papillomavirus (HPV) types 16 and 18 are strongly associated with the development of nasopharyngeal carcinoma.",
+    "difficulty": "simple",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q141",
+    "question": "In cases of Metastasis of Unknown Origin (MUO), how often does a postmortem examination fail to identify the primary tumor?",
+    "answer": "In about 40% of patients with metastases of unknown origin, the primary site is found in such examinations.",
+    "difficulty": "moderate",
+    "category": "Investigation"
+  },
+  {
+    "id": "Q142",
+    "question": "What is the standard preferred therapy for most women with operable breast cancer to preserve the breast?",
+    "answer": "Breast conservation, defined as complete tumor excision followed by whole breast irradiation.",
+    "difficulty": "simple",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q143",
+    "question": "What is the recommended treatment for elderly patients with advanced diffuse large B-cell lymphoma (DLBCL)?",
+    "answer": "CHOP alone was comparable to CHOP plus radiotherapy in this population of elderly DLBCL patients.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q144",
+    "question": "What characteristic genetic fusion is present in Chronic Myelogenous Leukemia (CML)?",
+    "answer": "A reciprocal translocation between chromosomes 9 and 22 results in the BCR-ABL1 fusion gene.",
+    "difficulty": "complex",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q145",
+    "question": "According to the CSCO guidelines, which breast cancer patients should be considered for preoperative neoadjuvant treatment?",
+    "answer": "Based on the information provided in the passage, the CSCO (Chinese Society of Clinical Oncology) guidelines consider certain breast cancer patients as reasonable candidates for preoperative neoadjuvant therapy. Specifically, these include: Patients who are initially eligible for lumpectomy but require down-staging by chemotherapy before they can be considered suitable candidates. Down-staged patients identified through the use of neoadjuvant treatment (preoperative chemotherapy) who may not have been originally thought to be candidates for lumpectomy. The passage suggests that further experience is needed to identify these down-staged patients effectively and manage them with breast-conserving surgery (BCT).",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q146",
+    "question": "Why do tumors with high frequencies of somatic mutations respond better to immune checkpoint inhibitors?",
+    "answer": "Tumors with high frequencies of somatic mutations are likely enriched in neoantigens, making them potentially more immunogenic and responding better to immune checkpoint inhibitors like PD-1/PD-L1 blockade.",
+    "difficulty": "complex",
+    "category": "Mechanism"
+  },
+  {
+    "id": "Q147",
+    "question": "What long-term complication affects approximately half of pediatric patients treated for salivary gland tumors?",
+    "answer": "The risk of postsplenectomy sepsis can occur particularly in children, but it is not specified that this affects approximately half of pediatric patients treated for salivary gland tumors. The provided context does not give specific information about long-term complications affecting 50% of such patients.",
+    "difficulty": "moderate",
+    "category": "Side_effects"
+  },
+  {
+    "id": "Q148",
+    "question": "What objective response rate was achieved with the combination of nivolumab and ipilimumab in the phase III CheckMate 067 trial for metastatic melanoma?",
+    "answer": "72.1%",
+    "difficulty": "complex",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q149",
+    "question": "In front-line therapy for NSCLC, what does high PD-L1 expression (>=50%) on tumor cells predict?",
+    "answer": "High PD-L1 expression (\u226550%) on tumor cells predicts a significantly longer progression-free survival and overall survival with pembrolizumab compared to platinum-based doublet ChT.",
+    "difficulty": "moderate",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q150",
+    "question": "What is a Level I radiotherapy recommendation for a breast cancer patient presenting with diffuse brain metastases?",
+    "answer": "Level I radiotherapy recommendation for a breast cancer patient presenting with diffuse brain metastases involves whole-brain radiation therapy (WBRT) and concomitant temozolomide.",
+    "difficulty": "simple",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q151",
+    "question": "Which FDA-approved immune checkpoint inhibitor targets mismatch repair-deficient (dMMR) or MSI-H refractory solid tumors agnostically?",
+    "answer": "Pembrolizumab and nivolumab",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q152",
+    "question": "How does the NCCN define an Adolescent and Young Adult (AYA) cancer patient?",
+    "answer": "The National Coalition for Cancer Survivorship defines Adolescent and Young Adult (AYA) cancer patients as those aged 15-24 years.",
+    "difficulty": "simple",
+    "category": "General"
+  },
+  {
+    "id": "Q153",
+    "question": "What are the common late effects of radiation therapy applied to the thyroid gland?",
+    "answer": "Common late effects include hypothyroidism, hyperthyroidism, and thyroid failure. These can occur after total body or cranio-spinal irradiation or radiotherapy to the neck. Annual screening with TFTs is recommended in high-risk patients.",
+    "difficulty": "simple",
+    "category": "Side_effects"
+  },
+  {
+    "id": "Q154",
+    "question": "Adolescent and Young Adult (AYA) patients with germline TP53 mutations (Li-Fraumeni syndrome) are at high risk of developing which bone and soft tissue malignancies?",
+    "answer": "osteosarcoma and soft tissue sarcomas.",
+    "difficulty": "moderate",
+    "category": "Epidemiology"
+  },
+  {
+    "id": "Q155",
+    "question": "What tumor markers should be checked quarterly during the first year of follow-up after radical therapy for colorectal cancer?",
+    "answer": "CEA every three months for at least the first three years",
+    "difficulty": "moderate",
+    "category": "Investigation"
+  },
+  {
+    "id": "Q156",
+    "question": "In the management of prostate cancer, when is the 'watchful waiting' approach utilized?",
+    "answer": "The 'watchful waiting' (also referred to as active surveillance) approach is typically utilized for patients with localized, low-stage prostate cancer who are considered candidates based on their age and overall health status. This strategy involves regular monitoring through PSA testing, digital rectal exams, and repeat biopsies without immediate treatment initiation.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q157",
+    "question": "Why do adolescents and young adults with Acute Lymphoblastic Leukemia (ALL) treated on pediatric protocols often show better survival than those on adult protocols?",
+    "answer": "Adolescents and young adults treated on pediatric protocols had a significantly better five-year survival compared to those treated on adult protocols. This is due to more intensive use of nonmyelosuppressive agents like steroids, L-asparaginase, vinciristine, earlier central nervous system prophylaxis, and longer maintenance in the pediatric protocols. Protocol adherence/compliance was also a contributing factor.",
+    "difficulty": "complex",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q158",
+    "question": "According to the Reese-Ellsworth staging system for retinoblastoma, what features define Group I?",
+    "answer": "Small flat tumors not extending outside of globe",
+    "difficulty": "complex",
+    "category": "Staging"
+  },
+  {
+    "id": "Q159",
+    "question": "Why is a biopsy generally avoided when evaluating a patient for suspected retinoblastoma?",
+    "answer": "A biopsy is generally avoided in patients suspected of having retinoblastoma due to the risk that corticosteroids can lead to nondiagnostic biopsies, as these patients are sensitive to steroids which may be present during initial presentation. Patients requiring treatment with even small doses of corticosteroids should have repeat biopsy after discontinuation.",
+    "difficulty": "moderate",
+    "category": "Investigation"
+  },
+  {
+    "id": "Q160",
+    "question": "What radiotherapy techniques are preferred for delivering Accelerated Partial Breast Irradiation (APBI)?",
+    "answer": "None of the provided context specifically discusses Accelerated Partial Breast Irradiation (APBI) or its preferred radiotherapy techniques. [LOW CONFIDENCE]",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q161",
+    "question": "What are the characteristics of an ideal maintenance chemotherapy protocol for advanced breast cancer?",
+    "answer": "The text does not provide specific details about the characteristics of an ideal maintenance chemotherapy protocol for advanced breast cancer. [LOW CONFIDENCE]",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q162",
+    "question": "When is it safe to administer adjuvant chemotherapy to a pregnant patient diagnosed with breast cancer?",
+    "answer": "Adjuvant chemotherapy for women in their third trimesters is often delayed until after delivery, often with the plan of delivering the baby several weeks early. For those in first or second trimesters, delaying radiation can increase local recurrence risk and should be considered carefully. Adjuvant therapy during pregnancy may not significantly affect obstetric complications but increases infant complication risks.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q163",
+    "question": "What is the purpose of ASCO's Global Guidelines (formerly Resource-Stratified Guidelines)?",
+    "answer": "The American Society of Clinical Oncology (ASCO) guidelines aim to define who benefits most from using Colony-Stimulating Factors (CSFs), reducing their use where it won't likely be cost-effective, and recommending CSF administration only for patients with high-risk factors or a history of febrile neutropenia.",
+    "difficulty": "moderate",
+    "category": "General"
+  },
+  {
+    "id": "Q164",
+    "question": "In ER-positive, HER2-negative breast cancer, what does a 21-gene recurrence score (RS) of 31 or greater indicate?",
+    "answer": "A 21-gene recurrence score (RS) of 31 or greater in ER-positive, HER2-negative breast cancer indicates that patients are likely to benefit from chemotherapy followed by endocrine therapy.",
+    "difficulty": "complex",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q165",
+    "question": "What does Adoptive T Cell Therapy (ACT) using Tumor Infiltrating Lymphocytes (TILs) entail?",
+    "answer": "Adoptive cell transfer with autologous ex vivo\u2013expanded tumor-infiltrating lymphocytes involves isolating TILs from surgically resected tumors, expanding them in vitro with IL-2, and infusing these cells into patients after lymphodepletion to create 'physical space' for the high number of TILs.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q166",
+    "question": "How do active cancer vaccines aim to alter the tumor microenvironment?",
+    "answer": "Active cancer vaccines aim to instruct the host immune system to recognize cancer as a foreign 'non-self' tissue and mount specific immune responses that eliminate malignant cells. They may induce de novo immune responses by stimulating tumour-specific T cells from the na\u00efve repertoire, or boost existing suboptimal responses by providing new/stronger antigenic stimuli.",
+    "difficulty": "complex",
+    "category": "Mechanism"
+  },
+  {
+    "id": "Q167",
+    "question": "What is the mechanism of tremelimumab in the treatment of hepatocellular carcinoma?",
+    "answer": "Tremelimumab is a fully human immunoglobulin G2 monoclonal antibody that blocks CTLA-4 on activated T cells, and was evaluated in 20 patients with hepatitis C virus-related HCC. It showed an objective response rate of 17.6% with three achieving confirmed partial responses.",
+    "difficulty": "moderate",
+    "category": "Mechanism"
+  },
+  {
+    "id": "Q168",
+    "question": "Why is the use of PD-1/PD-L1 inhibitors rationalized in the treatment of Merkel cell carcinoma (MCC)?",
+    "answer": "PD-1/PD-L1 expression observed in >90% of normal thymus cells, but its significance as a rationale for assessing ICIs remains debatable due to high frequency in non-neoplastic thymus and potential immune modulation by standard treatments.",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q169",
+    "question": "What are the common clinical presentations of a patient with a paranasal sinus tumor?",
+    "answer": "The provided text does not contain specific information about the common clinical presentations of a patient with a paranasal sinus tumor. [LOW CONFIDENCE] The document primarily discusses chemotherapy regimens and outcomes for patients with paranasal sinus cancer, including intraarterial drug delivery as an adjunct to radiation therapy. For details on common clinical presentations related to paranasal sinus tumors, you would need to refer to other sources or sections of the text that specifically address this topic. [LOW CONFIDENCE]",
+    "difficulty": "moderate",
+    "category": "Clinical_features"
+  },
+  {
+    "id": "Q170",
+    "question": "Which specific virus is fundamentally responsible for driving a high fraction of oropharyngeal squamous cell carcinomas?",
+    "answer": "Human papillomavirus (HPV) type 16 is the human-specific virus that is strongly associated with cancer of the oropharynx, particularly in cancers of the oropharynx. The association between HPV and oropharyngeal squamous cell carcinoma has been noted to be strongest for these types of tumors.",
+    "difficulty": "simple",
+    "category": "Etiology"
+  },
+  {
+    "id": "Q171",
+    "question": "How does human papillomavirus (HPV) infection status influence survival outcomes in oropharyngeal cancer?",
+    "answer": "HPV-16 DNA-positive tumors, particularly those associated with the E6 and E7 proteins, have improved survival after chemoradiotherapy. This implies that having HPV infection may be beneficial for patients diagnosed with oropharyngeal cancers, especially if they are positive for these viral oncogenes. However, it's important to note that this is based on a specific subset of tumors (those with transcriptionally active HPV-16 DNA) and does not universally apply to all cases of oropharyngeal cancer.",
+    "difficulty": "simple",
+    "category": "Prognosis"
+  },
+  {
+    "id": "Q172",
+    "question": "What distinguishes malignant melanoma from sebaceous adenocarcinoma in the parotid gland on immunohistochemistry?",
+    "answer": "On immunohistochemistry, sebaceous cells in SC show varying degrees of differentiation and nuclear pleomorphism, while melanoma can be confused with sebaceous adenocarcinoma. Specific stains like CEA, PSA, cytokeratin, vimentin, common leucocyte antigen (CLA), ER/PR may help differentiate them; however, few specific markers exist for distinguishing between the two.",
+    "difficulty": "complex",
+    "category": "Pathology"
+  },
+  {
+    "id": "Q173",
+    "question": "What is the typical presentation of early glottic (true vocal fold) laryngeal cancer?",
+    "answer": "The earliest stage of invasive glottic carcinoma through mucosa into the underlying lamina propria presents as a tethering of the normally sliding mucous membrane, with loss of the mucosal wave. Early invasive lesions can be appreciated using stroboscopic examination to show restrictive features.",
+    "difficulty": "simple",
+    "category": "Clinical_features"
+  },
+  {
+    "id": "Q174",
+    "question": "What is the primary treatment approach for Ewing's sarcoma of the pelvic bone?",
+    "answer": "The primary treatment approach for Ewing's sarcoma of the pelvic bone involves achieving local control, which can be accomplished through either high-dose radiotherapy or resection. However, there isn't a clear consensus on whether surgery (resection) is better than radiation therapy alone in terms of long-term survival and relapse-free survival. For localized lesions that are amenable to limb-sparing resections, patients typically undergo an initial phase of induction chemotherapy followed by surgical intervention after 12-15 weeks. For larger or more extensive tumors where surgery may not be feasible due to risk factors like extraosseous extension, radiotherapy is often the primary treatment modality. In summary, both radiation therapy and resection are used depending on the specific characteristics of each patient's tumor, with no definitive evidence favoring one approach over another in terms of overall effectiveness.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q175",
+    "question": "What are the essential diagnostic criteria for non-keratinizing squamous cell carcinoma of the sinonasal tract?",
+    "answer": "Non-keratinizing variants are mentioned but no detailed criteria are provided.",
+    "difficulty": "moderate",
+    "category": "Diagnosis"
+  },
+  {
+    "id": "Q176",
+    "question": "According to Indian national guidelines, what pathological findings mandate the use of post-mastectomy radiation in breast cancer?",
+    "answer": "Post-mastectomy radiation is recommended for patients with four or more positive axillary nodes and for patients with T3 disease.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q177",
+    "question": "Which combination of immunotherapy drugs is the standard first-line treatment for intermediate- and poor-prognosis metastatic clear cell renal cell carcinoma?",
+    "answer": "Nivolumab + ipilimumab",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q178",
+    "question": "In urothelial carcinoma, what is a primary limitation for standard systemic chemotherapy?",
+    "answer": "Standard systemic chemotherapy often causes significant haematological and non-haematological adverse events, usually seen after either first-line cisplatin- or non-cisplatin-based ChT.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q179",
+    "question": "In the liver tumor microenvironment, what factors drive immune escape in hepatocellular carcinoma?",
+    "answer": "failure to process TAAs into antigenic peptide , production of immunosuppressive soluble factors like TGF-\u03b2, IL-10, IDO and arginase by HCC cells and immune cells, expression of immune checkpoint molecules such as CTLA-4, PD-1, TIM-3, LAG-3 on both tumor and immune cells contribute to immune escape in hepatocellular carcinoma.",
+    "difficulty": "complex",
+    "category": "Mechanism"
+  },
+  {
+    "id": "Q180",
+    "question": "What is the treatment of choice for Stage I (T1N0M0) esophageal cancer?",
+    "answer": "lobectomy.",
+    "difficulty": "simple",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q181",
+    "question": "What are the common chemotherapy agents used concurrently with radiation in the definitive treatment of unresectable esophageal tumors?",
+    "answer": "Cisplatin, paclitaxel, carboplatin, or 5-FU are commonly used chemotherapy agents used concurrently with radiation in the definitive treatment of unresectable esophageal tumors.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q182",
+    "question": "What organs are considered critical structures that limit the dose of radiotherapy for pelvic tumors like cervical cancer?",
+    "answer": "The central nervous system (CNS) is considered a critical structure that limits the dose of radiotherapy for pelvic tumors like cervical cancer.",
+    "difficulty": "moderate",
+    "category": "Side_effects"
+  },
+  {
+    "id": "Q183",
+    "question": "When is adjuvant radiotherapy indicated for well-differentiated thyroid cancer?",
+    "answer": "Adjuvant radiation therapy for grossly resected well-differentiated thyroid cancer has not generally been thought to be beneficial until one recent retrospective study. The benefits observed in this study were specific and limited, primarily benefiting patients with lymph node-positive disease among those diagnosed with papillary thyroid cancer. The study by Farahati et al., which analyzed patients with T4 primary lesions (evidence of extrathyroidal extension) who underwent radiation therapy compared to those who did not, showed that adjuvant radiotherapy had a significant impact on reducing local recurrence. Specifically:\n\n- Patients in the group receiving radiation treatments experienced recurrent disease at 4% (3 out of 75 patients). - In contrast, patients without radiation treatment had recurrences at 26% (13 out of 50 patients), with statistical significance noted (P=.0001). However, these benefits were not observed in lymph node-negative papillary thyroid cancer cases. For T4 lesions and positive lymph nodes treated with radiotherapy, there was a recurrence rate of 7.1%, while without radiation therapy it was 44.8%. These results suggest that patients with T4 papillary thyroid cancer, particularly those with positive lymph nodes, may benefit from external-beam radiation therapy to the neck. Further prospective studies are needed to confirm this approach and determine its overall benefits for these specific patient populations.",
+    "difficulty": "complex",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q184",
+    "question": "How is an adequate margin typically defined in breast-conserving surgery?",
+    "answer": "Adequate margins are more than or equal to 2 mm.",
+    "difficulty": "moderate",
+    "category": "Surgery"
+  },
+  {
+    "id": "Q185",
+    "question": "What is the definition and goal of palliative care in oncology?",
+    "answer": "addressing the symptoms, side effects, and stress related to a serious illness. In this context, it aims to improve the patient's quality of life by providing comprehensive support that goes beyond traditional medical treatments. Palliative care focuses on alleviating suffering through symptom management (such as pain control), emotional support for patients and their families, assistance with arranging practical needs like daily living activities or finances, and coordination between all healthcare providers involved in a patient\u2019s care. The goal of palliative care is to help individuals live comfortably during the course of an illness, regardless of whether they are receiving curative treatment or not. It seeks to integrate early into cancer care when symptoms start appearing, aiming to provide relief from distressing symptoms and improve overall quality of life for patients. In oncology specifically, palliative care aims to complement standard medical treatments by offering holistic support that can enhance the effectiveness of these treatments while also addressing non-curative aspects of a patient's condition.",
+    "difficulty": "simple",
+    "category": "General"
+  },
+  {
+    "id": "Q186",
+    "question": "During a psycho-oncological assessment for a child with cancer, what is the primary goal of the investigative phase?",
+    "answer": "Not provided in context",
+    "difficulty": "moderate",
+    "category": "General"
+  },
+  {
+    "id": "Q187",
+    "question": "What is the recommended systemic therapy for patients with Stage IVB (distant metastatic) cervical cancer?",
+    "answer": "Chemotherapy represents a recommended systemic therapy for patients with stage IVB distant metastatic cervical cancer, as radiation therapy has limited effectiveness due to factors like poor vascular supply and bone marrow reserve. Systemic therapy with gemcitabine also represents a reasonable alternative in these patients.",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q188",
+    "question": "What is a cornerstone of management for pediatric patients diagnosed with familial polyposis syndromes?",
+    "answer": "A subtotal colectomy requiring continuing surveillance of the remaining rectum is the treatment of choice for FAP starting at 10 to 12 years of age.",
+    "difficulty": "simple",
+    "category": "Treatment"
+  },
+  {
+    "id": "Q189",
+    "question": "What serum markers are monitored in pediatric ovarian germ cell tumors?",
+    "answer": "AFP and HCG are helpful in recognizing preoperatively the presence of an endodermal sinus tumor, embryonal carcinoma, choriocarcinoma, or mixed germ cell tumor.",
+    "difficulty": "moderate",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q190",
+    "question": "Pediatric adrenocortical tumors are frequently associated with which familial cancer predisposition syndrome?",
+    "answer": "Pediatric adrenocortical tumors are frequently associated with Beckwith-Wiedemann Syndrome (BWS). This is evident from the literature, where it has been noted that BWS is characterized by a high frequency of Wilms' tumor and other features such as large size at birth, disproportionately large tongue, omphalocele, and linear creases in the earlobe. Additionally, there are reports suggesting that pediatric adrenocortical tumors can occur more frequently or earlier in individuals with Beckwith-Wiedemann Syndrome compared to the general population.",
+    "difficulty": "moderate",
+    "category": "Etiology"
+  },
+  {
+    "id": "Q191",
+    "question": "How can clinicians monitor antigen-specific T cell activity in patients undergoing immunotherapy?",
+    "answer": "Clinicians can monitor antigen-specific T cell activity through a tetramer-based staining strategy or ELISPOT technique.",
+    "difficulty": "complex",
+    "category": "Investigation"
+  },
+  {
+    "id": "Q192",
+    "question": "How does the gut microbiota influence systemic cancer immunotherapy?",
+    "answer": "The gut microbiota influences immune responses to anti-PD-(L)1 agents by affecting T cell activation. Alterations in the microbiota can result from environmental factors and pathogens, leading to microbial dysbiosis that promotes auto-inflammatory conditions potentially contributing to cancer development. Microbiota also affects different aspects of tumour biology including transformation and response to immunotherapy. However, its predictive role for response to anti-PD-1/PD-L1 drugs remains under investigation in humans.",
+    "difficulty": "complex",
+    "category": "Mechanism"
+  },
+  {
+    "id": "Q193",
+    "question": "What direct impact does targeting the MAPK pathway (e.g., using BRAF inhibitors) have on the immune system in melanoma?",
+    "answer": "Targeting the MAPK pathway, particularly through the use of BRAF inhibitors like vemurafenib or dabrafenib, has not been shown to directly impact the immune system in a way that is specifically beneficial for treating melanoma. The chapter mentions that these therapies target specific genetic mutations within the tumor and aim to inhibit pathways such as the MAP kinase pathway (Fig. 23.5), which includes BRAF and MEK targets. While targeted therapy can lead to improvements in symptoms, quality of life, progression-free survival (PFS), and overall survival (OS) by reducing disease burden or preventing secondary skin cancers caused by inhibition of BRAF alone, it does not directly address the immune system's role in melanoma. The chapter notes that these therapies may reduce the incidence of 2nd primary cutaneous squamous cell carcinomas (SCCs) due to BRAF inhibition and increase duration of response through suppression of acquired resistance pathways. However, for understanding how targeting specific genetic mutations impacts overall treatment efficacy or immune system involvement, further research would be needed.",
+    "difficulty": "complex",
+    "category": "Mechanism"
+  },
+  {
+    "id": "Q194",
+    "question": "What are the recommended screening tests for prostate cancer in men over 50 years of age?",
+    "answer": "For men over 50 years of age, annual PSA and digital rectal examination (DRE) is recommended starting at age 50 or earlier if high risk.",
+    "difficulty": "simple",
+    "category": "Investigation"
+  },
+  {
+    "id": "Q195",
+    "question": "How does the WHO classify tumors of the central nervous system (CNS) based on growth rate and aggressiveness?",
+    "answer": "The World Health Organization (WHO) classifies CNS tumors by their histological pattern of cell differentiation, with grade III defining anaplastic astrocytoma and grade IV glioblastoma, characterized by marked nuclear atypia, mitotic activity, microvascular proliferation or necrosis.",
+    "difficulty": "simple",
+    "category": "Pathology"
+  },
+  {
+    "id": "Q196",
+    "question": "When diagnosing operable breast cancer, why is the evaluation of ER, PR, and HER2/neu status essential?",
+    "answer": "ER, PR, and HER2/neu status are essential for determining the degree of endocrine responsiveness and to guide treatment choice in patients with early breast cancer. Highly endocrine responsive tumors may be suitable for endocrine therapy alone, while chemotherapy may be required for those at intermediate- or high-risk.",
+    "difficulty": "moderate",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q197",
+    "question": "Why is it important to assess serum tumor marker decline during chemotherapy for non-seminomatous germ cell tumors?",
+    "answer": "It's important to assess serum tumor marker decline during chemotherapy for non-seminomatous germ cell tumors because a favorable rate of decline in markers can predict better prognosis and may allow treatment intensification, improving PFS and OS.",
+    "difficulty": "complex",
+    "category": "Biomarker"
+  },
+  {
+    "id": "Q198",
+    "question": "What is an advance directive in the context of end-of-life planning for cancer patients?",
+    "answer": "Advance directives are formal written instructions about medical treatment preferences that a patient may want if they can no longer make decisions. They often conflict with family or physician choices and are not effective at ensuring wishes are followed.",
+    "difficulty": "simple",
+    "category": "General"
+  },
+  {
+    "id": "Q199",
+    "question": "If a cancer patient is experiencing distress, what specific symptom might they ask their doctor to evaluate to determine if it is purely distress-related?",
+    "answer": "A cancer patient might ask their doctor to evaluate pain or depression specifically as potential sources of distress.",
+    "difficulty": "moderate",
+    "category": "General"
+  },
+  {
+    "id": "Q200",
+    "question": "What accelerated approval did the FDA grant for sacituzumab govitecan in April 2020?",
+    "answer": "",
+    "difficulty": "moderate",
+    "category": "Treatment"
+  }
+]

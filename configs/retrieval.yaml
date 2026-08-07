@@ -1,0 +1,22 @@
+# Chunking + retrieval hyperparameters.
+
+chunking:
+  parent_chunk_size: 3500
+  child_chunk_size: 800
+  chunk_overlap: 50
+
+retrieval:
+  top_k_dense: 5
+  top_k_bm25: 5
+  top_k_graph: 5
+  hybrid_alpha: 0.7            # weight on dense score vs bm25 score (0=bm25 only, 1=dense only)
+  graph_expansion_hops: 1
+  final_top_k: 3               # after fusion + rerank, passed to generator
+
+evaluation:
+  metrics:
+    - faithfulness
+    - answer_relevancy
+    - context_precision
+    - context_recall
+  hallucination_threshold: 0.7

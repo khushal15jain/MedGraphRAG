@@ -1,0 +1,17 @@
+# Filesystem layout — kept relative to project root so the repo is portable.
+
+paths:
+  root: .
+  data_raw: data/raw
+  data_processed: data/processed
+  data_interim: data/interim
+  chunks_file: data/processed/chunks.jsonl
+  entities_file: data/processed/entities.jsonl
+  relations_file: data/processed/relations.jsonl
+  graph_file: outputs/knowledge_graph.gpickle
+  chroma_persist_dir: outputs/chroma_db
+  chroma_collection_name: medgraphrag_chunks
+  mlflow_tracking_uri: file:./outputs/mlruns
+  logs_dir: outputs/logs
+  benchmark_results: outputs/benchmark_results
+  figures_dir: outputs/figures

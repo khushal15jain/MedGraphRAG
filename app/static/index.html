@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedGraphRAG — Clinical Oncology Decision Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-hover: #24344d;
+    --surface-subtle: #0f172a;
+    --border: #334155;
+    --border-subtle: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --accent: #0ea5e9;
+    --accent-glow: rgba(14, 165, 233, 0.15);
+    --accent-dark: #0284c7;
+    --success: #10b981;
+    --success-bg: rgba(16, 185, 129, 0.12);
+    --warning: #f59e0b;
+    --warning-bg: rgba(245, 158, 11, 0.12);
+    --danger: #ef4444;
+    --danger-bg: rgba(239, 68, 68, 0.12);
+    --radius: 12px;
+    --radius-sm: 6px;
+    --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-main);
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+  }
+
+  /* Header */
+  header {
+    margin-bottom: 28px;
+  }
+  .brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(14, 165, 233, 0.1);
+    color: var(--accent);
+    border: 1px solid rgba(14, 165, 233, 0.25);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .brand-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  h1 {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 64ch;
+  }
+
+  /* Input Card */
+  .query-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow);
+    transition: border-color 0.2s;
+  }
+  .query-card:focus-within {
+    border-color: var(--accent);
+  }
+  textarea {
+    width: 100%;
+    min-height: 90px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 15px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+  textarea::placeholder {
+    color: var(--text-dim);
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+  .k-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .k-selector input {
+    width: 44px;
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+    padding: 4px 6px;
+    text-align: center;
+    font-family: inherit;
+    font-size: 12.5px;
+  }
+
+  .btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-submit:hover:not(:disabled) {
+    background: var(--accent-dark);
+  }
+  .btn-submit:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .btn-submit:disabled {
+    background: #334155;
+    color: #64748b;
+    cursor: not-allowed;
+  }
+
+  /* Sample queries */
+  .samples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .sample-chip {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .sample-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(14, 165, 233, 0.05);
+  }
+
+  /* Result section */
+  #result-area {
+    margin-top: 32px;
+  }
+
+  .loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(14, 165, 233, 0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-box {
+    background: var(--danger-bg);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    font-size: 14px;
+  }
+
+  /* Answer Card */
+  .answer-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 26px;
+    box-shadow: var(--shadow);
+    animation: fadeIn 0.25s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 18px;
+  }
+  .badges-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .badge {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .badge.good { background: var(--success-bg); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+  .badge.warn { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+  .badge.neutral { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border); }
+
+  .actions-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-copy {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-copy:hover {
+    color: var(--text-main);
+    border-color: var(--text-muted);
+  }
+
+  /* Score Meters */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .metric-item {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .metric-top {
+    display: flex;
+    justify-content: space-between;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .metric-val {
+    color: var(--text-main);
+    font-weight: 600;
+  }
+  .bar-track {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 999px;
+  }
+  .bar-fill.good { background: var(--success); }
+  .bar-fill.warn { background: var(--warning); }
+
+  /* Clinical Prose Rendering */
+  .clinical-prose {
+    font-size: 15.5px;
+    line-height: 1.75;
+    color: #e2e8f0;
+    margin-bottom: 24px;
+  }
+  .clinical-prose p {
+    margin-bottom: 14px;
+  }
+  .clinical-prose strong {
+    color: #ffffff;
+    font-weight: 600;
+  }
+  .clinical-prose ul, .clinical-prose ol {
+    margin: 12px 0 16px 22px;
+  }
+  .clinical-prose li {
+    margin-bottom: 6px;
+  }
+
+  /* Interactive Citation Pills */
+  .cite-pill {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(14, 165, 233, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(14, 165, 233, 0.3);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin: 0 3px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s;
+    vertical-align: baseline;
+  }
+  .cite-pill:hover {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+  }
+
+  /* Flagged sentence badges */
+  .flag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    font-weight: 500;
+    margin: 0 4px;
+  }
+  .flag-badge.warn {
+    background: var(--warning-bg);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+  .flag-badge.danger {
+    background: var(--danger-bg);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  /* Evidence Drawer */
+  .evidence-section {
+    margin-top: 24px;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+  .evidence-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .evidence-title {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+  .save-toast {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--success);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .ev-card {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+  }
+  .ev-card.highlighted {
+    border-color: var(--accent);
+    background: rgba(14, 165, 233, 0.08);
+    box-shadow: 0 0 15px rgba(14, 165, 233, 0.2);
+  }
+  .ev-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+  }
+  .ev-tag {
+    background: rgba(14, 165, 233, 0.2);
+    color: #38bdf8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .ev-source {
+    color: var(--text-muted);
+  }
+  .ev-body {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #cbd5e1;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 48px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand-badge">MedGraphRAG · Oncology Decision Support</div>
+      <h1>Clinical Evidence Assistant</h1>
+      <p class="subtitle">Ask any clinical question. Answers are retrieved via hybrid dense + lexical + knowledge graph traversal, verified sentence-by-sentence, and logged to JSON.</p>
+    </header>
+
+    <div class="query-card">
+      <form id="query-form">
+        <textarea id="question" placeholder="e.g. What is the recommended first-line treatment for HER2-positive metastatic breast cancer?" required minlength="3"></textarea>
+        <div class="card-footer">
+          <div class="k-selector">
+            <label for="top_k">Passages:</label>
+            <input type="number" id="top_k" value="5" min="1" max="20">
+          </div>
+          <button class="btn-submit" type="submit" id="ask-btn">
+            <span>Query Pipeline</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="samples" id="samples">
+      <button type="button" class="sample-chip">HER2+ metastatic breast cancer first-line</button>
+      <button type="button" class="sample-chip">When is neoadjuvant chemotherapy preferred?</button>
+      <button type="button" class="sample-chip">Grade 3+ toxicities of checkpoint inhibitors</button>
+      <button type="button" class="sample-chip">Anatomical divisions of the larynx</button>
+    </div>
+
+    <div id="result-area" aria-live="polite"></div>
+
+    <footer>MedGraphRAG v2.0 · Local Ollama + ChromaDB + NetworkX Graph</footer>
+  </div>
+
+<script>
+  const form = document.getElementById('query-form');
+  const questionInput = document.getElementById('question');
+  const topKInput = document.getElementById('top_k');
+  const askBtn = document.getElementById('ask-btn');
+  const resultArea = document.getElementById('result-area');
+  const samples = document.getElementById('samples');
+
+  // Quick sample queries
+  samples.addEventListener('click', (e) => {
+    if (e.target.matches('.sample-chip')) {
+      questionInput.value = e.target.textContent;
+      questionInput.focus();
+    }
+  });
+
+  questionInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  function renderLoading() {
+    resultArea.innerHTML = `
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <span>Retrieving hybrid dense-graph evidence and generating grounded clinical answer…</span>
+      </div>
+    `;
+  }
+
+  function renderError(msg) {
+    resultArea.innerHTML = `
+      <div class="error-box">
+        <strong>Error:</strong> ${escapeHtml(msg)}
+      </div>
+    `;
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // Format markdown and interactive citation pills
+  function formatClinicalProse(raw) {
+    if (!raw) return '';
+    let text = raw.trim();
+
+    // 1. Strip markdown code block wrapper if present
+    if (text.startsWith('```')) {
+      const lines = text.split('\n');
+      if (lines.length >= 2 && lines[0].startsWith('```')) {
+        lines.shift();
+        if (lines.length > 0 && lines[lines.length - 1].trim() === '```') {
+          lines.pop();
+        }
+        text = lines.join('\n').trim();
+      }
+    }
+
+    // 2. Unwrap JSON if the raw text is formatted as JSON
+    if (text.startsWith('{') && text.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(text);
+        for (const k of ['answer', 'Answer', 'response', 'Response', 'output', 'Output', 'result', 'Result']) {
+          if (parsed[k] && typeof parsed[k] === 'string') {
+            text = parsed[k];
+            break;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 2. Escape HTML entities
+    let html = escapeHtml(text);
+
+    // 3. Format citations [P1], [P2], etc. into interactive clickable pill buttons
+    html = html.replace(/\[(P\d+)\]/g, (match, tag) => {
+      return `<a href="#ev-${tag}" class="cite-pill" onclick="highlightEvidence('${tag}', event)">${tag}</a>`;
+    });
+
+    // 4. Format warning tags
+    html = html.replace(/\[LOW CONFIDENCE\]/gi, '<span class="flag-badge warn">⚠️ Low Confidence</span>');
+    html = html.replace(/\[UNVERIFIED\]/gi, '<span class="flag-badge danger">🚫 Unverified</span>');
+
+    // 5. Format bold **text**
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // 6. Convert newlines to clean paragraphs / breaks
+    const paragraphs = html.split(/\n{2,}/);
+    return paragraphs.map(p => {
+      // Check for bullet lists
+      if (p.includes('\n* ') || p.includes('\n- ') || p.startsWith('* ') || p.startsWith('- ')) {
+        const lines = p.split('\n');
+        let listItems = '';
+        lines.forEach(l => {
+          const clean = l.replace(/^[\*\-]\s+/, '').trim();
+          if (clean) listItems += `<li>${clean}</li>`;
+        });
+        return `<ul>${listItems}</ul>`;
+      }
+      return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+    }).join('');
+  }
+
+  // Interactive smooth scroll & glow on evidence card click
+  window.highlightEvidence = function(tag, event) {
+    if (event) event.preventDefault();
+    const card = document.getElementById(`ev-${tag}`);
+    if (card) {
+      document.querySelectorAll('.ev-card').forEach(c => c.classList.remove('highlighted'));
+      card.classList.add('highlighted');
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      setTimeout(() => {
+        card.classList.remove('highlighted');
+      }, 3000);
+    }
+  };
+
+  // Copy answer to clipboard
+  window.copyAnswer = function(btn) {
+    const prose = document.getElementById('clinical-answer-text');
+    if (prose) {
+      navigator.clipboard.writeText(prose.innerText).then(() => {
+        btn.textContent = '✓ Copied';
+        setTimeout(() => { btn.textContent = '📋 Copy Answer'; }, 2000);
+      });
+    }
+  };
+
+  function renderAnswer(data) {
+    const isGood = data.is_well_grounded;
+    const groundingScore = (data.avg_sentence_overlap || 0).toFixed(2);
+    const explainScore = (data.explainability_score || 0).toFixed(2);
+    const modelConf = data.model_confidence || 'High';
+
+    const evidenceHtml = (data.evidence || []).map((ev, i) => {
+      const tag = ev.citation || `P${i+1}`;
+      return `
+        <div class="ev-card" id="ev-${tag}">
+          <div class="ev-meta">
+            <span class="ev-tag">${escapeHtml(tag)}</span>
+            <span class="ev-source">${escapeHtml(ev.source_file)} · Page ${escapeHtml(String(ev.page_number))}</span>
+          </div>
+          <div class="ev-body">${escapeHtml(ev.text)}</div>
+        </div>
+      `;
+    }).join('');
+
+    const formattedAnswer = formatClinicalProse(data.answer);
+
+    resultArea.innerHTML = `
+      <div class="answer-panel">
+        <div class="panel-header">
+          <div class="badges-row">
+            <span class="badge ${isGood ? 'good' : 'warn'}">
+              ${isGood ? '✓ Well Grounded' : '⚠️ Review Required'}
+            </span>
+            <span class="badge neutral">Category: ${escapeHtml(data.category || 'Oncology')}</span>
+            <span class="badge neutral">Confidence: ${escapeHtml(modelConf)}</span>
+          </div>
+          <div class="actions-row">
+            <button class="btn-copy" onclick="copyAnswer(this)">📋 Copy Answer</button>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-item">
+            <div class="metric-top">
+              <span>Grounding Score</span>
+              <span class="metric-val">${groundingScore}</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill ${data.avg_sentence_overlap >= 0.7 ? 'good' : 'warn'}" style="width: ${Math.min(data.avg_sentence_overlap * 100, 100)}%"></div>
+            </div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-top">
+              <span>Explainability</span>
+              <span class="metric-val">${explainScore}</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill ${data.explainability_score >= 0.6 ? 'good' : 'warn'}" style="width: ${Math.min(data.explainability_score * 100, 100)}%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="clinical-prose" id="clinical-answer-text">
+          ${formattedAnswer}
+        </div>
+
+        <div class="evidence-section">
+          <div class="evidence-header">
+            <div class="evidence-title">Cited Evidence Sources (${data.evidence.length})</div>
+            <div class="save-toast">✓ Saved to result_generated.json</div>
+          </div>
+          ${evidenceHtml || '<div class="state-msg">No supporting passages returned.</div>'}
+        </div>
+      </div>
+    `;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const question = questionInput.value.trim();
+    if (question.length < 3) return;
+    const top_k = Math.min(Math.max(parseInt(topKInput.value, 10) || 5, 1), 20);
+
+    askBtn.disabled = true;
+    renderLoading();
+
+    try {
+      const res = await fetch('/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, top_k }),
+      });
+
+      if (!res.ok) {
+        let detail = `Request failed (${res.status}).`;
+        try {
+          const errBody = await res.json();
+          if (errBody.detail) detail = errBody.detail;
+        } catch (_) {}
+
+        if (res.status === 503) {
+          renderError("Pipeline is still warming up heavy models. Please wait 5 seconds and try again.");
+        } else if (res.status === 404) {
+          renderError("No relevant oncology evidence found for this query. Try rephrasing.");
+        } else {
+          renderError(detail);
+        }
+        return;
+      }
+
+      const data = await res.json();
+      renderAnswer(data);
+    } catch (err) {
+      renderError("Could not connect to the API. Ensure `uvicorn` is running at http://127.0.0.1:8000.");
+    } finally {
+      askBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

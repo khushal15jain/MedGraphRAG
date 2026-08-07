@@ -1,0 +1,39 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment secrets
+.env
+
+# Data (large / private — keep raw textbooks out of git)
+data/raw/*.pdf
+data/processed/*
+data/interim/*
+!data/processed/.gitkeep
+!data/interim/.gitkeep
+
+# Model artifacts / vector store
+outputs/*
+!outputs/.gitkeep
+chroma_db/
+mlruns/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+MedGraphRAG.zip

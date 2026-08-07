@@ -1,0 +1,15 @@
+# Main Hydra composition root.
+# Run with: python main.py  (Hydra auto-loads this file)
+# Override any value from the CLI, e.g.: python main.py llm.temperature=0.3
+
+defaults:
+  - paths
+  - model
+  - retrieval
+  - _self_
+
+project_name: MedGraphRAG
+seed: 42
+device: cpu   # "mps" is available on Apple Silicon but kept CPU-default for stability
+
+run_name: ${now:%Y-%m-%d_%H-%M-%S}

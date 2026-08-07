@@ -1,0 +1,7 @@
+Evidence passages:
+{evidence_block}
+
+Question:
+{question}
+
+Answer the question using only the evidence above, citing passages as [P1], [P2], etc.
