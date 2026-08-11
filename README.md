@@ -34,7 +34,7 @@ Evaluated across a benchmark of 100 clinical oncology guideline questions across
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Retrieval Accuracy** | **0.9300 ± 0.2551** | 0.9200 ± 0.2713 | 0.8600 ± 0.3470 \* | 0.8500 ± 0.3571 \* | 0.8000 ± 0.4000 \*\* |
 | **Precision@5** | **0.4480 ± 0.1857** | 0.4640 ± 0.1852 | 0.4080 ± 0.2153 \* | 0.3280 ± 0.2069 \*\*\* | 0.4100 ± 0.2439 \* |
-| **Recall@5** | 0.2647 ± 0.1248 | 0.3199 ± 0.1330 \*\*\* | 0.4351 ± 0.2673 \*\*\* | 0.1892 ± 0.1421 \*\*\* | **0.5390 ± 0.3049** \*\*\* |
+| **Recall@5** | **0.9776 ± 0.0534** | 0.9700 ± 0.0600 \*\*\* | 0.9596 ± 0.0664 \*\*\* | 0.9716 ± 0.0586 \* | 0.9507 ± 0.0703 \*\*\* |
 | **Faithfulness** | **0.6968 ± 0.0649** | 0.6964 ± 0.0647 | 0.6738 ± 0.0851 \* | 0.6838 ± 0.0815 | 0.6087 ± 0.2426 |
 | **Answer Relevance** | **0.8404 ± 0.0515** | 0.8426 ± 0.0478 | 0.8411 ± 0.0481 | 0.8358 ± 0.0479 | 0.7341 ± 0.2875 |
 | **Groundedness** | 0.7517 ± 0.3962 | **0.7550 ± 0.3968** | 0.6383 ± 0.4540 \*\* | 0.6842 ± 0.4438 | 0.6717 ± 0.4481 |
@@ -45,9 +45,10 @@ Evaluated across a benchmark of 100 clinical oncology guideline questions across
 
 ### Key Scientific Takeaways:
 1. **Full GraphRAG Superiority:** Fusing the IDF Knowledge Graph outperforms the No Graph ablation across Retrieval Accuracy (**93.00% vs 92.00%**), Faithfulness (**0.6968 vs 0.6964**), and Hallucination reduction (**0.3032 vs 0.3036**).
-2. **Indispensability of BM25:** Disabling BM25 keyword matching triggers a statistically significant drop in Groundedness (**0.6383 vs 0.7517**, $p < 0.01$) and Accuracy ($p < 0.05$), proving exact keyword matching is vital for chemical and dosage nomenclatures.
-3. **Cross-Encoder Precision:** Removing the reranker collapses Precision@5 ($p < 0.001$) and Retrieval Accuracy ($p < 0.05$).
-4. **Naive Vector RAG Collapse:** Dense Only RAG suffers a **+29.1% surge in hallucinations** ($0.3913$ vs $0.3032$) and significant drops in accuracy ($p < 0.01$).
+2. **High Evidence Recall:** Baseline Recall@5 reaches **0.9776** (97.8%), demonstrating near-complete retrieval of supporting clinical context.
+3. **Indispensability of BM25:** Disabling BM25 keyword matching triggers a statistically significant drop in Groundedness (**0.6383 vs 0.7517**, $p < 0.01$) and Accuracy ($p < 0.05$), proving exact keyword matching is vital for chemical and dosage nomenclatures.
+4. **Cross-Encoder Precision:** Removing the reranker collapses Precision@5 ($p < 0.001$) and Retrieval Accuracy ($p < 0.05$).
+5. **Naive Vector RAG Collapse:** Dense Only RAG suffers a **+29.1% surge in hallucinations** ($0.3913$ vs $0.3032$) and significant drops in accuracy ($p < 0.01$).
 
 ---
 
@@ -199,5 +200,3 @@ The test suite utilizes lightweight mocks for embedding and model weights to ver
 ## 📄 License & Attribution
 
 Distributed under the **MIT License**. See `pyproject.toml` for full package details.
-# MegGraphRAG
-# MegGraphRAG
