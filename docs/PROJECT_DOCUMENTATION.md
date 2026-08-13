@@ -90,12 +90,17 @@ Building an enterprise-grade medical GraphRAG system presented four major techni
 - **Symptom / Observed Behavior:** In initial baseline testing, an ablation study revealed an unexpected scientific anomaly: disabling the Knowledge Graph ("No Graph" ablation) slightly *outperformed* the naive GraphRAG baseline.
 - **Root Cause Analysis:** 
   The initial graph retrieval algorithm calculated candidate chunk scores by summing raw entity mention frequencies:
-  $$S_{\text{flawed}}(c) = \sum_{e \in \text{Entities}(c) \cap \mathcal{N}(\mathcal{E}_q)} \text{count}(e)$$
+
+$$S_{\mathrm{flawed}}(c) = \sum_{e \in \text{Entities}(c) \cap \mathcal{N}(\mathcal{E}_q)} \text{count}(e)$$
+
   Generic, high-degree clinical terms like *"patient"* (48,478 mentions), *"treatment"* (34,112 mentions), and *"cancer"* (29,850 mentions) appeared across almost all document chunks. Consequently, chunks containing generic stop-words received huge graph scores, suppressing specific oncology drug entities like *Osimertinib* (12 mentions). When Min-Max normalization was applied, generic terms compressed specific entity scores to $\approx 0.0$.
 - **Solution Applied:** 
   We re-engineered the graph retrieval scoring formula by introducing **Inverse Entity Frequency (IEF)** and **Topological Shortest-Path Distance Decay**:
-  $$\text{IEF}(v) = \log\left(1 + \frac{|\mathcal{V}|}{\text{count}(v) + 1}\right)$$
-  $$S_{\text{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \text{Entities}(c)} \frac{\text{IEF}(v)}{1 + \text{dist}_{\mathcal{G}}(e, v)} \right)$$
+
+$$\mathrm{IEF}(v) = \log\left(1 + \frac{|\mathcal{V}|}{\text{count}(v) + 1}\right)$$
+
+$$S_{\mathrm{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \text{Entities}(c)} \frac{\mathrm{IEF}(v)}{1 + \text{dist}_{\mathcal{G}}(e, v)} \right)$$
+
 - **Quantitative Impact:** Generic stop-words were suppressed by >99%, boosting rare biomarker entities. The Full GraphRAG baseline restored its scientific superiority over the No Graph ablation in Retrieval Accuracy (**0.9300 vs 0.9200**) and Faithfulness (**0.6968 vs 0.6964**).
 
 ---
@@ -120,8 +125,11 @@ Building an enterprise-grade medical GraphRAG system presented four major techni
   Continuous embedding spaces project conceptually related terms into nearby clusters, losing exact character-level string matching capability.
 - **Solution Applied:** 
   We integrated **Sparse BM25 Keyword Search** with query entity expansion alongside dense embeddings in a Min-Max normalized hybrid fusion formula:
-  $$\tilde{s}_{\text{channel}}(c) = \frac{s(c) - \min(s)}{\max(s) - \min(s) + \epsilon}$$
-  $$S_{\text{hybrid}}(c) = 0.45 \cdot \tilde{S}_{\text{dense}}(c) + 0.35 \cdot \tilde{S}_{\text{graph}}(c) + 0.20 \cdot \tilde{S}_{\text{bm25}}(c)$$
+
+$$\tilde{S}_{\mathrm{channel}}(c) = \frac{s(c) - \min(s)}{\max(s) - \min(s) + \epsilon}$$
+
+$$S_{\mathrm{hybrid}}(c) = 0.45 \cdot \tilde{S}_{\mathrm{dense}}(c) + 0.35 \cdot \tilde{S}_{\mathrm{graph}}(c) + 0.20 \cdot \tilde{S}_{\mathrm{bm25}}(c)$$
+
 - **Quantitative Impact:** Disabling BM25 caused a statistically significant drop in Groundedness (**0.6383 to 0.7517**, $p < 0.01$) and Accuracy ($p < 0.05$). BM25 integration preserved exact keyword precision for drug codes.
 
 ---
@@ -159,7 +167,9 @@ This section summarizes the exact step-by-step solution approaches and technical
 ### Solution Approach 1: Inverse Entity Frequency (IDF) + Distance Decay Traversal
 - **Methodology:** We formulated a specialized graph scoring algorithm that calculates Inverse Entity Frequency (IEF) for every node in the graph, penalizing high-degree clinical terms (*patient*, *disease*) while amplifying rare targeted oncology entities (*Osimertinib*, *HER2*).
 - **Mathematical Expression:**
-  $$S_{\text{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \text{Entities}(c)} \frac{\log\left(1 + \frac{|\mathcal{V}|}{\text{count}(v) + 1}\right)}{1 + \text{dist}_{\mathcal{G}}(e, v)} \right)$$
+
+$$S_{\mathrm{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \text{Entities}(c)} \frac{\log\left(1 + \frac{|\mathcal{V}|}{\text{count}(v) + 1}\right)}{1 + \text{dist}_{\mathcal{G}}(e, v)} \right)$$
+
 - **Algorithmic Flow:**
   1. Extract query entities $\mathcal{E}_q$ using SciSpaCy biomedical NER.
   2. Traverse $H$-hop neighborhood $\mathcal{N}_H(\mathcal{E}_q)$ in NetworkX ($H=2$).
@@ -171,8 +181,11 @@ This section summarizes the exact step-by-step solution approaches and technical
 ### Solution Approach 2: Min-Max Normalized Tri-Modal Hybrid Score Fusion
 - **Methodology:** To merge scores across non-commensurate distributions (Cosine Similarity $[0, 1]$, BM25 $[0, \infty)$, Graph Weights $[0, K]$), we apply per-query Min-Max feature scaling before convex linear combination.
 - **Mathematical Expression:**
-  $$\tilde{S}_k(c) = \frac{S_k(c) - \min_{c'} S_k(c')}{\max_{c'} S_k(c') - \min_{c'} S_k(c') + \epsilon}$$
-  $$S_{\text{hybrid}}(c) = \alpha \cdot \tilde{S}_{\text{dense}}(c) + \beta \cdot \tilde{S}_{\text{graph}}(c) + \gamma \cdot \tilde{S}_{\text{bm25}}(c)$$
+
+$$\tilde{S}_k(c) = \frac{S_k(c) - \min_{c'} S_k(c')}{\max_{c'} S_k(c') - \min_{c'} S_k(c') + \epsilon}$$
+
+$$S_{\mathrm{hybrid}}(c) = \alpha \cdot \tilde{S}_{\mathrm{dense}}(c) + \beta \cdot \tilde{S}_{\mathrm{graph}}(c) + \gamma \cdot \tilde{S}_{\mathrm{bm25}}(c)$$
+
   *(where $\alpha = 0.45, \beta = 0.35, \gamma = 0.20$)*
 - **Algorithmic Flow:**
   1. Retrieve top-20 dense candidates from ChromaDB HNSW index.
@@ -185,7 +198,9 @@ This section summarizes the exact step-by-step solution approaches and technical
 ### Solution Approach 3: BGE Cross-Encoder All-to-All Cross-Attention Reranking
 - **Methodology:** Bi-encoders embed queries and chunks independently, missing subtle interaction semantics. The Cross-Encoder concatenates the query and candidate chunk into a single sequence, evaluating all-to-all cross-attention between every query token and chunk token.
 - **Mathematical Expression:**
-  $$S_{\text{ce}}(q, c_i) = \sigma\left(\mathbf{W}_{\text{ce}} \cdot \text{Transformer}([CLS] \circ q \circ [SEP] \circ c_i)\right)$$
+
+$$S_{\mathrm{ce}}(q, c_i) = \sigma\left(\mathbf{W}_{\mathrm{ce}} \cdot \text{Transformer}([CLS] \circ q \circ [SEP] \circ c_i)\right)$$
+
 - **Algorithmic Flow:**
   1. Take top-15 fused candidate chunks from the hybrid pool.
   2. Concatenate $[CLS] \circ q \circ [SEP] \circ c_i \circ [SEP]$ for each candidate.
@@ -197,10 +212,14 @@ This section summarizes the exact step-by-step solution approaches and technical
 ### Solution Approach 4: Circuit-Breaker Refusal Gating & Sentence-Level NLI Verification
 - **Methodology:** We established a dual-safety verification framework to prevent hallucinatory content from reaching clinical users.
 - **Mathematical Expression:**
-  $$\text{SafePass} = \left( S_{\text{ce}}^1 \ge \tau_{\text{retrieval}} \right) \land \left( \frac{1}{|S_A|} \sum_{s \in S_A} \max_{c \in \mathcal{C}_{\text{gold}}} \text{NLI}_{\text{entailment}}(c \models s) \ge \tau_{\text{factual}} \right)$$
+
+$$\mathrm{SafePass} = \left( S_{\mathrm{ce}}^1 \ge \tau_{\mathrm{retrieval}} \right) \land \left( \frac{1}{|S_A|} \sum_{s \in S_A} \max_{c \in \mathcal{C}_{\mathrm{gold}}} \mathrm{NLI}_{\mathrm{entailment}}(c \models s) \ge \tau_{\mathrm{factual}} \right)$$
+
   *(where $\tau_{\text{retrieval}} = 0.35, \tau_{\text{factual}} = 0.70$)*
 - **Explainability Definition:** `Explainability` is defined as **Sentence-Level Citation Provenance Coverage**:
-  $$\text{Explainability} = \frac{\text{Number of Citing Sentences}}{\text{Total Sentences}}$$
+
+$$\mathrm{Explainability} = \frac{\text{Number of Citing Sentences}}{\text{Total Sentences}}$$
+
   In fused multi-modal pipelines (Baseline, No Graph, No BM25, No Reranker), the structured prompt forces passage tags (`[P1]`, `[P2]`), achieving **98.5% citation coverage** (`0.9850 ± 0.0594`). In **Dense-Only RAG**, weak/unmatched context causes the LLM to generate ungrounded sentences without passage citations, causing Explainability to drop to **0.8700** ($p < 0.001$).
 
 ---
@@ -258,9 +277,9 @@ To evaluate component contributions, we conducted a 500-evaluation ablation benc
 
 | Challenge / Goal | Solution Approach Deployed | Mathematical & Algorithmic Verification |
 | :--- | :--- | :--- |
-| **1. Graph Entity Bias** | Topological IDF Shortest-Path Decay | $S_{\text{graph}}(c) = \max \sum \frac{\text{IEF}(v)}{1 + \text{dist}(e, v)}$, suppressing generic stop-words (>99% drop). |
-| **2. OOV Drug Code Blur** | Min-Max Tri-Modal Hybrid Fusion | $S_{\text{hybrid}} = 0.45 \tilde{S}_{\text{dense}} + 0.35 \tilde{S}_{\text{graph}} + 0.20 \tilde{S}_{\text{bm25}}$, restoring keyword precision. |
-| **3. Context Noise & Dilution** | BGE Cross-Encoder Cross-Attention | $S_{\text{ce}} = \sigma(\mathbf{W}_{\text{ce}} \cdot \text{Transformer}([CLS] \circ q \circ [SEP] \circ c_i))$, boosting Precision@5 to 0.4480. |
-| **4. Generative Hallucinations** | Refusal Gatekeeper & NLI Grounding | $\text{SafePass} = (S_{\text{ce}}^1 \ge 0.35) \land (\text{NLI}_{\text{entailment}} \ge 0.70)$, reducing hallucinations by -29.1%. |
+| **1. Graph Entity Bias** | Topological IDF Shortest-Path Decay | $S_{\mathrm{graph}}(c) = \max \sum \frac{\mathrm{IEF}(v)}{1 + \text{dist}(e, v)}$, suppressing generic stop-words (>99% drop). |
+| **2. OOV Drug Code Blur** | Min-Max Tri-Modal Hybrid Fusion | $S_{\mathrm{hybrid}} = 0.45 \tilde{S}_{\mathrm{dense}} + 0.35 \tilde{S}_{\text{graph}} + 0.20 \tilde{S}_{\text{bm25}}$, restoring keyword precision. |
+| **3. Context Noise & Dilution** | BGE Cross-Encoder Cross-Attention | $S_{\mathrm{ce}} = \sigma(\mathbf{W}_{\mathrm{ce}} \cdot \text{Transformer}([CLS] \circ q \circ [SEP] \circ c_i))$, boosting Precision@5 to 0.4480. |
+| **4. Generative Hallucinations** | Refusal Gatekeeper & NLI Grounding | $\mathrm{SafePass} = (S_{\mathrm{ce}}^1 \ge 0.35) \land (\mathrm{NLI}_{\mathrm{entailment}} \ge 0.70)$, reducing hallucinations by -29.1%. |
 | **5. Low Explainability** | Citation Provenance Coverage | Defined as sentence citation ratio. Fused pipelines achieve **98.5%**, while Dense Only collapses to **87.0%** ($p < 0.001$). |
 | **6. Privacy & RAM Overhead** | Quantized Local Inference & Pipeline | 4-bit `Llama-3.2` via Ollama + sequential memory garbage collection, footprint < 8.5 GB RAM. |
