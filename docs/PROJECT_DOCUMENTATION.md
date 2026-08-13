@@ -90,11 +90,11 @@ Building an enterprise-grade medical GraphRAG system presented four major techni
 - **Symptom / Observed Behavior:** In initial baseline testing, an ablation study revealed an unexpected scientific anomaly: disabling the Knowledge Graph ("No Graph" ablation) slightly *outperformed* the naive GraphRAG baseline.
 - **Root Cause Analysis:** 
   The initial graph retrieval algorithm calculated candidate chunk scores by summing raw entity mention frequencies:
-  $$S_{\text{flawed}}(c) = \sum_{e \in \text{Entities}(c) \cap \mathcal{N}(\mathcal{E}_q)} \text{mention\_count}(e)$$
+  $$S_{\text{flawed}}(c) = \sum_{e \in \text{Entities}(c) \cap \mathcal{N}(\mathcal{E}_q)} \text{count}(e)$$
   Generic, high-degree clinical terms like *"patient"* (48,478 mentions), *"treatment"* (34,112 mentions), and *"cancer"* (29,850 mentions) appeared across almost all document chunks. Consequently, chunks containing generic stop-words received huge graph scores, suppressing specific oncology drug entities like *Osimertinib* (12 mentions). When Min-Max normalization was applied, generic terms compressed specific entity scores to $\approx 0.0$.
 - **Solution Applied:** 
   We re-engineered the graph retrieval scoring formula by introducing **Inverse Entity Frequency (IEF)** and **Topological Shortest-Path Distance Decay**:
-  $$\text{IEF}(v) = \log\left(1 + \frac{|\mathcal{V}|}{\text{mention\_count}(v) + 1}\right)$$
+  $$\text{IEF}(v) = \log\left(1 + \frac{|\mathcal{V}|}{\text{count}(v) + 1}\right)$$
   $$S_{\text{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \text{Entities}(c)} \frac{\text{IEF}(v)}{1 + \text{dist}_{\mathcal{G}}(e, v)} \right)$$
 - **Quantitative Impact:** Generic stop-words were suppressed by >99%, boosting rare biomarker entities. The Full GraphRAG baseline restored its scientific superiority over the No Graph ablation in Retrieval Accuracy (**0.9300 vs 0.9200**) and Faithfulness (**0.6968 vs 0.6964**).
 
@@ -159,7 +159,7 @@ This section summarizes the exact step-by-step solution approaches and technical
 ### Solution Approach 1: Inverse Entity Frequency (IDF) + Distance Decay Traversal
 - **Methodology:** We formulated a specialized graph scoring algorithm that calculates Inverse Entity Frequency (IEF) for every node in the graph, penalizing high-degree clinical terms (*patient*, *disease*) while amplifying rare targeted oncology entities (*Osimertinib*, *HER2*).
 - **Mathematical Expression:**
-  $$S_{\text{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \text{Entities}(c)} \frac{\log\left(1 + \frac{|\mathcal{V}|}{\text{mention\_count}(v) + 1}\right)}{1 + \text{dist}_{\mathcal{G}}(e, v)} \right)$$
+  $$S_{\text{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \text{Entities}(c)} \frac{\log\left(1 + \frac{|\mathcal{V}|}{\text{count}(v) + 1}\right)}{1 + \text{dist}_{\mathcal{G}}(e, v)} \right)$$
 - **Algorithmic Flow:**
   1. Extract query entities $\mathcal{E}_q$ using SciSpaCy biomedical NER.
   2. Traverse $H$-hop neighborhood $\mathcal{N}_H(\mathcal{E}_q)$ in NetworkX ($H=2$).
@@ -200,7 +200,7 @@ This section summarizes the exact step-by-step solution approaches and technical
   $$\text{SafePass} = \left( S_{\text{ce}}^1 \ge \tau_{\text{retrieval}} \right) \land \left( \frac{1}{|S_A|} \sum_{s \in S_A} \max_{c \in \mathcal{C}_{\text{gold}}} \text{NLI}_{\text{entailment}}(c \models s) \ge \tau_{\text{factual}} \right)$$
   *(where $\tau_{\text{retrieval}} = 0.35, \tau_{\text{factual}} = 0.70$)*
 - **Explainability Definition:** `Explainability` is defined as **Sentence-Level Citation Provenance Coverage**:
-  $$\text{Explainability} = \frac{\text{Number of Generated Sentences Citing a Valid Context Passage Tag}}{\text{Total Sentences in Generated Answer}}$$
+  $$\text{Explainability} = \frac{\text{Number of Citing Sentences}}{\text{Total Sentences}}$$
   In fused multi-modal pipelines (Baseline, No Graph, No BM25, No Reranker), the structured prompt forces passage tags (`[P1]`, `[P2]`), achieving **98.5% citation coverage** (`0.9850 ± 0.0594`). In **Dense-Only RAG**, weak/unmatched context causes the LLM to generate ungrounded sentences without passage citations, causing Explainability to drop to **0.8700** ($p < 0.001$).
 
 ---
@@ -247,7 +247,7 @@ To evaluate component contributions, we conducted a 500-evaluation ablation benc
 ## 3.2 Detailed Findings & Scientific Rationale
 
 1. **Full GraphRAG Baseline Dominance:** Fusing the IDF Knowledge Graph outperforms the No Graph ablation across Retrieval Accuracy (**93.00% vs 92.00%**), Evidence Recall (**97.76% vs 97.00%**), Faithfulness (**0.6968 vs 0.6964**), and Hallucination reduction (**0.3032 vs 0.3036**).
-2. **Explainability & Provenance (98.5%):** Measured as the sentence-level citation coverage ($\frac{\text{Traceable Sentences}}{\text{Total Sentences}}$). Fused pipelines achieve **98.5% citation coverage**, while Dense-Only RAG collapses to **87.00%** ($p < 0.001$) due to ungrounded sentence assertions.
+2. **Explainability & Provenance (98.5%):** Measured as the sentence-level citation coverage. Fused pipelines achieve **98.5% citation coverage**, while Dense-Only RAG collapses to **87.00%** ($p < 0.001$) due to ungrounded sentence assertions.
 3. **Indispensability of BM25 Keyword Search:** Disabling BM25 triggers a statistically significant drop in Groundedness (**0.6383 to 0.7517**, $p < 0.01$) and Accuracy ($p < 0.05$), proving exact keyword search is essential for molecular drug names and staging codes.
 4. **Cross-Encoder Precision Boost:** Removing the cross-encoder reranker causes a sharp drop in Precision@5 (dropping to **0.3280**, $p < 0.001$) and Retrieval Accuracy (dropping to **0.8500**, $p < 0.05$), confirming that cross-attention filtering is required to eliminate context noise.
 5. **Failure of Naive Dense-Only Vector RAG:** Dense Only RAG collapses across Retrieval Accuracy (**0.8000**, $p < 0.01$), Clinical Reliability (**0.7840**, $p < 0.05$), and Hallucination surge (**0.3913**, a **+29.1% increase in hallucinations** over Full MedGraphRAG).
@@ -262,5 +262,5 @@ To evaluate component contributions, we conducted a 500-evaluation ablation benc
 | **2. OOV Drug Code Blur** | Min-Max Tri-Modal Hybrid Fusion | $S_{\text{hybrid}} = 0.45 \tilde{S}_{\text{dense}} + 0.35 \tilde{S}_{\text{graph}} + 0.20 \tilde{S}_{\text{bm25}}$, restoring keyword precision. |
 | **3. Context Noise & Dilution** | BGE Cross-Encoder Cross-Attention | $S_{\text{ce}} = \sigma(\mathbf{W}_{\text{ce}} \cdot \text{Transformer}([CLS] \circ q \circ [SEP] \circ c_i))$, boosting Precision@5 to 0.4480. |
 | **4. Generative Hallucinations** | Refusal Gatekeeper & NLI Grounding | $\text{SafePass} = (S_{\text{ce}}^1 \ge 0.35) \land (\text{NLI}_{\text{entailment}} \ge 0.70)$, reducing hallucinations by -29.1%. |
-| **5. Low Explainability** | Citation Provenance Coverage | Defined as $\frac{\text{Traceable Sentences}}{\text{Total Sentences}}$. Fused pipelines achieve **98.5%**, while Dense Only collapses to **87.0%** ($p < 0.001$). |
+| **5. Low Explainability** | Citation Provenance Coverage | Defined as sentence citation ratio. Fused pipelines achieve **98.5%**, while Dense Only collapses to **87.0%** ($p < 0.001$). |
 | **6. Privacy & RAM Overhead** | Quantized Local Inference & Pipeline | 4-bit `Llama-3.2` via Ollama + sequential memory garbage collection, footprint < 8.5 GB RAM. |
