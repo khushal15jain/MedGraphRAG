@@ -91,15 +91,15 @@ Building an enterprise-grade medical GraphRAG system presented four major techni
 - **Root Cause Analysis:** 
   The initial graph retrieval algorithm calculated candidate chunk scores by summing raw entity mention frequencies:
 
-$$S_{\mathrm{flawed}}(c) = \sum_{e \in \text{Entities}(c) \cap \mathcal{N}(\mathcal{E}_q)} \text{count}(e)$$
+$$S_{\mathrm{flawed}}(c) = \sum_{e \in \mathrm{Entities}(c) \cap \mathcal{N}(\mathcal{E}_q)} \mathrm{count}(e)$$
 
   Generic, high-degree clinical terms like *"patient"* (48,478 mentions), *"treatment"* (34,112 mentions), and *"cancer"* (29,850 mentions) appeared across almost all document chunks. Consequently, chunks containing generic stop-words received huge graph scores, suppressing specific oncology drug entities like *Osimertinib* (12 mentions). When Min-Max normalization was applied, generic terms compressed specific entity scores to $\approx 0.0$.
 - **Solution Applied:** 
   We re-engineered the graph retrieval scoring formula by introducing **Inverse Entity Frequency (IEF)** and **Topological Shortest-Path Distance Decay**:
 
-$$\mathrm{IEF}(v) = \log\left(1 + \frac{|\mathcal{V}|}{\text{count}(v) + 1}\right)$$
+$$\mathrm{IEF}(v) = \log\left(1 + \frac{|\mathcal{V}|}{\mathrm{count}(v) + 1}\right)$$
 
-$$S_{\mathrm{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \text{Entities}(c)} \frac{\mathrm{IEF}(v)}{1 + \text{dist}_{\mathcal{G}}(e, v)} \right)$$
+$$S_{\mathrm{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \mathrm{Entities}(c)} \frac{\mathrm{IEF}(v)}{1 + \mathrm{dist}_{\mathcal{G}}(e, v)} \right)$$
 
 - **Quantitative Impact:** Generic stop-words were suppressed by >99%, boosting rare biomarker entities. The Full GraphRAG baseline restored its scientific superiority over the No Graph ablation in Retrieval Accuracy (**0.9300 vs 0.9200**) and Faithfulness (**0.6968 vs 0.6964**).
 
@@ -113,7 +113,7 @@ $$S_{\mathrm{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal
   We implemented a four-tier factual defense system:
   1. **Cross-Encoder Reranking (`BAAI/bge-reranker-base`)**: Evaluates all-to-all cross-attention between query and candidate chunks to select the top-3 gold chunks.
   2. **Dual-Stage Refusal Gatekeeper**: Enforces automatic refusal if retrieval similarity falls below $\tau = 0.35$, returning: *"Based on the provided medical oncology documents, there is insufficient evidence to answer this question."*
-  3. **Sentence-Level NLI Entailment Verification**: Tests every generated sentence against retrieved context using NLI entailment checking ($\tau_{\text{ground}} = 0.70$).
+  3. **Sentence-Level NLI Entailment Verification**: Tests every generated sentence against retrieved context using NLI entailment checking ($\tau_{\mathrm{ground}} = 0.70$).
   4. **Strict Provenance Metadata**: Attaches verifiable citation markers `[Document, Section, Page X, Chunk ID]` to every clinical claim.
 - **Quantitative Impact:** Reduced hallucinations by **-29.1%** compared to dense-only RAG ($0.3032$ vs $0.3913$), achieving **98.5% Sentence Citation Provenance Tracking**.
 
@@ -168,7 +168,7 @@ This section summarizes the exact step-by-step solution approaches and technical
 - **Methodology:** We formulated a specialized graph scoring algorithm that calculates Inverse Entity Frequency (IEF) for every node in the graph, penalizing high-degree clinical terms (*patient*, *disease*) while amplifying rare targeted oncology entities (*Osimertinib*, *HER2*).
 - **Mathematical Expression:**
 
-$$S_{\mathrm{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \text{Entities}(c)} \frac{\log\left(1 + \frac{|\mathcal{V}|}{\text{count}(v) + 1}\right)}{1 + \text{dist}_{\mathcal{G}}(e, v)} \right)$$
+$$S_{\mathrm{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \mathrm{Entities}(c)} \frac{\log\left(1 + \frac{|\mathcal{V}|}{\mathrm{count}(v) + 1}\right)}{1 + \mathrm{dist}_{\mathcal{G}}(e, v)} \right)$$
 
 - **Algorithmic Flow:**
   1. Extract query entities $\mathcal{E}_q$ using SciSpaCy biomedical NER.
@@ -199,7 +199,7 @@ $$S_{\mathrm{hybrid}}(c) = \alpha \cdot \tilde{S}_{\mathrm{dense}}(c) + \beta \c
 - **Methodology:** Bi-encoders embed queries and chunks independently, missing subtle interaction semantics. The Cross-Encoder concatenates the query and candidate chunk into a single sequence, evaluating all-to-all cross-attention between every query token and chunk token.
 - **Mathematical Expression:**
 
-$$S_{\mathrm{ce}}(q, c_i) = \sigma\left(\mathbf{W}_{\mathrm{ce}} \cdot \text{Transformer}([CLS] \circ q \circ [SEP] \circ c_i)\right)$$
+$$S_{\mathrm{ce}}(q, c_i) = \sigma\left(\mathbf{W}_{\mathrm{ce}} \cdot \mathrm{Transformer}([CLS] \circ q \circ [SEP] \circ c_i)\right)$$
 
 - **Algorithmic Flow:**
   1. Take top-15 fused candidate chunks from the hybrid pool.
@@ -215,7 +215,7 @@ $$S_{\mathrm{ce}}(q, c_i) = \sigma\left(\mathbf{W}_{\mathrm{ce}} \cdot \text{Tra
 
 $$\mathrm{SafePass} = \left( S_{\mathrm{ce}}^1 \ge \tau_{\mathrm{retrieval}} \right) \land \left( \frac{1}{|S_A|} \sum_{s \in S_A} \max_{c \in \mathcal{C}_{\mathrm{gold}}} \mathrm{NLI}_{\mathrm{entailment}}(c \models s) \ge \tau_{\mathrm{factual}} \right)$$
 
-  *(where $\tau_{\text{retrieval}} = 0.35, \tau_{\text{factual}} = 0.70$)*
+  *(where $\tau_{\mathrm{retrieval}} = 0.35, \tau_{\mathrm{factual}} = 0.70$)*
 - **Explainability Definition:** `Explainability` is defined as **Sentence-Level Citation Provenance Coverage**:
 
 $$\mathrm{Explainability} = \frac{\text{Number of Citing Sentences}}{\text{Total Sentences}}$$
@@ -277,9 +277,9 @@ To evaluate component contributions, we conducted a 500-evaluation ablation benc
 
 | Challenge / Goal | Solution Approach Deployed | Mathematical & Algorithmic Verification |
 | :--- | :--- | :--- |
-| **1. Graph Entity Bias** | Topological IDF Shortest-Path Decay | $S_{\mathrm{graph}}(c) = \max \sum \frac{\mathrm{IEF}(v)}{1 + \text{dist}(e, v)}$, suppressing generic stop-words (>99% drop). |
-| **2. OOV Drug Code Blur** | Min-Max Tri-Modal Hybrid Fusion | $S_{\mathrm{hybrid}} = 0.45 \tilde{S}_{\mathrm{dense}} + 0.35 \tilde{S}_{\text{graph}} + 0.20 \tilde{S}_{\text{bm25}}$, restoring keyword precision. |
-| **3. Context Noise & Dilution** | BGE Cross-Encoder Cross-Attention | $S_{\mathrm{ce}} = \sigma(\mathbf{W}_{\mathrm{ce}} \cdot \text{Transformer}([CLS] \circ q \circ [SEP] \circ c_i))$, boosting Precision@5 to 0.4480. |
+| **1. Graph Entity Bias** | Topological IDF Shortest-Path Decay | $S_{\mathrm{graph}}(c) = \max \sum \frac{\mathrm{IEF}(v)}{1 + \mathrm{dist}(e, v)}$, suppressing generic stop-words (>99% drop). |
+| **2. OOV Drug Code Blur** | Min-Max Tri-Modal Hybrid Fusion | $S_{\mathrm{hybrid}} = 0.45 \tilde{S}_{\mathrm{dense}} + 0.35 \tilde{S}_{\mathrm{graph}} + 0.20 \tilde{S}_{\mathrm{bm25}}$, restoring keyword precision. |
+| **3. Context Noise & Dilution** | BGE Cross-Encoder Cross-Attention | $S_{\mathrm{ce}} = \sigma(\mathbf{W}_{\mathrm{ce}} \cdot \mathrm{Transformer}([CLS] \circ q \circ [SEP] \circ c_i))$, boosting Precision@5 to 0.4480. |
 | **4. Generative Hallucinations** | Refusal Gatekeeper & NLI Grounding | $\mathrm{SafePass} = (S_{\mathrm{ce}}^1 \ge 0.35) \land (\mathrm{NLI}_{\mathrm{entailment}} \ge 0.70)$, reducing hallucinations by -29.1%. |
 | **5. Low Explainability** | Citation Provenance Coverage | Defined as sentence citation ratio. Fused pipelines achieve **98.5%**, while Dense Only collapses to **87.0%** ($p < 0.001$). |
 | **6. Privacy & RAM Overhead** | Quantized Local Inference & Pipeline | 4-bit `Llama-3.2` via Ollama + sequential memory garbage collection, footprint < 8.5 GB RAM. |
