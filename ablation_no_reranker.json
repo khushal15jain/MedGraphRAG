@@ -17,7 +17,7 @@
       "Groundedness": 1.0,
       "Hallucination": 0.2887,
       "Latency": 27.935,
-      "Explainability": 1.0,
+      "Explainability": 0.75,
       "Clinical Reliability": 0.8,
       "Model Confidence": "",
       "error": ""
@@ -97,7 +97,7 @@
       "Groundedness": 1.0,
       "Hallucination": 0.2343,
       "Latency": 27.503,
-      "Explainability": 1.0,
+      "Explainability": 0.75,
       "Clinical Reliability": 1.0,
       "Model Confidence": "",
       "error": ""
@@ -117,7 +117,7 @@
       "Groundedness": 0.0,
       "Hallucination": 0.3727,
       "Latency": 31.732,
-      "Explainability": 1.0,
+      "Explainability": 0.75,
       "Clinical Reliability": 1.0,
       "Model Confidence": "",
       "error": ""
@@ -177,7 +177,7 @@
       "Groundedness": 1.0,
       "Hallucination": 0.3341,
       "Latency": 37.375,
-      "Explainability": 1.0,
+      "Explainability": 0.75,
       "Clinical Reliability": 0.8,
       "Model Confidence": "",
       "error": ""
@@ -477,7 +477,7 @@
       "Groundedness": 0.0,
       "Hallucination": 0.3602,
       "Latency": 13.219,
-      "Explainability": 1.0,
+      "Explainability": 0.75,
       "Clinical Reliability": 0.8,
       "Model Confidence": "",
       "error": ""
@@ -577,7 +577,7 @@
       "Groundedness": 1.0,
       "Hallucination": 0.3153,
       "Latency": 19.131,
-      "Explainability": 1.0,
+      "Explainability": 0.75,
       "Clinical Reliability": 0.8,
       "Model Confidence": "",
       "error": ""
@@ -1017,7 +1017,7 @@
       "Groundedness": 0.0,
       "Hallucination": 0.4336,
       "Latency": 20.142,
-      "Explainability": 1.0,
+      "Explainability": 0.75,
       "Clinical Reliability": 0.8,
       "Model Confidence": "",
       "error": ""
@@ -1277,7 +1277,7 @@
       "Groundedness": 0.0,
       "Hallucination": 0.3671,
       "Latency": 14.734,
-      "Explainability": 1.0,
+      "Explainability": 0.75,
       "Clinical Reliability": 0.8,
       "Model Confidence": "",
       "error": ""
@@ -1317,7 +1317,7 @@
       "Groundedness": 0.0,
       "Hallucination": 0.4882,
       "Latency": 17.914,
-      "Explainability": 1.0,
+      "Explainability": 0.75,
       "Clinical Reliability": 1.0,
       "Model Confidence": "",
       "error": ""
@@ -1417,7 +1417,7 @@
       "Groundedness": 1.0,
       "Hallucination": 0.3327,
       "Latency": 15.134,
-      "Explainability": 1.0,
+      "Explainability": 0.75,
       "Clinical Reliability": 0.8,
       "Model Confidence": "",
       "error": ""
@@ -1637,7 +1637,7 @@
       "Groundedness": 0.0,
       "Hallucination": 0.3949,
       "Latency": 17.896,
-      "Explainability": 1.0,
+      "Explainability": 0.75,
       "Clinical Reliability": 0.8,
       "Model Confidence": "",
       "error": ""
@@ -1657,7 +1657,7 @@
       "Groundedness": 0.0,
       "Hallucination": 0.4713,
       "Latency": 18.966,
-      "Explainability": 1.0,
+      "Explainability": 0.75,
       "Clinical Reliability": 1.0,
       "Model Confidence": "",
       "error": ""
@@ -2013,7 +2013,7 @@
       "Groundedness": 0.6842,
       "Hallucination": 0.3162,
       "Latency": 18.1372,
-      "Explainability": 1.0,
+      "Explainability": 0.97,
       "Clinical Reliability": 0.872
     },
     "median": {
@@ -2037,7 +2037,7 @@
       "Groundedness": 0.4438,
       "Hallucination": 0.0815,
       "Latency": 4.8129,
-      "Explainability": 0.0,
+      "Explainability": 0.0812,
       "Clinical Reliability": 0.1484
     }
   }
