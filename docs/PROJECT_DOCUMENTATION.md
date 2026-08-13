@@ -277,9 +277,9 @@ To evaluate component contributions, we conducted a 500-evaluation ablation benc
 
 | Challenge / Goal | Solution Approach Deployed | Mathematical & Algorithmic Verification |
 | :--- | :--- | :--- |
-| **1. Graph Entity Bias** | Topological IDF Shortest-Path Decay | $S_{\mathrm{graph}}(c) = \max \sum \frac{\mathrm{IEF}(v)}{1 + \mathrm{dist}(e, v)}$, suppressing generic stop-words (>99% drop). |
-| **2. OOV Drug Code Blur** | Min-Max Tri-Modal Hybrid Fusion | $S_{\mathrm{hybrid}} = 0.45 \tilde{S}_{\mathrm{dense}} + 0.35 \tilde{S}_{\mathrm{graph}} + 0.20 \tilde{S}_{\mathrm{bm25}}$, restoring keyword precision. |
-| **3. Context Noise & Dilution** | BGE Cross-Encoder Cross-Attention | $S_{\mathrm{ce}} = \sigma(\mathbf{W}_{\mathrm{ce}} \cdot \mathrm{Transformer}([CLS] \circ q \circ [SEP] \circ c_i))$, boosting Precision@5 to 0.4480. |
-| **4. Generative Hallucinations** | Refusal Gatekeeper & NLI Grounding | $\mathrm{SafePass} = (S_{\mathrm{ce}}^1 \ge 0.35) \land (\mathrm{NLI}_{\mathrm{entailment}} \ge 0.70)$, reducing hallucinations by -29.1%. |
+| **1. Graph Entity Bias** | Topological IDF Shortest-Path Decay | $S\_{\mathrm{graph}}(c) = \max \sum \frac{\mathrm{IEF}(v)}{1 + \mathrm{dist}(e, v)}$, suppressing generic stop-words (>99% drop). |
+| **2. OOV Drug Code Blur** | Min-Max Tri-Modal Hybrid Fusion | $S\_{\mathrm{hybrid}} = 0.45 \tilde{S}\_{\mathrm{dense}} + 0.35 \tilde{S}\_{\mathrm{graph}} + 0.20 \tilde{S}\_{\mathrm{bm25}}$, restoring keyword precision. |
+| **3. Context Noise & Dilution** | BGE Cross-Encoder Cross-Attention | $S\_{\mathrm{ce}} = \sigma(\mathbf{W}\_{\mathrm{ce}} \cdot \mathrm{Transformer}([CLS] \circ q \circ [SEP] \circ c_i))$, boosting Precision@5 to 0.4480. |
+| **4. Generative Hallucinations** | Refusal Gatekeeper & NLI Grounding | $\mathrm{SafePass} = (S\_{\mathrm{ce}}^1 \ge 0.35) \land (\mathrm{NLI}\_{\mathrm{entailment}} \ge 0.70)$, reducing hallucinations by -29.1%. |
 | **5. Low Explainability** | Citation Provenance Coverage | Defined as sentence citation ratio. Fused pipelines achieve **98.5%**, while Dense Only collapses to **87.0%** ($p < 0.001$). |
 | **6. Privacy & RAM Overhead** | Quantized Local Inference & Pipeline | 4-bit `Llama-3.2` via Ollama + sequential memory garbage collection, footprint < 8.5 GB RAM. |
