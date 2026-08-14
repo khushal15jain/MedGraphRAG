@@ -1,59 +1,13 @@
-"""
-evaluation/metrics.py
+"""evaluation/metrics.py
 ----------------------
-Module: Extended Evaluation Metrics Suite
-Adds: BLEU-1/2/4, ROUGE-1/2/L, METEOR, Answer F1, MRR, nDCG,
-      Context Precision/Recall/Relevancy, Citation Precision/Recall/
-      Coverage, Evidence Coverage, Semantic Similarity.
+Extended Evaluation Metrics Suite for MedGraphRAG.
 
-Research rationale (for the paper's Evaluation Methodology section):
-----------------------------------------------------------------------
-- BLEU/ROUGE/METEOR give lexical-overlap generation-quality baselines
-  that reviewers expect to see reported alongside any new
-  faithfulness/groundedness metric, since they are the de-facto standard
-  comparison point in prior RAG/summarization literature.
-- Answer F1 (token-level, SQuAD-style) is included because clinical QA
-  benchmarks (e.g. PubMedQA/MedQA-style evaluations) conventionally report
-  it, and reviewers from a medical-informatics venue will look for it.
-- MRR / nDCG are RETRIEVAL ranking-quality metrics (not generation), and
-  are what should be reported alongside Precision@5/Recall@5 to
-  characterize whether the *fusion+adaptive-K* changes actually improved
-  ranking quality, not just cutoff size.
-- Context Precision / Context Recall / Context Relevancy quantify the
-  retrieval-to-generation interface directly: whether the chunks handed
-  to the generator were both correct (precision) and complete (recall)
-  relative to a gold evidence set, and how much of the CONTEXT (not just
-  the final answer) is on-topic. This is the standard decomposition used
-  by RAG-triad evaluation frameworks (e.g. RAGAS) and isolates whether
-  future gains should target retrieval or generation.
-- Citation Precision / Recall / Coverage and Evidence Coverage are NOVEL
-  metrics specific to the citation-aware architecture proposed above; they
-  did not exist as concepts under the old free-text generator because
-  there were no structured citations to measure. These are the metrics
-  that make Explainability and Faithfulness improvements independently
-  verifiable and are strong candidates for a paper's core contribution
-  claims.
-- Semantic Similarity (embedding cosine between generated and reference
-  answer) is reported as a complement to lexical BLEU/ROUGE, since
-  clinical paraphrases (e.g. "ERBB2" vs "HER2") are semantically
-  equivalent but lexically distinct -- reporting both together is
-  standard practice to show robustness of the quality claim.
-
-Third-party dependencies (add to requirements.txt):
-    nltk>=3.8
-    rouge-score>=0.1.2
-    sentence-transformers>=2.2   (already used for BGE, no new dependency)
-
-FILES TO MODIFY
-----------------
-- evaluation/metrics.py          (NEW - this file)
-- evaluation/run_evaluation.py   (call compute_all_metrics() per QA pair,
-                                   aggregate across the 200-item benchmark)
-
-FUNCTIONS TO ADD
------------------
-See function list below; compute_all_metrics() is the single entry point
-run_evaluation.py should call per QA item.
+Computes comprehensive lexical, retrieval ranking, generation, citation, and clinical metrics:
+- Lexical Overlap: BLEU-1/2/4, ROUGE-1/2/L, METEOR, SQuAD-style Answer F1.
+- Retrieval Ranking: Precision@5, Recall@5, MRR, nDCG@5, HitRate@5.
+- Context Interface: Context Precision, Context Recall, Context Relevancy / Groundedness.
+- Citation & Evidence: Citation Precision, Citation Recall, Citation Coverage, Explainability.
+- Semantic Similarity: Embedding cosine similarity between generated and reference answers.
 """
 
 from __future__ import annotations

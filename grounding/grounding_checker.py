@@ -1,43 +1,12 @@
-"""
-grounding_checker.py
+"""grounding_checker.py
 ---------------------
-Module: Grounding Checker (sentence/claim-level)
-Target metrics: Groundedness (67.5% -> 90%+), Faithfulness, Hallucination
+Sentence-level and claim-level grounding verification module.
 
-WHY THE CURRENT APPROACH FAILS
--------------------------------
-"Evidence Grounding" exists as a pipeline stage already, but a 67.5%
-groundedness score alongside 47% faithfulness suggests it is a coarse,
-answer-level check (e.g. "does the whole answer overlap with SOME
-retrieved text?") rather than a CLAIM-level check. Coarse checks pass an
-answer even if only half its sentences are supported, because the
-supported half drags the aggregate score up. Groundedness needs to be
-measured and enforced at the unit the user actually reads and trusts: the
-individual sentence/claim.
-
-PROPOSED ALGORITHM
--------------------
-1. Claim-evidence similarity: for each claim, embed it with the EXISTING
-   BGE-base embedder (no new embedding model) and compute max cosine
-   similarity against the embeddings of ONLY the evidence chunks it cited
-   (evidence_ids). This directly checks "did the model cite the right
-   place" not just "does this text appear somewhere in the whole context".
-2. Lexical overlap fallback / secondary signal: compute a normalized
-   token-overlap (evidence-recall style) between the claim and its cited
-   evidence text. Medical claims are terminology-dense, so exact-term
-   overlap is a strong, cheap complementary signal to semantic similarity
-   (catches cases where embeddings judge two DIFFERENT drugs as
-   "similar" because they're both oncology terms).
-3. Optional NLI entailment cross-check: if a cross-encoder NLI model is
-   available (e.g. a small "facebook/bart-large-mnli"-class model, or
-   your existing BGE reranker used as a relevance proxy), classify
-   entailment/contradiction/neutral between the cited evidence and the
-   claim as a stronger but costlier confirmation for claims near the
-   grounding decision boundary only (saves latency vs. running NLI on
-   every claim).
-4. Decision rule: combine the two/three signals into a single grounded:
-   bool per claim, with an explicit LOW-CONFIDENCE band that gets
-   surfaced to the user (per your requirement: mark instead of remove)
+Provides fine-grained claim validation across generated clinical answers:
+- Evaluates individual claims against retrieved gold evidence chunks using BGE embeddings.
+- Computes token-level lexical overlap to verify exact medical terminology and entity matches.
+- Integrates NLI entailment scoring to verify factual support and flag ungrounded claims.
+"""
    rather than silently dropped, EXCEPT when similarity is near-zero (no
    plausible support at all), in which case the claim is dropped as
    hallucinated content, not merely flagged.

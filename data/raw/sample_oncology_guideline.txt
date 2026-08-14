@@ -1,0 +1,32 @@
+========================================================================================
+             SAMPLE CLINICAL ONCOLOGY PRACTICE GUIDELINE: NON-SMALL CELL LUNG CANCER
+========================================================================================
+
+SECTION 1: MOLECULAR TESTING AND BIOMARKER PROFILING
+In patients with advanced or metastatic non-small cell lung cancer (NSCLC), comprehensive
+molecular biomarker testing should be performed prior to initiating first-line systemic therapy.
+Key targetable oncogenic drivers include EGFR mutations (exon 19 deletions, L858R substitution),
+ALK rearrangements, ROS1 fusions, BRAF V600E mutations, RET fusions, MET exon 14 skipping
+mutations, and KRAS G12C mutations. Additionally, PD-L1 expression levels should be measured
+using immunohistochemistry (IHC) to guide immunotherapy selection.
+
+SECTION 2: FIRST-LINE TARGETED THERAPY FOR EGFR-MUTANT NSCLC
+For patients with EGFR exon 19 deletion or L858R mutation, third-generation EGFR tyrosine kinase
+inhibitor (TKI) Osimertinib (AZD9291) is recommended as first-line monotherapy. In the FLAURA
+trial, Osimertinib demonstrated statistically significant improvements in progression-free survival
+(PFS) and overall survival (OS) compared to first-generation TKIs (Gefitinib or Erlotinib), with
+a lower incidence of Grade 3 or higher adverse events.
+
+SECTION 3: RESISTANCE MECHANISMS AND SECOND-LINE INTERVENTIONS
+Acquired resistance to first-line Osimertinib frequently involves EGFR C797S point mutations,
+MET amplification, or HER2 amplification. Upon disease progression, repeat liquid biopsy or
+tissue re-biopsy is recommended to identify actionable resistance pathways. In the absence of
+a targetable resistance mutation, platinum-based doublet chemotherapy (Cisplatin or Carboplatin
+combined with Pemetrexed) plus Bevacizumab is indicated.
+
+SECTION 4: IMMUNOTHERAPY IN PD-L1 HIGH EXPRESSING TUMORS
+For patients with non-oncogene addicted NSCLC exhibiting high PD-L1 expression (Tumor Proportion
+Score TPS >= 50%), Pembrolizumab monotherapy is recommended as first-line therapy based on the
+KEYNOTE-024 trial. For TPS 1-49%, combination chemo-immunotherapy (Pembrolizumab + Carboplatin +
+Pemetrexed) is indicated.
+========================================================================================

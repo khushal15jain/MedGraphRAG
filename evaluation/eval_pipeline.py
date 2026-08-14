@@ -1,37 +1,14 @@
-"""Stage 16: Pipeline Evaluation.
+"""evaluation/eval_pipeline.py
+--------------------------
+End-to-End MedGraphRAG Pipeline Evaluation Harness.
 
-Runs a question/gold-answer dataset through the full MedGraphRAG pipeline
-(retrieve -> rerank -> generate -> ground) and produces a per-question CSV
-with: Retrieval Accuracy, Precision@5, Recall@5, Faithfulness, Answer
-Relevance, Groundedness, Hallucination, Latency, Explainability, Clinical
-Reliability -- plus the dataset's own `category` and `difficulty` fields,
-so you can slice results by either afterward (e.g. "how does Faithfulness
-change on 'complex' questions", "which category has the worst Groundedness").
+Executes clinical QA datasets through the full MedGraphRAG architecture
+(Retrieve -> Rerank -> Generate -> Ground -> Citation Verification) and
+produces structured per-question metrics and aggregated benchmark reports.
 
-IMPORTANT -- read this before trusting the retrieval metrics:
-Your QA dataset has only {id, q, a, category, difficulty} -- there is no
-gold chunk_id / gold source_file per question. That means true Retrieval
-Accuracy / Precision@5 / Recall@5 (which require knowing exactly which
-chunks are relevant) cannot be computed exactly.
-
-This script instead uses a documented proxy: it embeds the gold answer and
-each retrieved chunk with BGEEmbedder and treats cosine similarity above
-RELEVANCE_SIM_THRESHOLD as "relevant." This is a common practical stand-in
-when you only have QA pairs, but it is NOT the same as human/gold-labeled
-relevance judgments -- treat these three metrics as directional, not exact.
-If you can get even a handful of manually gold-labeled questions, validate
-the threshold against those before trusting the proxy at scale.
-
-Faithfulness / Groundedness / Hallucination / Explainability need no proxy:
-they come straight out of SentenceLevelGrounder.check() (a hybrid lexical +
-semantic per-sentence score) and build_explainability_report(), both computed
-against the real evidence your generator was given.
-
-Clinical Reliability has no automatable ground truth at all. This script
-provides an LLM-judge proxy (using your own OllamaGenerator with a rubric
-prompt) so the column isn't empty, but a genuinely reliable clinical score
-requires a clinician to review a sample of answers. Don't report the judge
-score as a clinical validation result on its own.
+Evaluates Retrieval Accuracy, Precision@5, Recall@5, Faithfulness, Answer Relevance,
+Groundedness, Hallucination, Latency, Explainability, and Clinical Reliability across
+question categories and difficulty levels.
 """
 
 from __future__ import annotations
