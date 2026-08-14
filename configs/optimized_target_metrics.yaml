@@ -1,0 +1,10 @@
+NLI_threshold: 0.75
+bm25_weight: 0.25
+candidate_pool_size: 20
+dedup_threshold: 0.7
+dense_weight: 0.4
+final_top_k: 5
+graph_weight: 0.35
+grounding_threshold: 0.7
+min_word_count: 15
+reranker_threshold: -2.5

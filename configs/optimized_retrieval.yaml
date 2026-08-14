@@ -1,0 +1,36 @@
+# Optimized Retrieval & Pipeline Hyperparameters (Tuned on Validation Split N_val=20)
+
+retrieval:
+  dense_weight: 0.35
+  bm25_weight: 0.30
+  graph_weight: 0.35
+  candidate_pool_size: 25
+  final_top_k: 5
+  section_aware_filtering: true
+
+reranker:
+  model_name: "BAAI/bge-reranker-base"
+  dedup_threshold: 0.65
+  min_word_count: 15
+  reranker_threshold: -2.0
+
+graph:
+  ief_scaling: true
+  max_hop_distance: 2
+  stop_entities:
+    - "patient"
+    - "patients"
+    - "treatment"
+    - "therapy"
+    - "disease"
+    - "study"
+    - "cancer"
+    - "clinical"
+    - "data"
+    - "results"
+
+grounding:
+  grounding_threshold: 0.70
+  nli_threshold: 0.75
+  drop_unsupported: true
+  intent_aware_generation: true

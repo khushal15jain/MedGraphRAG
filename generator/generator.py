@@ -1,74 +1,9 @@
-"""
-generator.py
+"""generator.py
 ------------
-Module: Generator (Qwen2.5-3B via Ollama)
-Target metrics: Faithfulness, Hallucination, Clinical Reliability, Latency
+Structured Grounded Answer Generation Module.
 
-WHY THE CURRENT APPROACH FAILS
--------------------------------
-The current generator almost certainly does a single free-text completion
-call at default/creative temperature and returns it as the final answer.
-Two problems: (1) nothing checks whether the model actually followed
-grounding instructions before the answer is shown to the user -- a
-citation-aware prompt (see prompt_builder.py) only HELPS faithfulness if
-its output contract is enforced, not just requested; (2) a single-shot
-call at higher temperature increases the chance of the free-generation
-tail drifting into unsupported detail exactly in the low-frequency,
-high-stakes claims (dosages, statistics) that most matter for clinical
-reliability.
-
-PROPOSED ALGORITHM
--------------------
-1. Low-temperature, JSON-mode generation (temperature<=0.2) -- oncology
-   QA is a precision task, not a creative one; lower temperature
-   measurably reduces confabulation rate in small instruction-tuned
-   models.
-2. JSON parsing with repair fallback: if the model wraps JSON in prose or
-   markdown fences, strip and re-parse before giving up (small models
-   frequently add "Here is the answer:" despite instructions).
-3. Self-correction retry loop (max 1 retry): run the parsed claims through
-   grounding_checker.py's cheap embedding-similarity check BEFORE
-   returning to the user. If more than `retry_threshold` fraction of
-   claims fail grounding, re-prompt ONCE with an explicit correction
-   message listing which claims were ungrounded, asking the model to
-   either fix the citation or mark the claim unsupported. This is the
-   single highest-leverage lever for faithfulness because it uses the
-   SAME cheap check as evaluation to gate what the user sees, rather than
-   only measuring faithfulness after the fact.
-4. Caching: identical (question, evidence-set-hash) pairs are memoized,
-   which matters a lot for iterative benchmark evaluation (200 QA pairs
-   re-run repeatedly during development) and for repeated user questions.
-5. Final assembly: only after grounding-checker filtering (next module)
-   is the JSON turned into the human-readable answer string + citation
-   markers, so what ships to the user is the POST-FILTER text, not the
-   raw model output.
-
-FILES TO MODIFY
-----------------
-- generation/generator.py       (NEW - this file)
-- generation/prompt_builder.py  (build_prompt / EvidenceItem, imported)
-- grounding/grounding_checker.py (check_claims, imported for the retry gate)
-- pipeline.py                   (call generate_grounded_answer() instead
-                                  of the raw llm.generate() call)
-
-FUNCTIONS TO ADD
------------------
-- call_llm_json(prompt, llm_client, temperature=0.15, max_tokens=900) -> dict
-- generate_grounded_answer(question, evidence_list, llm_client,
-                            embedder, retry_threshold=0.3) -> GroundedAnswer
-- assemble_answer_text(claims) -> str
-
-EXPECTED METRIC IMPROVEMENT
------------------------------
-Faithfulness         : 47.15% -> 80-85% (structured contract + retry gate)
-Hallucination        : 52.85% -> 12-18%
-Clinical Reliability : 66.5%  -> 85-90%
-Latency              : baseline generation unchanged (~same call cost);
-                        retry loop adds latency ONLY on the fraction of
-                        answers that fail the first grounding pass
-                        (typically well under half after prompt_builder.py
-                        is in place), and cache hits remove latency
-                        entirely for repeated questions.
+Executes low-temperature, constrained LLM generation over reranked clinical evidence,
+parses claim-level evidence citations, and validates answer grounding.
 """
 
 from __future__ import annotations
