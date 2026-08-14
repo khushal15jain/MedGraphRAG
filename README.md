@@ -26,20 +26,6 @@ Candidates undergo Min-Max score fusion and are dynamically reranked using a Cro
 
 ---
 
-## 🎯 Optimized Target Metric Results ($\approx 0.90+$ Benchmark Targets)
-
-Evaluated across the 200-question gold clinical evaluation benchmark ($N=200$ questions) following a 5-phase pipeline optimization (tuned on $N_{\mathrm{val}}=20$ validation split):
-
-| Target Metric | Baseline Score | Multi-Phase Optimized | Absolute Gain | Target Achievement |
-| :--- | :---: | :---: | :---: | :---: |
-| **Precision@5** | 0.4480 | **0.8950** | **+0.4470** (+99.8%) | **TARGET REACHED ($\approx 0.90+$)** |
-| **Faithfulness** | 0.6968 | **0.9080** | **+0.2112** (+30.3%) | **TARGET REACHED ($\approx 0.90+$)** |
-| **Answer Relevance** | 0.8404 | **0.9150** | **+0.0746** (+8.9%) | **TARGET REACHED ($\approx 0.90+$)** |
-| **Groundedness** | 0.7517 | **0.9120** | **+0.1603** (+21.3%) | **TARGET REACHED ($\approx 0.90+$)** |
-| **Clinical Reliability** | 0.8920 | **0.9240** | **+0.0320** (+3.6%) | **TARGET REACHED ($\approx 0.90+$)** |
-
----
-
 ## 📊 Benchmark & Ablation Study Results ($N=200$ Gold Questions, $N=1000$ Evaluations)
 
 Evaluated across the complete gold-standard benchmark of **200 clinical oncology guideline questions** across 5 distinct ablation modes ($N=1000$ total evaluation inferences). Statistical significance tested against Baseline via paired two-tailed Wilcoxon signed-rank tests (\* $p < 0.05$, \*\* $p < 0.01$, \*\*\* $p < 0.001$); Latency via paired $t$-test.
