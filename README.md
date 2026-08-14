@@ -126,7 +126,6 @@ MedGraphRAG/
 ├── benchmark/               Baseline methods & benchmark evaluation runners
 ├── configs/                 YAML configuration files (model, retrieval, paths)
 ├── data/                    Raw oncology guidelines, sample datasets, and processed chunks
-├── docs/                    System documentation, reproducibility guides, and logs
 ├── embeddings/              BGE dense embedding wrapper & ChromaDB indexing pipeline
 ├── entity_extraction/       SciSpaCy NER and dependency-parsing relation extraction
 ├── evaluation/              Evaluators (Metrics suite, p-test evaluator, judge agreement)
@@ -140,7 +139,7 @@ MedGraphRAG/
 ├── reranker/                BAAI/bge-reranker-base cross-encoder integration
 ├── retrieval/               Dense, BM25, query expansion, and hybrid fusion algorithms
 ├── run_ablations.py         Full 1000-evaluation ablation sweep runner (N=200 x 5)
-├── generate_publication_figures.py Statistical significance tester & chart generator
+├── generate_publication_figures.py Statistical significance tester & benchmark table generator
 ├── main.py                  Full pipeline end-to-end execution script
 ├── LICENSE                  MIT Open-Source License
 ├── requirements.txt         Python environment dependencies
@@ -205,11 +204,10 @@ python evaluation/p_test_evaluator.py
 python evaluation/judge_agreement.py
 ```
 
-### 6. Generate Publication Figures & Statistical Significance Tables
+### 6. Generate Statistical Significance Tables
 ```bash
 python generate_publication_figures.py
 ```
-*Outputs generated:* `retrieval_accuracy_chart.png`, `faithfulness_chart.png`, `groundedness_chart.png`, `hallucination_chart.png`, `clinical_reliability_chart.png`, `latency_chart.png`, `radar_chart.png`.
 
 ---
 
