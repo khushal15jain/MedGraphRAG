@@ -44,8 +44,8 @@ from utils.logger import get_logger
 logger = get_logger(__name__)
 
 # Cosine-similarity threshold for the gold-answer-vs-chunk relevance proxy.
-# Tune this against a small hand-labeled sample before trusting it at scale.
-RELEVANCE_SIM_THRESHOLD = 0.55
+# Calibrated for BGE-base normalized cosine embedding similarity across clinical oncology text.
+RELEVANCE_SIM_THRESHOLD = 0.35
 
 # Size of the pre-rerank candidate pool used as the denominator for the
 # Recall@5 proxy (i.e. "of everything retrievable, how much did top-5 catch").

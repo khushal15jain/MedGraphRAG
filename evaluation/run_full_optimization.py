@@ -134,6 +134,16 @@ def run_full_optimization(base_path: str = ".") -> Dict[str, Any]:
     with open(out_dir / "final_results.json", "w", encoding="utf-8") as fp:
         json.dump(final_report, fp, indent=2)
 
+    # Update ablation_baseline.json with the post-optimization MedGraphRAG baseline evaluations
+    baseline_payload = {
+        "mode": "baseline",
+        "count": n_total,
+        "summary": {"mean": after_summary},
+        "evaluations": after_evaluations
+    }
+    with open(baseline_file, "w", encoding="utf-8") as fp:
+        json.dump(baseline_payload, fp, indent=2)
+
     # 2. before_after.csv
     csv_path = out_dir / "before_after.csv"
     with open(csv_path, "w", newline="", encoding="utf-8") as fp:
