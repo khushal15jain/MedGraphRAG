@@ -9,8 +9,8 @@ This document details the exact environment, dataset splits, model tags, and com
 | Pipeline Stage | Reproducibility Status | Notes / Requirements |
 | :--- | :--- | :--- |
 | **Main Evaluation ($N=200$)** | **ARTIFACT-REPRODUCIBLE** | Full 200-question dataset included in `data/gold_standard_dataset.json`. Requires local Ollama `llama3.2:latest` model server. |
-| **Ablation Benchmark ($N=1000$)** | **FULLY REPRODUCIBLE** | 100-question subset across 5 ablation conditions ($100 \times 5 = 500$ inferences per benchmark run). Execution logged in `ablation_*.json`. |
-| **Statistical Analysis** | **FULLY REPRODUCIBLE** | SciPy paired Wilcoxon signed-rank and paired $t$-tests executed via `evaluation/p_test_evaluator.py`. |
+| **Ablation Benchmark ($N=500$)** | **FULLY REPRODUCIBLE** | Stratified 100-question subset across 5 ablation conditions ($100 \times 5 = 500$ inferences per benchmark run). Execution logged in `ablation_*.json`. |
+| **Statistical Analysis** | **FULLY REPRODUCIBLE** | SciPy paired Wilcoxon signed-rank and paired $t$-tests executed via `evaluation/p_test_evaluator.py` with Holm-Bonferroni correction. |
 | **Figure Generation** | **FULLY REPRODUCIBLE** | Re-rendered using `generate_publication_figures.py`. Saved to `docs/images/`. |
 | **Source PDF Ingestion** | **PARTIALLY REPRODUCIBLE** | Ingestion pipeline is fully reproducible; copyrighted PDF files must be independently acquired per `docs/source_corpus.md`. |
 
@@ -20,7 +20,7 @@ This document details the exact environment, dataset splits, model tags, and com
 
 - **Operating System**: macOS (Apple Silicon M3 Max) / x86_64 Ubuntu Linux 22.04 LTS.
 - **Python Runtime**: Python 3.11.8 (`.venv` virtual environment).
-- **LLM Engine**: Ollama `v0.1.28` hosting `llama3.2:latest` (3B parameters, 4-bit quantized, `T = 0.0`).
+- **LLM Engine**: Ollama `v0.1.28` hosting `llama3.2:latest` (3.8B parameters, 4-bit quantized `llama3.2:3b-instruct-q4_K_M`, `T = 0.0`, `top_p = 0.9`).
 - **Dense Embedding Model**: `BAAI/bge-base-en-v1.5` (768-dim, CPU execution).
 - **Cross-Encoder Reranker**: `BAAI/bge-reranker-base` (batch size = 8, top-5 output).
 - **Biomedical NER Engine**: SciSpaCy `en_core_sci_sm` (v0.5.4).
@@ -48,11 +48,12 @@ python main.py
 python evaluation/run_full_optimization.py
 
 # 5. Run full 5-way ablation benchmark (100 questions x 5 conditions = 500 evaluations)
-python run_ablations.py
+python run_ablations.py --num-questions 100
 
 # 6. Compute paired Wilcoxon statistical p-values & effect sizes
 python evaluation/p_test_evaluator.py
 
-# 7. Generate publication-grade figures
+# 7. Generate publication-grade figures and tables
 python generate_publication_figures.py
+python generate_paper_tables.py
 ```

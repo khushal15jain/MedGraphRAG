@@ -18,7 +18,7 @@ This paper presents **MedGraphRAG**, an end-to-end, privacy-preserving, and expl
 
 Retrieved candidates undergo candidate deduplication, quality filtering, and cross-attention reranking via `BAAI/bge-reranker-base`. Context is injected into a 4-bit quantized local `Llama-3.2:latest` (3.8B, `llama3.2:3b-instruct-q4_K_M`) generator operating at temperature T = 0.0. Every generated claim is subjected to sentence-level hybrid lexical-semantic grounding verification (grounding threshold = 0.70) and refusal gating (refusal threshold = 0.35), providing 98.5% sentence-level citation provenance tracking (`[Source: Document, Section, Page X, Chunk ID]`).
 
-Evaluated across a benchmark of 200 Gold Clinical Oncology Questions (N = 200, N = 1000 ablation evaluations), MedGraphRAG achieves **0.9500 Retrieval Accuracy**, **0.8950 Precision@5**, **0.9080 Faithfulness**, **0.9150 Answer Relevance**, **0.9120 Groundedness**, and **0.9240 Clinical Reliability**, demonstrating statistically significant improvements over Vanilla Dense RAG, BM25-only, Hybrid, and GraphRAG baselines (p < 0.001). A dual-judge framework (`Qwen2.5-3B-Instruct` primary judge vs. `GPT-4o-mini` / `Llama-3.1-70B-Instruct` secondary meta-judges) establishes high inter-judge agreement (Pearson r = 0.9644, Cohen kappa = 0.6815) and strong alignment with human expert clinical annotators (r = 0.9683). The system operates entirely on local consumer hardware without transmitting clinical data to third-party cloud APIs.
+Evaluated across a benchmark of 200 Gold Clinical Oncology Questions (N = 200 main benchmark, N = 500 ablation evaluations over a stratified 100-question subset), MedGraphRAG achieves **0.9500 Retrieval Accuracy**, **0.8950 Precision@5**, **0.9080 Faithfulness**, **0.9150 Answer Relevance**, **0.9120 Groundedness**, and **0.9240 Clinical Reliability**, demonstrating statistically significant improvements over Vanilla Dense RAG, BM25-only, Hybrid, and GraphRAG baselines (p_adj < 0.001). A dual-judge framework (`Qwen2.5-3B-Instruct` primary judge vs. `GPT-4o-mini` / `Llama-3.1-70B-Instruct` secondary meta-judges) establishes high inter-judge agreement (Pearson r = 0.9644, Cohen kappa = 0.6815) and strong alignment with human expert clinical annotators (r = 0.9683). The system operates entirely on local consumer hardware without transmitting clinical data to third-party cloud APIs.
 
 **Index Terms**—Biomedical NLP, Retrieval-Augmented Generation, Knowledge Graphs, Information Retrieval, Clinical Decision Support Systems, Local LLM Inference.
 
@@ -49,7 +49,7 @@ While commercial cloud-based LLM APIs offer high language capability, sending pa
 3. Develop a Min-Max score standardization and fusion layer unifying dense vector, sparse BM25, and IEF graph retrieval channels.
 4. Implement a Cross-Encoder reranking and candidate deduplication pipeline achieving Precision@5 >= 0.8950.
 5. Build a sentence-level hybrid lexical-semantic claim verifier achieving Faithfulness >= 0.9080 and Groundedness >= 0.9120.
-6. Conduct rigorous empirical benchmarking (N = 200 questions, N = 1000 ablation evaluations) with statistical hypothesis testing (Holm-Bonferroni adjusted p-values, Wilcoxon signed-rank tests, paired t-tests) and dual-judge/human alignment verification.
+6. Conduct rigorous empirical benchmarking (N = 200 questions, N = 500 ablation evaluations across a 100-question subset) with statistical hypothesis testing (Holm-Bonferroni adjusted p-values, Wilcoxon signed-rank tests, paired t-tests) and dual-judge/human alignment verification.
 
 ---
 
@@ -78,7 +78,7 @@ Human expert evaluation was conducted over a 30-item random subsample drawn from
 
 ## 3. EXPERIMENTAL RESULTS
 
-### Table 1: Main Benchmark Ablation Results (N=200 Questions, N=1000 Evaluations)
+### Table 1: Main Benchmark Ablation Results (N=100 Stratified Questions, N=500 Evaluations)
 
 | Metric Category | Metric Name | Baseline (Full MedGraphRAG) | No Graph (Ablation B) | No BM25 (Ablation C) | No Reranker (Ablation D) | Dense Only (Ablation E) | Holm-Bonferroni Adjusted p-value |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -111,7 +111,7 @@ ollama pull llama3.2:latest
 # Run pipeline & tests
 python main.py
 python evaluation/run_full_optimization.py
-python run_ablations.py
+python run_ablations.py --num-questions 100
 python evaluation/p_test_evaluator.py
 python generate_publication_figures.py
 pytest tests/test_reproducibility.py

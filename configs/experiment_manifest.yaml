@@ -4,8 +4,8 @@
 experiment_name: MedGraphRAG_Publication_Benchmark
 dataset: data/qa_dataset.json
 dataset_size: 200
-ablation_size_per_condition: 200
-total_ablation_evaluations: 1000
+ablation_size_per_condition: 100
+total_ablation_evaluations: 500
 seed: 42
 
 generator:

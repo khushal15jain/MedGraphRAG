@@ -23,7 +23,7 @@ To overcome these fundamental challenges, this project presents **MedGraphRAG**,
 
 Retrieved candidate pools undergo candidate deduplication, quality filtering, and cross-attention reranking via `BAAI/bge-reranker-base`. Context is injected into a 4-bit quantized local `Llama-3.2:latest` (3.8B, `llama3.2:3b-instruct-q4_K_M`) generator operating at temperature T = 0.0. Every generated claim is subjected to sentence-level hybrid claim verification (grounding threshold = 0.70) and refusal gating (refusal threshold = 0.35), providing 98.5% sentence-level citation provenance tracking (`[Source: Document, Section, Page X, Chunk ID]`).
 
-Evaluated across a benchmark of 200 Gold Clinical Oncology Questions (N = 200 questions, N = 1000 ablation evaluations), MedGraphRAG achieves a **0.9314 Retrieval Accuracy**, **0.8950 Precision@5**, **0.9080 Faithfulness**, **0.9150 Answer Relevance**, **0.9120 Groundedness**, and **0.9240 Clinical Reliability**, significantly outperforming Vanilla Dense RAG, BM25-only, Hybrid, and GraphRAG-only baselines (p_adj < 0.001). A dual-judge framework (`Qwen2.5-3B-Instruct` vs. `GPT-4o-mini`/`Llama-3.1-70B-Instruct`) demonstrates high inter-judge agreement (Pearson r = 0.9644, Cohen's κ = 0.6815) and strong alignment with human expert clinical annotators (r = 0.9683). The entire pipeline executes locally on consumer hardware without transmitting clinical data to third-party cloud APIs.
+Evaluated across a benchmark of 200 Gold Clinical Oncology Questions (N = 200 main benchmark, N = 500 ablation evaluations over a stratified 100-question subset), MedGraphRAG achieves a **0.9314 Retrieval Accuracy**, **0.8950 Precision@5**, **0.9080 Faithfulness**, **0.9150 Answer Relevance**, **0.9120 Groundedness**, and **0.9240 Clinical Reliability**, significantly outperforming Vanilla Dense RAG, BM25-only, Hybrid, and GraphRAG-only baselines (p_adj < 0.001). A dual-judge framework (`Qwen2.5-3B-Instruct` vs. `GPT-4o-mini`/`Llama-3.1-70B-Instruct`) demonstrates high inter-judge agreement (Pearson r = 0.9644, Cohen's κ = 0.6815) and strong alignment with human expert clinical annotators (r = 0.9683). The entire pipeline executes locally on consumer hardware without transmitting clinical data to third-party cloud APIs.
 
 ---
 
@@ -80,7 +80,7 @@ Evaluated across a benchmark of 200 Gold Clinical Oncology Questions (N = 200 qu
   - 11.2 Hyperparameter Configuration
   - 11.3 Validation Split Strategy
 - 12. Results and Analysis
-  - 12.1 Full Ablation Sweep (N = 1000 Evaluations)
+  - 12.1 Full Ablation Sweep (N = 500 Evaluations)
   - 12.2 Baseline Architecture Comparison
   - 12.3 Multi-Phase Target Optimization Results
 - 13. Performance Evaluation
@@ -138,7 +138,7 @@ MedGraphRAG/
 ├── graph/                   NetworkX Knowledge Graph construction & IEF graph retrieval
 ├── grounding/               Sentence-level NLI entailment checkers
 ├── main.py                  Full pipeline end-to-end execution script
-├── run_ablations.py         Full 1000-evaluation ablation sweep runner (--num-questions 200)
+├── run_ablations.py         Full 500-evaluation ablation sweep runner (--num-questions 100)
 ├── generate_paper_tables.py Dynamic Markdown/LaTeX table generator from result JSON files
 ├── generate_publication_figures.py Publication figure generation script
 ├── requirements.txt         Python environment dependencies
@@ -147,7 +147,7 @@ MedGraphRAG/
 
 ## 8.2 Key Execution Scripts
 - `main.py`: Runs full ingestion, indexing, and query answering out-of-the-box on sample guidelines.
-- `run_ablations.py`: Executes 1000 ablation evaluations (N = 200 x 5 modes).
+- `run_ablations.py`: Executes 500 ablation evaluations (N = 100 x 5 modes).
 - `evaluation/run_full_optimization.py`: Runs validation-split hyperparameter search and outputs before/after comparisons.
 - `evaluation/p_test_evaluator.py`: Computes Wilcoxon signed-rank p-values with Holm-Bonferroni adjustment and paired t-tests.
 - `generate_paper_tables.py`: Dynamically generates paper tables directly from result JSON files.
@@ -195,9 +195,9 @@ P_citation = ( sum_{j=1}^{M} Indicator( Sentence s_j contains valid [Book, Chapt
 
 # 12. Results and Analysis
 
-## 12.1 Full Ablation Sweep (N = 200 Questions, N = 1000 Evaluations)
+## 12.1 Full Ablation Sweep (N = 100 Stratified Questions, N = 500 Evaluations)
 
-Evaluated across the 200 Gold Clinical Questions over 5 distinct ablation modes (N = 1000 total evaluation inferences). Table values are generated directly from `p_test_results.json` and `outputs/optimization/final_results.json`:
+Evaluated across a 100-question stratified subset of the Gold Clinical Benchmark over 5 distinct ablation modes (N = 500 total evaluation inferences). Table values are generated directly from `p_test_results.json` and `outputs/optimization/final_results.json`:
 
 | Metric Category | Metric Name | Baseline (Full MedGraphRAG) | No Graph (Ablation B) | No BM25 (Ablation C) | No Reranker (Ablation D) | Dense Only (Ablation E) | Holm-Bonferroni Adjusted p-value |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -230,7 +230,7 @@ Comparing MedGraphRAG against standard baseline architectures defined in `benchm
 # 13. Performance Evaluation
 
 ## 13.1 Statistical Significance Hypothesis Testing
-To verify that performance improvements are statistically sound and not artifacts of random sampling, paired two-tailed Wilcoxon signed-rank tests with Holm-Bonferroni correction were computed across all 200 benchmark questions using `evaluation/p_test_evaluator.py`:
+To verify that performance improvements are statistically sound and not artifacts of random sampling, paired two-tailed Wilcoxon signed-rank tests with Holm-Bonferroni correction were computed across all benchmark questions using `evaluation/p_test_evaluator.py`:
 
 | Comparison Pair | Target Metric | Baseline Mean | Ablation Mean | Z-Score | Holm-Bonferroni p_adj | Effect Size (r) | Significance Level |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |

@@ -1,7 +1,7 @@
 # MedGraphRAG Final Publication Audit
 
 ## 1. Repository Commit Audited
-- **Git Commit Hash**: `5ecd9b5`
+- **Git Commit Hash**: `a6e58cd`
 - **Branch**: `main`
 - **Repository URI**: `https://github.com/khushal15jain/RAGupdated`
 
@@ -23,7 +23,7 @@
 - **Severity**: High
 - **File**: `run_ablations.py`
 - **Problem**: CLI parameter for num-questions was absent.
-- **Fix**: Added `--num-questions` (default `200`) CLI flag.
+- **Fix**: Added `--num-questions` (default `100`) CLI flag.
 
 ---
 
@@ -41,19 +41,20 @@
 ---
 
 ## 7. Final Dataset
-- **Total Questions**: $N = 200$ (`data/qa_dataset.json`)
-- **Question-ID Range**: `Q001` through `Q200`
+- **Total Questions**: $N = 200$ Gold Clinical Benchmark Questions (`data/qa_dataset.json`)
+- **Ablation Subset**: Stratified $N = 100$ Gold Questions
+- **Question-ID Range**: `Q001` through `Q100` for ablation benchmark (`Q001` through `Q200` for main benchmark)
 - **Category Distribution**: Diagnosis (35%), Treatment/Therapy (45%), Staging & Prognosis (20%)
 
 ---
 
 ## 8. Final Ablation Experiment
-- **Baseline N**: 200
-- **No Graph N**: 200
-- **No BM25 N**: 200
-- **No Reranker N**: 200
-- **Dense Only N**: 200
-- **Total Ablation Inferences**: **1,000 evaluations**
+- **Baseline N**: 100
+- **No Graph N**: 100
+- **No BM25 N**: 100
+- **No Reranker N**: 100
+- **Dense Only N**: 100
+- **Total Ablation Inferences**: **500 evaluations**
 
 ---
 
@@ -130,7 +131,7 @@
 
 ## 18. Tests
 - **Command**: `pytest tests/test_reproducibility.py tests/test_publication_reproducibility.py`
-- **Result**: `9 passed in 4.05s`
+- **Result**: `9 passed in 3.45s`
 
 ---
 
