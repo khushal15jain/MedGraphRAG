@@ -1,0 +1,50 @@
+{
+  "ablation_baseline.json": {
+    "count": 100,
+    "unique_ids": 100,
+    "first_id": "Q001",
+    "last_id": "Q100",
+    "duplicate_ids": 0,
+    "missing_ids_in_gold_200": 100
+  },
+  "ablation_no_graph.json": {
+    "count": 100,
+    "unique_ids": 100,
+    "first_id": "Q001",
+    "last_id": "Q100",
+    "duplicate_ids": 0,
+    "missing_ids_in_gold_200": 100
+  },
+  "ablation_no_bm25.json": {
+    "count": 100,
+    "unique_ids": 100,
+    "first_id": "Q001",
+    "last_id": "Q100",
+    "duplicate_ids": 0,
+    "missing_ids_in_gold_200": 100
+  },
+  "ablation_no_reranker.json": {
+    "count": 100,
+    "unique_ids": 100,
+    "first_id": "Q001",
+    "last_id": "Q100",
+    "duplicate_ids": 0,
+    "missing_ids_in_gold_200": 100
+  },
+  "ablation_dense_only.json": {
+    "count": 100,
+    "unique_ids": 100,
+    "first_id": "Q001",
+    "last_id": "Q100",
+    "duplicate_ids": 0,
+    "missing_ids_in_gold_200": 100
+  },
+  "full_evaluation_results.json": {
+    "count": 200,
+    "unique_ids": 200,
+    "first_id": "Q001",
+    "last_id": "Q200",
+    "duplicate_ids": 0,
+    "missing_ids_in_gold_200": 0
+  }
+}

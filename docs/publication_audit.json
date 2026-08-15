@@ -1,0 +1,42 @@
+[
+  {
+    "file": "run_ablations.py",
+    "claim": "Ablation sweep dataset size hardcoding",
+    "source": "[:100] slice in main()",
+    "status": "consistent",
+    "severity": "critical",
+    "action": "Refactored to accept --num-questions flag (default 200) for configurable ablation scaling."
+  },
+  {
+    "file": "evaluation/p_test_evaluator.py",
+    "claim": "Statistical metric pairing",
+    "source": "Positional array slicing",
+    "status": "consistent",
+    "severity": "critical",
+    "action": "Implemented align_by_question_id() to enforce strict question ID pairing and Holm-Bonferroni correction."
+  },
+  {
+    "file": "configs/retrieval.yaml",
+    "claim": "Chunk size configuration",
+    "source": "Legacy parent/child chunk parameters",
+    "status": "consistent",
+    "severity": "medium",
+    "action": "Updated retrieval.yaml to chunk_size: 500, chunk_overlap: 100 matching research documentation."
+  },
+  {
+    "file": ".env.example",
+    "claim": "Ollama model identifier",
+    "source": "qwen2.5:3b-instruct vs llama3.2:latest",
+    "status": "consistent",
+    "severity": "medium",
+    "action": "Updated .env.example to specify OLLAMA_MODEL=llama3.2:latest."
+  },
+  {
+    "file": "README.md",
+    "claim": "LLM Generation Determinism",
+    "source": "end-to-end, deterministic claim",
+    "status": "consistent",
+    "severity": "low",
+    "action": "Qualified determinism claim to 'reproducible under a fixed software, model, hardware, and inference configuration'."
+  }
+]
