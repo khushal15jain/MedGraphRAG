@@ -402,7 +402,7 @@ The current README/repository documentation describes:
 ```text
 Gold questions: 200
 Ablation conditions: 5
-Total ablation evaluations: 1000
+Total ablation evaluations: 500
 ```
 
 The five conditions are:
