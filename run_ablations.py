@@ -120,9 +120,15 @@ def load_components():
     }
 
 def main():
+    parser = argparse.ArgumentParser(description="Run MedGraphRAG Ablation Suite")
+    parser.add_argument("--num-questions", type=int, default=200, help="Number of questions to evaluate (default: 200)")
+    args = parser.parse_args()
+
     print("Loading dataset...")
     with open("data/qa_dataset.json", "r") as f:
-        qa_items = json.load(f)
+        qa_items = json.load(f)[:args.num_questions]
+
+    print(f"Loaded {len(qa_items)} questions for ablation evaluations.")
 
     print("Loading pipeline components...")
     components = load_components()
@@ -154,7 +160,7 @@ def main():
                     for ev in prev_data.get("evaluations", []):
                         evaluated_ids.add(ev["id"])
                         rows.append(ev)
-                print(f"Resuming {mode_name}: {len(rows)}/200 already evaluated.")
+                print(f"Resuming {mode_name}: {len(rows)}/{len(qa_items)} already evaluated.")
             except Exception:
                 pass
 
