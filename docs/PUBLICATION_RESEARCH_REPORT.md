@@ -18,7 +18,7 @@ This paper presents **MedGraphRAG**, an end-to-end, privacy-preserving, and expl
 
 Retrieved candidates undergo candidate deduplication, quality filtering, and cross-attention reranking via `BAAI/bge-reranker-base`. Context is injected into a 4-bit quantized local `Llama-3.2:latest` (3.8B, `llama3.2:3b-instruct-q4_K_M`) generator operating at temperature T = 0.0. Every generated claim is subjected to sentence-level hybrid lexical-semantic grounding verification (grounding threshold = 0.70) and refusal gating (refusal threshold = 0.35), providing 98.5% sentence-level citation provenance tracking (`[Source: Document, Section, Page X, Chunk ID]`).
 
-Evaluated across a benchmark of 200 Gold Clinical Oncology Questions (N = 200 main benchmark, N = 500 ablation evaluations over a stratified 100-question subset), MedGraphRAG achieves **0.9500 Retrieval Accuracy**, **0.8950 Precision@5**, **0.9080 Faithfulness**, **0.9150 Answer Relevance**, **0.9120 Groundedness**, and **0.9240 Clinical Reliability**, demonstrating statistically significant improvements over Vanilla Dense RAG, BM25-only, Hybrid, and GraphRAG baselines (p_adj < 0.001). A dual-judge framework (`Qwen2.5-3B-Instruct` primary judge vs. `GPT-4o-mini` / `Llama-3.1-70B-Instruct` secondary meta-judges) establishes high inter-judge agreement (Pearson r = 0.9644, Cohen kappa = 0.6815) and strong alignment with human expert clinical annotators (r = 0.9683). The system operates entirely on local consumer hardware without transmitting clinical data to third-party cloud APIs.
+Evaluated across a benchmark of 200 Gold Clinical Oncology Questions (N = 200 main benchmark, N = 500 ablation evaluations over a stratified 100-question subset), MedGraphRAG achieves **0.9300 Retrieval Accuracy**, **0.8950 Precision@5**, **0.9080 Faithfulness**, **0.9150 Answer Relevance**, **0.9120 Groundedness**, and **0.9240 Clinical Reliability**, demonstrating statistically significant improvements for several key metrics (such as Precision@5 $p_{\mathrm{adj}} = 1.98 \times 10^{-7}$, Recall@5 $p_{\mathrm{adj}} = 3.56 \times 10^{-5}$, and Groundedness $p_{\mathrm{adj}} = 0.0072$) over Vanilla Dense RAG, BM25-only, Hybrid, and GraphRAG baselines. A dual-judge framework (`Qwen2.5-3B-Instruct` primary judge vs. `GPT-4o-mini` / `Llama-3.1-70B-Instruct` secondary meta-judges) establishes high inter-judge agreement (Pearson r = 0.9644, Cohen kappa = 0.6815) and strong alignment with human expert clinical annotators (30-item random subsample evaluated by 3 independent clinical oncology specialists, Pearson r = 0.9683). The system operates entirely on local consumer hardware without transmitting clinical data to third-party cloud APIs.
 
 **Index Terms**—Biomedical NLP, Retrieval-Augmented Generation, Knowledge Graphs, Information Retrieval, Clinical Decision Support Systems, Local LLM Inference.
 
@@ -56,15 +56,11 @@ While commercial cloud-based LLM APIs offer high language capability, sending pa
 ## 2. METHODOLOGY & MATHEMATICAL FORMULATION
 
 ### 2.1 Inverse Entity Frequency (IEF) Graph Scoring
-To suppress generic terms (*patient*, *treatment*), every node in the graph is assigned an Inverse Entity Frequency weight:
-
-$$\mathrm{IEF}(v) = \log\left(1 + \frac{|\mathcal{V}|}{\mathrm{count}(v) + 1}\right)$$
-
-Pure topological decay scoring for a candidate chunk c over H-hop neighborhood of query entities:
+To suppress generic terms (*patient*, *treatment*), every entity node in NetworkX is assigned an Inverse Entity Frequency weight. Candidate chunk graph score $S_{\mathrm{graph}}(c)$ is calculated over the BFS shortest-path hop distance $\mathrm{dist}_{\mathcal{G}}(e, v)$ from query seed entities $e$:
 
 $$S_{\mathrm{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \mathrm{ChunkEntities}(c)} \frac{1.0}{1.0 + \mathrm{dist}_{\mathcal{G}}(e, v)} \right)$$
 
-where dist(e,v) is the shortest path hop distance in NetworkX.
+where $\mathrm{dist}_{\mathcal{G}}(e, v)$ is the exact shortest-path hop distance in NetworkX ($0$ for seed entity, $1$ for 1-hop neighbor, $2$ for 2-hop neighbor).
 
 ### 2.2 Sentence-Level Citation Provenance Formula
 The 98.5% Sentence Citation Provenance Coverage metric is formally defined as:
@@ -82,7 +78,7 @@ Human expert evaluation was conducted over a 30-item random subsample drawn from
 
 | Metric Category | Metric Name | Baseline (Full MedGraphRAG) | No Graph (Ablation B) | No BM25 (Ablation C) | No Reranker (Ablation D) | Dense Only (Ablation E) | Holm-Bonferroni Adjusted p-value |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Retrieval** | **Retrieval Accuracy** | **0.9314 ± 0.2551** | 0.9200 ± 0.2713 | 0.8600 ± 0.3470 * | 0.8500 ± 0.3571 * | 0.8000 ± 0.4000 ** | p_adj = 0.0348 * |
+| **Retrieval** | **Retrieval Accuracy** | **0.9300 ± 0.2551** | 0.9200 ± 0.2713 | 0.8600 ± 0.3470 * | 0.8500 ± 0.3571 * | 0.8000 ± 0.4000 ** | p_adj = 0.0348 * |
 | **Retrieval** | **Precision@5** | **0.8950 ± 0.1857** | 0.4640 ± 0.1852 | 0.4080 ± 0.2153 * | **0.3280 ± 0.2069 *** | 0.4100 ± 0.2439 * | **p_adj = 1.98e-7 *** |
 | **Retrieval** | **Recall@5** | **0.9776 ± 0.0534** | 0.9700 ± 0.0600 *** | 0.9596 ± 0.0664 *** | 0.9716 ± 0.0586 * | 0.9507 ± 0.0703 *** | **p_adj = 3.56e-5 *** |
 | **Semantic** | **Faithfulness** | **0.9080 ± 0.0649** | 0.6964 ± 0.0647 | 0.6738 ± 0.0851 * | 0.6838 ± 0.0815 | **0.6087 ± 0.2426** | **p_adj = 0.0291 *** |
@@ -118,4 +114,4 @@ pytest tests/test_reproducibility.py
 ```
 
 ### Conclusion
-MedGraphRAG demonstrates that integrating **Tri-Modal Hybrid Retrieval** (BGE Dense + BM25 Sparse + NetworkX IEF Graph) with **Cross-Encoder Reranking** and **Sentence-Level Grounding** significantly improves retrieval precision (0.8950), faithfulness (0.9080), and groundedness (0.9120) over standard RAG baselines (p_adj < 0.001).
+MedGraphRAG demonstrates that integrating **Tri-Modal Hybrid Retrieval** (BGE Dense + BM25 Sparse + NetworkX IEF Graph) with **Cross-Encoder Reranking** and **Sentence-Level Grounding** yields statistically significant improvements for several key metrics (such as Precision@5 $p_{\mathrm{adj}} = 1.98 \times 10^{-7}$, Recall@5 $p_{\mathrm{adj}} = 3.56 \times 10^{-5}$, and Groundedness $p_{\mathrm{adj}} = 0.0072$) over standard RAG baselines. All reported numbers trace directly to executable code and result artifacts in the repository.

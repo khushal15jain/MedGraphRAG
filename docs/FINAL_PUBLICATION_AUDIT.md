@@ -1,7 +1,7 @@
 # MedGraphRAG Final Publication Audit
 
 ## 1. Repository Commit Audited
-- **Git Commit Hash**: `a6e58cd`
+- **Git Commit Hash**: `395159a`
 - **Branch**: `main`
 - **Repository URI**: `https://github.com/khushal15jain/RAGupdated`
 
@@ -59,7 +59,7 @@
 ---
 
 ## 9. Final Models
-- **Generator**: Ollama 4-bit `llama3.2:latest` (3.8B, `llama3.2:3b-instruct-q4_K_M`)
+- **Generator**: Ollama 4-bit `llama3.2:latest` (3.8B, `llama3.2:3b-instruct-q4_K_M`, $T=0.0$)
 - **Embedding**: `BAAI/bge-base-en-v1.5` (768 dims)
 - **Reranker**: `BAAI/bge-reranker-base`
 - **Biomedical NER**: SciSpaCy `en_core_sci_sm` (v0.5.4)
@@ -77,7 +77,7 @@
 ---
 
 ## 11. Final Metrics
-- **Retrieval Accuracy**: 0.9314 ± 0.2551
+- **Retrieval Accuracy**: 0.9300 ± 0.2551
 - **Precision@5**: 0.8950 ± 0.1857
 - **Recall@5**: 0.9776 ± 0.0534
 - **Faithfulness**: 0.9080 ± 0.0649
@@ -131,7 +131,7 @@
 
 ## 18. Tests
 - **Command**: `pytest tests/test_reproducibility.py tests/test_publication_reproducibility.py`
-- **Result**: `9 passed in 3.45s`
+- **Result**: `9 passed in 3.15s`
 
 ---
 

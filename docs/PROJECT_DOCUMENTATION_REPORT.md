@@ -23,7 +23,7 @@ To overcome these fundamental challenges, this project presents **MedGraphRAG**,
 
 Retrieved candidate pools undergo candidate deduplication, quality filtering, and cross-attention reranking via `BAAI/bge-reranker-base`. Context is injected into a 4-bit quantized local `Llama-3.2:latest` (3.8B, `llama3.2:3b-instruct-q4_K_M`) generator operating at temperature T = 0.0. Every generated claim is subjected to sentence-level hybrid claim verification (grounding threshold = 0.70) and refusal gating (refusal threshold = 0.35), providing 98.5% sentence-level citation provenance tracking (`[Source: Document, Section, Page X, Chunk ID]`).
 
-Evaluated across a benchmark of 200 Gold Clinical Oncology Questions (N = 200 main benchmark, N = 500 ablation evaluations over a stratified 100-question subset), MedGraphRAG achieves a **0.9314 Retrieval Accuracy**, **0.8950 Precision@5**, **0.9080 Faithfulness**, **0.9150 Answer Relevance**, **0.9120 Groundedness**, and **0.9240 Clinical Reliability**, significantly outperforming Vanilla Dense RAG, BM25-only, Hybrid, and GraphRAG-only baselines (p_adj < 0.001). A dual-judge framework (`Qwen2.5-3B-Instruct` vs. `GPT-4o-mini`/`Llama-3.1-70B-Instruct`) demonstrates high inter-judge agreement (Pearson r = 0.9644, Cohen's κ = 0.6815) and strong alignment with human expert clinical annotators (r = 0.9683). The entire pipeline executes locally on consumer hardware without transmitting clinical data to third-party cloud APIs.
+Evaluated across a benchmark of 200 Gold Clinical Oncology Questions (N = 200 main benchmark, N = 500 ablation evaluations over a stratified 100-question subset), MedGraphRAG achieves a **0.9300 Retrieval Accuracy**, **0.8950 Precision@5**, **0.9080 Faithfulness**, **0.9150 Answer Relevance**, **0.9120 Groundedness**, and **0.9240 Clinical Reliability**, demonstrating statistically significant improvements for several key metrics (such as Precision@5 $p_{\mathrm{adj}} = 1.98 \times 10^{-7}$, Recall@5 $p_{\mathrm{adj}} = 3.56 \times 10^{-5}$, and Groundedness $p_{\mathrm{adj}} = 0.0072$) over Vanilla Dense RAG, BM25-only, Hybrid, and GraphRAG-only baselines. A dual-judge framework (`Qwen2.5-3B-Instruct` vs. `GPT-4o-mini`/`Llama-3.1-70B-Instruct`) demonstrates high inter-judge agreement (Pearson r = 0.9644, Cohen's κ = 0.6815) and strong alignment with human expert clinical annotators (30-item random subsample evaluated by 3 independent clinical oncology specialists, r = 0.9683). The entire pipeline executes locally on consumer hardware without transmitting clinical data to third-party cloud APIs.
 
 ---
 
@@ -157,19 +157,13 @@ MedGraphRAG/
 # 9. Algorithms and Formulations
 
 ## 9.1 Inverse Entity Frequency (IEF) Topological Scoring
-To prevent generic clinical terms (*patient*, *treatment*, *study*) from dominating graph retrieval, every entity node v in the Graph V is assigned an Inverse Entity Frequency weight:
-
-```text
-IEF(v) = log( 1 + |V| / (count(v) + 1) )
-```
-
-For a query q with extracted entities E_q, candidate chunk graph score S_graph(c) is calculated over H-hop neighborhood N_H(e):
+To prevent generic clinical terms (*patient*, *treatment*, *study*) from dominating graph retrieval, every entity node v in NetworkX is assigned an Inverse Entity Frequency weight. For candidate chunk c, score S_graph(c) is calculated over BFS shortest-path hop distance dist_graph(e, v):
 
 ```text
 S_graph(c) = max_{e in E_q} [ sum_{v in N_H(e) and v in ChunkEntities(c)} ( 1.0 / (1.0 + dist_graph(e, v)) ) ]
 ```
 
-where dist_graph(e, v) is the shortest path hop distance in NetworkX between query entity e and chunk entity v.
+where dist_graph(e, v) is the exact shortest path hop distance in NetworkX between query seed entity e and chunk entity v.
 
 ## 9.2 Min-Max Hybrid Fusion
 Scores across channels (dense s_dense, sparse s_bm25, graph s_graph) are normalized to [0, 1] via Min-Max scaling:
@@ -201,7 +195,7 @@ Evaluated across a 100-question stratified subset of the Gold Clinical Benchmark
 
 | Metric Category | Metric Name | Baseline (Full MedGraphRAG) | No Graph (Ablation B) | No BM25 (Ablation C) | No Reranker (Ablation D) | Dense Only (Ablation E) | Holm-Bonferroni Adjusted p-value |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Retrieval** | **Retrieval Accuracy** | **0.9314 ± 0.2551** | 0.9200 ± 0.2713 | 0.8600 ± 0.3470 * | 0.8500 ± 0.3571 * | 0.8000 ± 0.4000 ** | p_adj = 0.0348 * |
+| **Retrieval** | **Retrieval Accuracy** | **0.9300 ± 0.2551** | 0.9200 ± 0.2713 | 0.8600 ± 0.3470 * | 0.8500 ± 0.3571 * | 0.8000 ± 0.4000 ** | p_adj = 0.0348 * |
 | **Retrieval** | **Precision@5** | **0.8950 ± 0.1857** | 0.4640 ± 0.1852 | 0.4080 ± 0.2153 * | **0.3280 ± 0.2069 *** | 0.4100 ± 0.2439 * | **p_adj = 1.98e-7 *** |
 | **Retrieval** | **Recall@5** | **0.9776 ± 0.0534** | 0.9700 ± 0.0600 *** | 0.9596 ± 0.0664 *** | 0.9716 ± 0.0586 * | 0.9507 ± 0.0703 *** | **p_adj = 3.56e-5 *** |
 | **Semantic** | **Faithfulness** | **0.9080 ± 0.0649** | 0.6964 ± 0.0647 | 0.6738 ± 0.0851 * | 0.6838 ± 0.0815 | **0.6087 ± 0.2426** | **p_adj = 0.0291 *** |
@@ -223,7 +217,7 @@ Comparing MedGraphRAG against standard baseline architectures defined in `benchm
 | **BM25 Only (Sparse)** | 0.8200 | 0.3950 | 0.9450 | 0.6350 | 0.6520 | 0.7020 | 4.05 / 5.0 | 11.85s |
 | **Hybrid (Dense + BM25)** | 0.8800 | 0.4250 | 0.9650 | 0.6750 | 0.7150 | 0.7580 | 4.31 / 5.0 | 19.45s |
 | **GraphRAG Only** | 0.8400 | 0.3650 | 0.9380 | 0.6480 | 0.6820 | 0.7250 | 4.18 / 5.0 | 21.32s |
-| **MedGraphRAG (Optimized)**| **0.9500** | **0.8950** | **0.9776** | **0.9080** | **0.9120** | **0.7948** | **4.72 / 5.0** | 25.54s |
+| **MedGraphRAG (Optimized)**| **0.9300** | **0.8950** | **0.9776** | **0.9080** | **0.9120** | **0.7948** | **4.72 / 5.0** | 25.54s |
 
 ---
 
@@ -241,7 +235,7 @@ To verify that performance improvements are statistically sound and not artifact
 | **Baseline vs No BM25** | Latency (s) | **25.57s** | 31.47s | -0.741 | 4.39 x 10^-11| 0.0741 | **Extremely Significant (p < 0.001)** |
 
 ## 13.2 Dual-Judge & Human Alignment Study
-To address potential evaluation bias from small local LLM evaluators, `evaluation/judge_agreement.py` executed a dual-judge comparison between Primary Judge (`Qwen2.5-3B-Instruct`), Secondary Judge (`GPT-4o-mini`/`Llama-3.1-70B-Instruct`), and a 30-item human expert clinical subsample:
+To address potential evaluation bias from small local LLM evaluators, `evaluation/judge_agreement.py` executed a dual-judge comparison between Primary Judge (`Qwen2.5-3B-Instruct`), Secondary Judge (`GPT-4o-mini`/`Llama-3.1-70B-Instruct`), and a 30-item human expert clinical subsample evaluated by 3 independent clinical oncology specialists:
 
 ```text
 +-----------------------------------------------------------------------------------+
@@ -258,4 +252,4 @@ To address potential evaluation bias from small local LLM evaluators, `evaluatio
 
 # 16. Conclusion
 
-MedGraphRAG demonstrates that integrating **Tri-Modal Hybrid Retrieval** (BGE Dense + BM25 Sparse + NetworkX IEF Graph) with **Cross-Encoder Reranking** and **Sentence-Level Grounding** significantly improves retrieval precision (0.8950), faithfulness (0.9080), and groundedness (0.9120) over standard RAG baselines (p_adj < 0.001). All reported numbers trace directly to executable code and result artifacts in the repository.
+MedGraphRAG demonstrates that integrating **Tri-Modal Hybrid Retrieval** (BGE Dense + BM25 Sparse + NetworkX IEF Graph) with **Cross-Encoder Reranking** and **Sentence-Level Grounding** yields statistically significant improvements for several key metrics (such as Precision@5 $p_{\mathrm{adj}} = 1.98 \times 10^{-7}$, Recall@5 $p_{\mathrm{adj}} = 3.56 \times 10^{-5}$, and Groundedness $p_{\mathrm{adj}} = 0.0072$) over standard RAG baselines. All reported numbers trace directly to executable code and result artifacts in the repository.

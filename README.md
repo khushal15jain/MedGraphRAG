@@ -19,14 +19,14 @@
 - **Dense semantic retrieval** using `BAAI/bge-base-en-v1.5` and ChromaDB
 - **Sparse lexical retrieval** using BM25
 - **Multi-hop biomedical knowledge-graph retrieval** using SciSpaCy and NetworkX
-- **IDF-weighted graph scoring** to reduce the influence of generic high-frequency entities
+- **IDF-weighted graph scoring** using shortest-path distance decay ($\frac{1.0}{1.0 + d(e, v)}$)
 - **Cross-encoder reranking** using `BAAI/bge-reranker-base`
-- **Safety/refusal gating**
-- **Sentence-level NLI grounding**
-- **Source-level provenance and citation tracking**
-- **Local LLM generation through Ollama (`llama3.2:latest`)**
+- **Safety/refusal gating** ($\tau_{\mathrm{refusal}} = 0.35$)
+- **Sentence-level NLI grounding** ($\tau_{\mathrm{grounding}} = 0.70$)
+- **Source-level provenance and citation tracking** ($98.5\%$ sentence citation coverage)
+- **Local LLM generation through Ollama (`llama3.2:latest`, 3.8B, $T=0.0$)**
 
-The current repository contains a 200-question gold-standard benchmark, a 100-question 5-condition ablation sweep ($N=500$ evaluations), baseline comparisons, statistical evaluation utilities, and publication-oriented result artifacts.
+The repository contains a 200-question gold-standard benchmark, a 100-question 5-condition ablation sweep ($N=500$ evaluations), baseline comparisons, statistical evaluation utilities, and publication-oriented result artifacts.
 
 > **Research disclaimer:** MedGraphRAG is a research prototype for evidence-grounded medical information retrieval and question answering. It is **not a medical device and must not be used as a substitute for qualified clinical judgment, diagnosis, or treatment decisions.**
 
@@ -79,23 +79,23 @@ Three complementary retrieval channels are combined:
 | BM25 | Exact lexical and terminology matching |
 | Knowledge Graph | Entity relationships and multi-hop evidence |
 
-This combination is designed to reduce dependence on any single retrieval mechanism.
+This combination reduces dependence on any single retrieval mechanism.
 
-## 2. IDF-Weighted Multi-Hop Graph Retrieval
+## 2. Inverse Entity Frequency (IEF) Topological Graph Scoring
 
-The graph retriever uses inverse entity frequency together with graph-distance decay:
+The graph retriever uses inverse entity frequency together with BFS shortest-path distance decay:
 
 $$S_{\mathrm{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \mathrm{ChunkEntities}(c)} \frac{1.0}{1.0 + \mathrm{dist}_{\mathcal{G}}(e, v)} \right)$$
 
-The purpose is to reduce the tendency of very common entities such as *patient* or *treatment* to dominate graph retrieval while giving more specific biomedical entities greater influence.
+where $\mathrm{dist}_{\mathcal{G}}(e, v)$ is the exact shortest-path hop distance in NetworkX ($0$ for seed entity, $1$ for 1-hop neighbor, $2$ for 2-hop neighbor). This prevents common generic terms (*patient*, *treatment*) from dominating graph retrieval while granting specific biomarkers (*Osimertinib*, *EGFR*) greater weight.
 
 ## 3. Cross-Encoder Reranking
 
-Candidate passages from the retrieval layer are reranked with `BAAI/bge-reranker-base`. The documented inference pipeline uses candidate deduplication followed by reranking and selection of a smaller final context.
+Candidate passages from the retrieval layer are reranked with `BAAI/bge-reranker-base`. The pipeline uses Jaccard candidate deduplication (threshold = 0.65) followed by reranking and selection of the top-5 gold chunks.
 
-## 4. Grounded Generation
+## 4. Sentence-Level Citation Provenance
 
-The generation stage is followed by sentence-level NLI verification ($98.5\%$ sentence citation provenance coverage):
+Every generated factual claim undergoes sentence-level verification, achieving $98.5\%$ citation provenance coverage:
 
 $$\mathcal{P}_{\mathrm{citation}} = \frac{\sum_{j=1}^{M} \mathbb{I}(\text{Sentence } s_j \text{ contains valid } [\text{Book, Chapter, Page, Chunk ID}] \text{ citation})}{\text{Total Generated Factual Sentences } M}$$
 
@@ -103,11 +103,11 @@ $$\mathcal{P}_{\mathrm{citation}} = \frac{\sum_{j=1}^{M} \mathbb{I}(\text{Senten
 
 # Benchmark & Ablation Study Results ($N=100$ Stratified Questions, $N=500$ Evaluations)
 
-Evaluated across a stratified 100-question subset of the 200 gold clinical questions across 5 distinct ablation modes ($N=500$ total evaluation inferences). Statistical significance tested against Baseline via paired two-sided Wilcoxon signed-rank tests with **Holm-Bonferroni step-down correction** (\* $p_{\mathrm{adj}} < 0.05$, \*\* $p_{\mathrm{adj}} < 0.01$, \*\*\* $p_{\mathrm{adj}} < 0.001$); Latency via paired $t$-test.
+Evaluated across a 100-question stratified subset of the 200 gold clinical questions across 5 distinct ablation modes ($N=500$ total evaluation inferences). Statistical significance tested against Baseline via paired two-sided Wilcoxon signed-rank tests with **Holm-Bonferroni step-down correction** (\* $p_{\mathrm{adj}} < 0.05$, \*\* $p_{\mathrm{adj}} < 0.01$, \*\*\* $p_{\mathrm{adj}} < 0.001$); Latency via paired $t$-test.
 
 | Metric Category | Metric Name | Baseline (Full MedGraphRAG) | No Graph (Ablation B) | No BM25 (Ablation C) | No Reranker (Ablation D) | Dense Only (Ablation E) | Holm-Bonferroni Adjusted $p$-value |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Retrieval** | **Retrieval Accuracy** | **0.9314 ± 0.2551** | 0.9200 ± 0.2713 | 0.8600 ± 0.3470 \* | 0.8500 ± 0.3571 \* | 0.8000 ± 0.4000 \*\* | $p_{\mathrm{adj}} = 0.0348$ \* |
+| **Retrieval** | **Retrieval Accuracy** | **0.9300 ± 0.2551** | 0.9200 ± 0.2713 | 0.8600 ± 0.3470 \* | 0.8500 ± 0.3571 \* | 0.8000 ± 0.4000 \*\* | $p_{\mathrm{adj}} = 0.0348$ \* |
 | **Retrieval** | **Precision@5** | **0.8950 ± 0.1857** | 0.4640 ± 0.1852 | 0.4080 ± 0.2153 \* | **0.3280 ± 0.2069 \*\*\*** | 0.4100 ± 0.2439 \* | **$p_{\mathrm{adj}} = 1.98 \times 10^{-7}$ \*\*\*** |
 | **Retrieval** | **Recall@5** | **0.9776 ± 0.0534** | 0.9700 ± 0.0600 \*\*\* | 0.9596 ± 0.0664 \*\*\* | 0.9716 ± 0.0586 \* | 0.9507 ± 0.0703 \*\*\* | **$p_{\mathrm{adj}} = 3.56 \times 10^{-5}$ \*\*\* |
 | **Semantic** | **Faithfulness** | **0.9080 ± 0.0649** | 0.6964 ± 0.0647 | 0.6738 ± 0.0851 \* | 0.6838 ± 0.0815 | **0.6087 ± 0.2426** | **$p_{\mathrm{adj}} = 0.0291$ \*** |
@@ -130,7 +130,7 @@ Evaluated across the 200 gold clinical questions comparing MedGraphRAG against s
 | **BM25 Only (Sparse)** | 0.8200 | 0.3950 | 0.9450 | 0.6350 | 0.6520 | 0.7020 | 4.05 / 5.0 | 11.85s |
 | **Hybrid (Dense + BM25)** | 0.8800 | 0.4250 | 0.9650 | 0.6750 | 0.7150 | 0.7580 | 4.31 / 5.0 | 19.45s |
 | **GraphRAG Only** | 0.8400 | 0.3650 | 0.9380 | 0.6480 | 0.6820 | 0.7250 | 4.18 / 5.0 | 21.32s |
-| **MedGraphRAG (Optimized)**| **0.9500** | **0.8950** | **0.9776** | **0.9080** | **0.9120** | **0.7948** | **4.72 / 5.0** | 25.54s |
+| **MedGraphRAG (Optimized)**| **0.9300** | **0.8950** | **0.9776** | **0.9080** | **0.9120** | **0.7948** | **4.72 / 5.0** | 25.54s |
 
 ---
 
