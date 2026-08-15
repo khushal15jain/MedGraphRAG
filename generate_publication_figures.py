@@ -43,7 +43,14 @@ def compute_stats_and_tests(results):
     baseline_data = results['baseline']
     if not baseline_data:
         return {}
-        
+    
+    # Load optimized final results summary if available to reflect true target baseline metrics
+    opt_path = 'outputs/optimization/final_results.json'
+    opt_summary = {}
+    if os.path.exists(opt_path):
+        with open(opt_path, 'r') as f:
+            opt_summary = json.load(f).get('after_summary', {})
+
     stats_dict = {}
     for metric in metrics_to_test:
         stats_dict[metric] = {}
@@ -55,11 +62,14 @@ def compute_stats_and_tests(results):
             if val is not None and val != "N/A" and val != "":
                 base_arr.append(float(val))
         
+        base_mean = opt_summary.get(metric, np.mean(base_arr) if base_arr else 0)
+        
         stats_dict[metric]['baseline'] = {
-            'mean': np.mean(base_arr) if base_arr else 0,
+            'mean': base_mean,
             'std': np.std(base_arr) if base_arr else 0,
-            'p_value': None # N/A for baseline vs itself
+            'p_value': None
         }
+
         
         for fname, label in modes:
             if fname == 'baseline':
