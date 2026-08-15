@@ -1,7 +1,9 @@
 """evaluation/generate_pdf_report.py
 -----------------------------------
-Builds publication-grade IEEE-style PDF document PUBLICATION_RESEARCH_REPORT.pdf
-from PUBLICATION_RESEARCH_REPORT.md using ReportLab.
+Builds publication-grade IEEE-style PDF documents from Markdown reports using ReportLab.
+Generates:
+  - PROJECT_DOCUMENTATION.pdf from docs/PROJECT_DOCUMENTATION.md
+  - ABLATION_STUDY_REPORT.pdf from docs/ABLATION_STUDY_REPORT.md
 """
 
 import os
@@ -11,9 +13,8 @@ from pathlib import Path
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, HRFlowable, KeepTogether
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, HRFlowable
 )
 from reportlab.pdfgen import canvas
 
@@ -39,17 +40,17 @@ class IEEEArticleCanvas(canvas.Canvas):
 
     def draw_header_footer(self, page_count):
         if self._pageNumber == 1:
-            return  # Suppress running header/footer on title page
+            return  # Suppress running header/footer on cover/title page
 
         self.saveState()
         self.setFont("Helvetica-Bold", 8)
         self.setFillColor(colors.HexColor("#0F172A"))  # Slate 900
 
         # Running Header
-        self.drawString(54, 752, "MedGraphRAG: IEEE-Style Clinical GraphRAG Research Report")
+        self.drawString(54, 752, "MedGraphRAG: Medical Oncology Graph-Augmented RAG Documentation")
         self.setFont("Helvetica", 8)
         self.setFillColor(colors.HexColor("#64748B"))  # Slate 500
-        self.drawRightString(612 - 54, 752, "Academic & Technical Research Paper")
+        self.drawRightString(612 - 54, 752, "Technical Documentation & Empirical Report")
 
         self.setStrokeColor(colors.HexColor("#CBD5E1"))  # Slate 300
         self.setLineWidth(0.75)
@@ -57,7 +58,7 @@ class IEEEArticleCanvas(canvas.Canvas):
 
         # Running Footer
         self.line(54, 48, 612 - 54, 48)
-        self.drawString(54, 34, "Confidential / Research & Engineering Systems Architecture")
+        self.drawString(54, 34, "Research Systems Architecture & Empirical Verification")
         page_str = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(612 - 54, 34, page_str)
         self.restoreState()
@@ -68,7 +69,10 @@ def format_inline_markdown(text: str) -> str:
     # Escape XML entities first
     text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-    # Bold and Italics
+    # Handle escaped asterisks or asterisks attached to backslashes
+    text = text.replace("\\*", "*")
+
+    # Bold and Italics (proper tag nesting)
     text = re.sub(r"\*\*\*(.*?)\*\*\*", r"<b><i>\1</i></b>", text)
     text = re.sub(r"\*\*(.*?)\*\*", r"<b>\1</b>", text)
     text = re.sub(r"\*(.*?)\*", r"<i>\1</i>", text)
@@ -90,8 +94,10 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
     raw_text = md_file.read_text(encoding="utf-8")
     lines = raw_text.splitlines()
 
-    # Primary PDF Path
     output_pdf = pdf_paths[0]
+    out_dir = os.path.dirname(output_pdf)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
 
     doc = SimpleDocTemplate(
         output_pdf,
@@ -105,11 +111,11 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
     styles = getSampleStyleSheet()
 
     # Premium Color Palette
-    PRIMARY = colors.HexColor("#0F172A")    # Slate 900 (Primary Headers)
-    SECONDARY = colors.HexColor("#0284C7")  # Sky 600 (Subheaders & Accents)
-    TEXT_DARK = colors.HexColor("#334155")  # Slate 700 (Body Text)
-    BG_LIGHT = colors.HexColor("#F8FAFC")   # Slate 50 (Table Alt Rows)
-    CODE_BG = colors.HexColor("#F1F5F9")    # Slate 100 (Code Blocks)
+    PRIMARY = colors.HexColor("#0F172A")    # Slate 900
+    SECONDARY = colors.HexColor("#0284C7")  # Sky 600
+    TEXT_DARK = colors.HexColor("#334155")  # Slate 700
+    BG_LIGHT = colors.HexColor("#F8FAFC")   # Slate 50
+    CODE_BG = colors.HexColor("#F1F5F9")    # Slate 100
     BORDER = colors.HexColor("#E2E8F0")     # Slate 200
 
     # Custom Typography Styles
@@ -117,8 +123,8 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
         "CoverTitle",
         parent=styles["Normal"],
         fontName="Helvetica-Bold",
-        fontSize=22,
-        leading=26,
+        fontSize=20,
+        leading=24,
         textColor=PRIMARY,
         spaceAfter=12
     )
@@ -127,11 +133,11 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
         "H1_Custom",
         parent=styles["Normal"],
         fontName="Helvetica-Bold",
-        fontSize=14,
-        leading=18,
+        fontSize=13,
+        leading=17,
         textColor=PRIMARY,
-        spaceBefore=16,
-        spaceAfter=8,
+        spaceBefore=14,
+        spaceAfter=6,
         keepWithNext=True
     )
 
@@ -139,11 +145,11 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
         "H2_Custom",
         parent=styles["Normal"],
         fontName="Helvetica-Bold",
-        fontSize=11,
-        leading=15,
+        fontSize=10.5,
+        leading=14.5,
         textColor=SECONDARY,
-        spaceBefore=12,
-        spaceAfter=6,
+        spaceBefore=10,
+        spaceAfter=5,
         keepWithNext=True
     )
 
@@ -151,10 +157,10 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
         "H3_Custom",
         parent=styles["Normal"],
         fontName="Helvetica-Bold",
-        fontSize=9.5,
-        leading=13.5,
+        fontSize=9.0,
+        leading=13.0,
         textColor=TEXT_DARK,
-        spaceBefore=10,
+        spaceBefore=8,
         spaceAfter=4,
         keepWithNext=True
     )
@@ -164,7 +170,7 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
         parent=styles["Normal"],
         fontName="Helvetica",
         fontSize=8.5,
-        leading=12.5,
+        leading=12.0,
         textColor=TEXT_DARK,
         spaceAfter=5
     )
@@ -187,9 +193,9 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
         backColor=CODE_BG,
         borderColor=BORDER,
         borderWidth=0.5,
-        borderPadding=6,
-        spaceBefore=6,
-        spaceAfter=8
+        borderPadding=5,
+        spaceBefore=5,
+        spaceAfter=7
     )
 
     style_th = ParagraphStyle(
@@ -218,7 +224,6 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
     table_buffer = []
 
     for line in lines:
-        # Code Block Boundaries
         if line.strip().startswith("```"):
             if in_code:
                 code_raw = "\n".join(code_buffer)
@@ -235,11 +240,9 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
             code_buffer.append(line)
             continue
 
-        # Table Separator Filter
         if "|" in line and "-|-" in line:
             continue
 
-        # Table Rows Parsing
         if "|" in line:
             cells = [format_inline_markdown(c.strip()) for c in line.split("|")[1:-1]]
             if cells and any(cells):
@@ -250,7 +253,6 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
                     table_buffer.append(cells)
             continue
         elif in_table:
-            # Build Table
             if table_buffer:
                 table_matrix = []
                 for row_idx, r in enumerate(table_buffer):
@@ -261,8 +263,7 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
                     table_matrix.append(formatted_r)
 
                 cols = len(table_buffer[0])
-                total_w = 504.0  # 612 - 108 margins
-                col_w = total_w / cols
+                col_w = 504.0 / cols
 
                 t = Table(table_matrix, colWidths=[col_w] * cols)
                 t.setStyle(TableStyle([
@@ -284,10 +285,9 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
         if not line_str:
             continue
 
-        # Headings Processing
         if line_str.startswith("# "):
             h_text = format_inline_markdown(line_str[2:])
-            if not story:  # Cover Title Page
+            if not story:
                 story.append(Spacer(1, 10))
                 story.append(Paragraph(h_text, style_cover_title))
                 story.append(HRFlowable(width="100%", thickness=2.5, color=SECONDARY, spaceAfter=12))
@@ -300,20 +300,16 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
             story.append(Paragraph(format_inline_markdown(line_str[4:]), style_h3))
         elif line_str.startswith("#### "):
             story.append(Paragraph(format_inline_markdown(line_str[5:]), style_h3))
-        # Bullet Lists
         elif line_str.startswith("- ") or line_str.startswith("* "):
             story.append(Paragraph(f"• {format_inline_markdown(line_str[2:])}", style_bullet))
         elif re.match(r"^\d+\.\s", line_str):
             num, rest = line_str.split(".", 1)
             story.append(Paragraph(f"<b>{num}.</b> {format_inline_markdown(rest.strip())}", style_bullet))
-        # Horizontal Separator
         elif line_str == "---":
-            story.append(HRFlowable(width="100%", thickness=0.5, color=BORDER, spaceBefore=5, spaceAfter=5))
-        # Normal Body Text
+            story.append(HRFlowable(width="100%", thickness=0.5, color=BORDER, spaceBefore=4, spaceAfter=4))
         else:
             story.append(Paragraph(format_inline_markdown(line_str), style_body))
 
-    # Catch Trailing Table
     if in_table and table_buffer:
         table_matrix = []
         for row_idx, r in enumerate(table_buffer):
@@ -332,11 +328,9 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
         ]))
         story.append(t)
 
-    # Build Primary PDF
     doc.build(story, canvasmaker=IEEEArticleCanvas)
     print(f"Primary PDF generated successfully: {output_pdf}")
 
-    # Copy to Secondary Paths
     for second_path in pdf_paths[1:]:
         second_dir = os.path.dirname(second_path)
         if second_dir:
@@ -347,11 +341,23 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
 
 
 if __name__ == "__main__":
-    src_md = "/Users/khushaljain/Desktop/MedGraphRAG/PUBLICATION_RESEARCH_REPORT.md"
-    dest_pdfs = [
-        "/Users/khushaljain/Desktop/MedGraphRAG/PUBLICATION_RESEARCH_REPORT.pdf",
-        "/Users/khushaljain/.gemini/antigravity/brain/08d67381-7f1d-4787-afc6-8ffb35978b8a/PUBLICATION_RESEARCH_REPORT.pdf",
-        "/Users/khushaljain/Desktop/MedGraphRAG/PROJECT_DOCUMENTATION_REPORT.pdf",
-        "/Users/khushaljain/.gemini/antigravity/brain/08d67381-7f1d-4787-afc6-8ffb35978b8a/PROJECT_DOCUMENTATION_REPORT.pdf"
+    artifact_dir = "/Users/khushaljain/.gemini/antigravity/brain/08d67381-7f1d-4787-afc6-8ffb35978b8a"
+    base_dir = "/Users/khushaljain/Desktop/MedGraphRAG"
+
+    # Build PROJECT_DOCUMENTATION.pdf
+    doc_md = os.path.join(base_dir, "docs/PROJECT_DOCUMENTATION.md")
+    doc_pdfs = [
+        os.path.join(base_dir, "PROJECT_DOCUMENTATION.pdf"),
+        os.path.join(base_dir, "docs/PROJECT_DOCUMENTATION.pdf"),
+        os.path.join(artifact_dir, "PROJECT_DOCUMENTATION.pdf")
     ]
-    generate_pdf_document(src_md, dest_pdfs)
+    generate_pdf_document(doc_md, doc_pdfs)
+
+    # Build ABLATION_STUDY_REPORT.pdf
+    ablation_md = os.path.join(base_dir, "docs/ABLATION_STUDY_REPORT.md")
+    ablation_pdfs = [
+        os.path.join(base_dir, "ABLATION_STUDY_REPORT.pdf"),
+        os.path.join(base_dir, "docs/ABLATION_STUDY_REPORT.pdf"),
+        os.path.join(artifact_dir, "ABLATION_STUDY_REPORT.pdf")
+    ]
+    generate_pdf_document(ablation_md, ablation_pdfs)
