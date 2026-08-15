@@ -124,20 +124,24 @@ Evaluated across a 100-question stratified subset of the 200 gold clinical quest
 
 | Metric Category | Metric Name | Baseline (Full MedGraphRAG) | No Graph (Ablation B) | No BM25 (Ablation C) | No Reranker (Ablation D) | Dense Only (Ablation E) | Holm-Bonferroni Adjusted $p$-value |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Retrieval** | **Retrieval Accuracy** | **0.9300 ± 0.2551** | 0.9200 ± 0.2713 | 0.8600 ± 0.3470 \* | 0.8500 ± 0.3571 \* | 0.8000 ± 0.4000 \*\* | $p_{\mathrm{adj}} = 0.0348$ \* |
-| **Retrieval** | **Precision@5** | **0.8950 ± 0.1857** | 0.4640 ± 0.1852 | 0.4080 ± 0.2153 \* | **0.3280 ± 0.2069 \*\*\*** | 0.4100 ± 0.2439 \* | **$p_{\mathrm{adj}} = 1.98 \times 10^{-7}$ \*\*\*** |
-| **Retrieval** | **Recall@5** | **0.9776 ± 0.0534** | 0.9700 ± 0.0600 \*\*\* | 0.9596 ± 0.0664 \*\*\* | 0.9716 ± 0.0586 \* | 0.9507 ± 0.0703 \*\*\* | **$p_{\mathrm{adj}} = 3.56 \times 10^{-5}$ \*\*\*** |
-| **Semantic** | **Faithfulness** | **0.9080 ± 0.0649** | 0.6964 ± 0.0647 | 0.6738 ± 0.0851 \* | 0.6838 ± 0.0815 | **0.6087 ± 0.2426** | **$p_{\mathrm{adj}} = 0.0291$ \*** |
-| **Semantic** | **Answer Relevance** | **0.9150 ± 0.0515** | 0.8426 ± 0.0478 | 0.8411 ± 0.0481 | 0.8358 ± 0.0479 | 0.7341 ± 0.2875 | $p_{\mathrm{adj}} = 0.4939$ (n.s.) |
-| **Semantic** | **Groundedness** | **0.9120 ± 0.3962** | 0.7550 ± 0.3968 | **0.6383 ± 0.4540 \*\*** | 0.6842 ± 0.4438 | 0.6717 ± 0.4481 | **$p_{\mathrm{adj}} = 0.0072$ \*\*** |
-| **Semantic** | **Hallucination** | **0.0920 ± 0.0649** | 0.3036 ± 0.0647 | 0.3262 ± 0.0851 \* | 0.3162 ± 0.0815 | 0.3913 ± 0.2426 | $p_{\mathrm{adj}} = 0.0289$ \* |
-| **Clinical** | **Explainability** | **0.9850 ± 0.0594** | 0.9800 ± 0.0678 | 0.9750 ± 0.0750 \* | 0.9700 ± 0.0812 \* | 0.8700 ± 0.1249 \*\*\* | **$p_{\mathrm{adj}} = 1.18 \times 10^{-11}$ \*\*\*** |
-| **Clinical** | **Clinical Reliability** | **0.9240 ± 0.1181** | 0.8940 ± 0.1182 | 0.8840 ± 0.1391 | 0.8720 ± 0.1484 | 0.7840 ± 0.3233 \* | $p_{\mathrm{adj}} = 0.0404$ \* |
-| **Latency** | **Latency** | **25.57s ± 9.79s** | 25.40s ± 11.58s | 31.47s ± 9.19s \*\*\* | 18.14s ± 4.81s \*\*\* | **14.22s ± 6.24s** \*\*\* | **$p_{\mathrm{adj}} = 4.39 \times 10^{-11}$ \*\*\* (Paired $t$-test)** |
+| **Retrieval** | **Retrieval Accuracy** | **0.9300 ± 0.2500** | 0.9200 ± 0.2713 \* | 0.8600 ± 0.3470 \* | 0.8500 ± 0.3571 \*\* | 0.8000 ± 0.4000 \*\*\* | $p_{\mathrm{adj}} = 0.0266$ \* |
+| **Retrieval** | **Precision@5** | **0.8950 ± 0.0340** | 0.4640 ± 0.1852 \*\*\* | 0.4080 ± 0.2153 \*\*\* | 0.3280 ± 0.2069 \*\*\* | 0.4100 ± 0.2439 \*\*\* | **$p_{\mathrm{adj}} = 3.89 \times 10^{-17}$ \*\*\*** |
+| **Retrieval** | **Recall@5** | **0.9776 ± 0.0534** | 0.9700 ± 0.0600 \*\*\* | 0.9596 ± 0.0664 \*\* | 0.9716 ± 0.0586 | 0.9507 ± 0.0703 \*\*\* | **$p_{\mathrm{adj}} = 3.56 \times 10^{-5}$ \*\*\*** |
+| **Semantic** | **Faithfulness** | **0.9080 ± 0.0277** | 0.6964 ± 0.0647 \*\*\* | 0.6738 ± 0.0851 \*\*\* | 0.6838 ± 0.0815 \*\*\* | 0.6087 ± 0.2426 \*\*\* | **$p_{\mathrm{adj}} = 3.89 \times 10^{-17}$ \*\*\*** |
+| **Semantic** | **Answer Relevance** | **0.9150 ± 0.0195** | 0.8426 ± 0.0478 \*\*\* | 0.8411 ± 0.0481 \*\*\* | 0.8358 ± 0.0479 \*\*\* | 0.7341 ± 0.2875 \*\*\* | **$p_{\mathrm{adj}} = 3.89 \times 10^{-17}$ \*\*\*** |
+| **Semantic** | **Groundedness** | **0.9120 ± 0.0370** | 0.7550 ± 0.3968 | 0.6383 ± 0.4540 \* | 0.6842 ± 0.4438 | 0.6717 ± 0.4481 | **$p_{\mathrm{adj}} = 0.0118$ \*** |
+| **Semantic** | **Hallucination Rate** | **0.0920 ± 0.0277** | 0.3036 ± 0.0647 \*\*\* | 0.3262 ± 0.0851 \*\*\* | 0.3162 ± 0.0815 \*\*\* | 0.3913 ± 0.2426 \*\*\* | **$p_{\mathrm{adj}} = 3.89 \times 10^{-17}$ \*\*\*** |
+| **Clinical** | **Explainability ($\mathcal{P}_{\mathrm{cit}}$)** | **0.9850 ± 0.0594** | 0.9800 ± 0.0678 | 0.9750 ± 0.0750 \* | 0.9700 ± 0.0812 \* | 0.8700 ± 0.1249 \*\*\* | **$p_{\mathrm{adj}} = 1.18 \times 10^{-11}$ \*\*\*** |
+| **Clinical** | **Clinical Reliability** | **0.9240 ± 0.0215** | 0.8940 ± 0.1182 \*\* | 0.8840 ± 0.1391 \*\* | 0.8720 ± 0.1484 \*\*\* | 0.7840 ± 0.3233 \*\*\* | **$p_{\mathrm{adj}} = 8.76 \times 10^{-14}$ \*\*\*** |
+| **Operational** | **Latency (s)** | **25.5718 ± 9.8122** | 25.4019 ± 11.5814 | 31.4729 ± 9.1852 \*\*\* | 18.1372 ± 4.8129 \*\*\* | 14.2173 ± 6.2356 \*\*\* | **$p_{\mathrm{adj}} = 4.39 \times 10^{-11}$ \*\*\* (Paired $t$-test)** |
+
+> **Note:** These figures are reproduced verbatim from Table I of the accompanying IEEE paper (`docs/`). If a future run of `run_ablations.py` / `generate_publication_figures.py` produces different numbers, regenerate this table from that output rather than editing it by hand — see "Known Issue" below.
 
 ---
 
 ## 📈 Comparison to Standard Baseline Architectures
+
+> **⚠ Unverified — not present in the paper.** This table does not appear anywhere in the IEEE manuscript (`docs/`), and I could not confirm its numbers against `full_evaluation_results.json` or any other tracked artifact in this pass. Before publishing, verify it comes from a real run of `benchmark/baselines.py` (or remove it) — do not treat it as validated just because it's internally consistent with the table above.
 
 Evaluated across the 200 gold clinical questions comparing MedGraphRAG against standard baseline architectures defined in `benchmark/baselines.py`:
 
