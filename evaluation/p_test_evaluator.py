@@ -1,19 +1,72 @@
 """evaluation/p_test_evaluator.py
 ------------------------------
 Statistical Hypothesis Testing Module (p-test Evaluation Suite).
-Computes paired two-tailed Wilcoxon signed-rank tests (non-parametric)
-and paired t-tests for latency across all ablation configurations vs Baseline.
-Calculates p-values, W-statistics, Z-scores, effect sizes (r), and significance flags.
+Performs explicit Question-ID Alignment (align_by_question_id) across baseline and ablation evaluations.
+Computes paired two-tailed Wilcoxon signed-rank tests (non-parametric) and paired t-tests for latency.
+Calculates raw p-values, Holm-Bonferroni adjusted p-values, W-statistics, Z-scores, effect sizes (r), and significance flags.
 """
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 
 import numpy as np
 from scipy import stats
+
+
+def align_by_question_id(
+    baseline_evals: List[Dict[str, Any]],
+    ablation_evals: List[Dict[str, Any]],
+    metric: str
+) -> Tuple[np.ndarray, np.ndarray, List[str]]:
+    """Strictly align baseline and ablation metric values by unique question ID ('id').
+
+    Args:
+        baseline_evals: List of baseline evaluation records.
+        ablation_evals: List of ablation evaluation records.
+        metric: Target metric string name.
+
+    Returns:
+        Tuple of (aligned_baseline_array, aligned_ablation_array, aligned_ids).
+
+    Raises:
+        ValueError: If duplicate question IDs exist or alignment fails.
+    """
+    base_map = {ev["id"]: ev[metric] for ev in baseline_evals if "id" in ev and metric in ev and ev[metric] not in ["N/A", ""]}
+    ab_map = {ev["id"]: ev[metric] for ev in ablation_evals if "id" in ev and metric in ev and ev[metric] not in ["N/A", ""]}
+
+    if len(base_map) != len(baseline_evals):
+        raise ValueError(f"Duplicate or invalid question IDs detected in baseline evaluations for metric '{metric}'.")
+
+    common_ids = sorted(list(set(base_map.keys()) & set(ab_map.keys())))
+    if not common_ids:
+        raise ValueError(f"No overlapping question IDs found for metric '{metric}'.")
+
+    base_vals = np.array([float(base_map[qid]) for qid in common_ids], dtype=float)
+    ab_vals = np.array([float(ab_map[qid]) for qid in common_ids], dtype=float)
+
+    return base_vals, ab_vals, common_ids
+
+
+def apply_holm_bonferroni(raw_p_values: List[float]) -> List[float]:
+    """Apply Holm-Bonferroni step-down correction to a list of raw p-values."""
+    m = len(raw_p_values)
+    if m == 0:
+        return []
+
+    sorted_indices = sorted(range(m), key=lambda i: raw_p_values[i])
+    adjusted = [1.0] * m
+
+    cum_max = 0.0
+    for k, idx in enumerate(sorted_indices):
+        raw_p = raw_p_values[idx]
+        adj_p = min(1.0, raw_p * (m - k))
+        cum_max = max(cum_max, adj_p)
+        adjusted[idx] = min(1.0, cum_max)
+
+    return adjusted
 
 
 def run_p_tests(base_path: str = ".") -> Dict[str, Any]:
@@ -36,14 +89,11 @@ def run_p_tests(base_path: str = ".") -> Dict[str, Any]:
     baseline_evals = data["Exp1_Baseline"]
     n_samples = len(baseline_evals)
 
-    # Metrics to test
+    # Valid metrics present in evaluation output
     metrics_to_test = [
         "Retrieval Accuracy", "Precision@5", "Recall@5", "Faithfulness",
         "Answer Relevance", "Groundedness", "Hallucination", "Explainability",
-        "Clinical Reliability", "MRR", "NDCG@5", "HitRate@5", "BLEU-1",
-        "BLEU-2", "BLEU-4", "ROUGE-1", "ROUGE-2", "ROUGE-L", "METEOR",
-        "Answer F1", "Safety", "Completeness", "Originality", "Precision",
-        "Efficiency", "Overall", "Latency"
+        "Clinical Reliability", "Latency"
     ]
 
     p_test_results = {
@@ -57,24 +107,26 @@ def run_p_tests(base_path: str = ".") -> Dict[str, Any]:
         ab_evals = data[ab_key]
         comp_dict = {}
 
-        for metric in metrics_to_test:
-            base_vals = np.array([ev.get(metric, 0.0) for ev in baseline_evals if metric in ev])
-            ab_vals = np.array([ev.get(metric, 0.0) for ev in ab_evals if metric in ev])
+        raw_p_vals = []
+        metrics_computed = []
 
-            if len(base_vals) == 0 or len(ab_vals) == 0 or len(base_vals) != len(ab_vals):
+        for metric in metrics_to_test:
+            try:
+                base_vals, ab_vals, aligned_ids = align_by_question_id(baseline_evals, ab_evals, metric)
+            except ValueError:
                 continue
 
+            n_aligned = len(base_vals)
             diffs = base_vals - ab_vals
             non_zero_diffs = diffs[diffs != 0]
 
             if metric == "Latency":
-                # Continuous metric: Paired Student's t-test
                 t_stat, p_val = stats.ttest_rel(base_vals, ab_vals)
                 stat_val = float(t_stat)
                 test_type = "Paired t-test"
-                z_score = float(t_stat / np.sqrt(n_samples))
+                z_score = float(t_stat / np.sqrt(n_aligned))
             else:
-                # Non-parametric metrics: Wilcoxon signed-rank test
+                test_type = "Wilcoxon signed-rank"
                 if len(non_zero_diffs) == 0:
                     stat_val = 0.0
                     p_val = 1.0
@@ -83,7 +135,6 @@ def run_p_tests(base_path: str = ".") -> Dict[str, Any]:
                     try:
                         w_stat, p_val = stats.wilcoxon(base_vals, ab_vals, alternative="two-sided")
                         stat_val = float(w_stat)
-                        # Normal approximation for effect size Z
                         n_nz = len(non_zero_diffs)
                         mean_w = n_nz * (n_nz + 1) / 4.0
                         var_w = n_nz * (n_nz + 1) * (2 * n_nz + 1) / 24.0
@@ -93,31 +144,42 @@ def run_p_tests(base_path: str = ".") -> Dict[str, Any]:
                         p_val = 1.0
                         z_score = 0.0
 
-            # Significance notation
-            if p_val < 0.001:
+            raw_p_vals.append(float(p_val))
+            metrics_computed.append((metric, base_vals, ab_vals, diffs, test_type, stat_val, z_score, n_aligned))
+
+        # Holm-Bonferroni Multiple Comparison Adjustment
+        adj_p_vals = apply_holm_bonferroni(raw_p_vals)
+
+        for i, (metric, base_vals, ab_vals, diffs, test_type, stat_val, z_score, n_aligned) in enumerate(metrics_computed):
+            p_val = raw_p_vals[i]
+            adj_p = adj_p_vals[i]
+
+            if adj_p < 0.001:
                 sig_flag = "***"
                 significance = "Extremely Significant (p < 0.001)"
-            elif p_val < 0.01:
+            elif adj_p < 0.01:
                 sig_flag = "**"
                 significance = "Highly Significant (p < 0.01)"
-            elif p_val < 0.05:
+            elif adj_p < 0.05:
                 sig_flag = "*"
                 significance = "Statistically Significant (p < 0.05)"
             else:
                 sig_flag = "n.s."
                 significance = "Not Significant (p >= 0.05)"
 
-            effect_size_r = float(abs(z_score) / np.sqrt(n_samples))
+            effect_size_r = float(abs(z_score) / np.sqrt(n_aligned))
 
             comp_dict[metric] = {
+                "n_aligned": n_aligned,
                 "baseline_mean": float(np.mean(base_vals)),
                 "baseline_std": float(np.std(base_vals)),
                 "ablation_mean": float(np.mean(ab_vals)),
                 "ablation_std": float(np.std(ab_vals)),
                 "mean_difference": float(np.mean(diffs)),
-                "test_type": test_type if metric == "Latency" else "Wilcoxon signed-rank",
+                "test_type": test_type,
                 "test_statistic": stat_val,
-                "p_value": float(p_val),
+                "p_value": p_val,
+                "p_value_adjusted_holm": adj_p,
                 "z_score": z_score,
                 "effect_size_r": effect_size_r,
                 "significance_flag": sig_flag,
@@ -135,4 +197,4 @@ def run_p_tests(base_path: str = ".") -> Dict[str, Any]:
 
 if __name__ == "__main__":
     res = run_p_tests()
-    print(f"P-test evaluation completed. Saved results to p_test_results.json across {res['n_samples']} samples.")
+    print(f"P-test evaluation completed with strict ID alignment and Holm-Bonferroni correction. Saved to p_test_results.json across {res['n_samples']} samples.")

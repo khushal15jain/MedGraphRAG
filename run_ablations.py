@@ -122,7 +122,7 @@ def load_components():
 def main():
     print("Loading dataset...")
     with open("data/qa_dataset.json", "r") as f:
-        qa_items = json.load(f)[:100]
+        qa_items = json.load(f)
 
     print("Loading pipeline components...")
     components = load_components()
