@@ -1,12 +1,15 @@
-# MedGraphRAG Project Documentation
+# MedGraphRAG Comprehensive Project Documentation
 
-## Project Overview
+## 1. Project Overview & System Purpose
 
-**MedGraphRAG** is an evidence-grounded, privacy-preserving, and explainable Clinical Decision Support System (CDSS) designed specifically for medical oncology question answering. MedGraphRAG integrates three complementary retrieval channels—Dense Semantic Vector Search, Lexical BM25 Keyword Search, and Multi-Hop Knowledge Graph Traversal—with Cross-Encoder Reranking and Sentence-Level NLI Grounding.
+**MedGraphRAG** is an evidence-grounded, privacy-preserving, and explainable Clinical Decision Support System (CDSS) prototype designed for medical oncology question answering. MedGraphRAG introduces a **Tri-Modal Hybrid Retrieval Architecture** that unifies:
+1. **High-Dimensional Dense Semantic Search** via `BAAI/bge-base-en-v1.5` in ChromaDB,
+2. **Lexical Sparse Keyword Search** via BM25Okapi with query entity expansion, and
+3. **Multi-Hop Knowledge Graph Traversal** using SciSpaCy biomedical Named Entity Recognition (NER) structured in NetworkX with **Inverse Entity Frequency (IEF) Topological Decay Scoring**.
 
 ---
 
-## Technical Architecture & Workflow
+## 2. Complete Data & Execution Pipeline
 
 ```text
 [ Clinical Oncology PDFs ]
@@ -50,9 +53,9 @@
 
 ---
 
-## Canonical Performance Metrics
+## 3. Canonical Performance Metrics Summary
 
-Evaluated across the 200 Gold Clinical Question Benchmark ($N=200$ main benchmark, $N=500$ ablation evaluations across a 100-question subset):
+Evaluated across the 200 Gold Clinical Question Benchmark ($N=200$ main benchmark, $N=500$ ablation evaluations over a stratified 100-question subset):
 
 - **Retrieval Accuracy**: **0.9300 ± 0.2551**
 - **Precision@5**: **0.8950 ± 0.1857**
@@ -67,37 +70,56 @@ Evaluated across the 200 Gold Clinical Question Benchmark ($N=200$ main benchmar
 
 ---
 
-## Technology Stack & Provenance
+## 4. Module Layout & Class Specifications
 
-| Component | Technology | Exact Version / Tag |
-| :--- | :--- | :--- |
-| **Language** | Python | 3.11.8 |
-| **PDF Loader** | PyMuPDF | `fitz` v1.23 |
-| **Biomedical NER** | SciSpaCy | `en_core_sci_sm` v0.5.4 |
-| **Knowledge Graph** | NetworkX | Undirected Graph |
-| **Dense Embeddings** | ChromaDB | `BAAI/bge-base-en-v1.5` (768-dim) |
-| **Sparse Search** | Rank-BM25 | BM25Okapi |
-| **Reranker** | Cross-Encoder | `BAAI/bge-reranker-base` |
-| **Local LLM Generator** | Ollama | `llama3.2:latest` (3.8B, 4-bit `q4_K_M`, $T=0.0$) |
-| **Grounding Engine** | NLI Checker | Sentence-level claim verifier ($\tau = 0.70$) |
+- `preprocessing/pdf_loader.py`: Layout-aware PDF text extraction (`fitz`).
+- `preprocessing/chunker.py`: Section-aware recursive token chunker ($500 / 100$).
+- `entity_extraction/ner_extractor.py`: SciSpaCy biomedical NER (`en_core_sci_sm`).
+- `graph/graph_builder.py`: NetworkX graph builder for entity-chunk relations.
+- `graph/graph_retriever.py`: BFS topological decay retriever ($\frac{1.0}{1.0 + d(e, v)}$).
+- `embeddings/embedder.py`: BGE dense vector embedding encoder.
+- `embeddings/chroma_indexer.py`: ChromaDB vector database indexer.
+- `retrieval/bm25_retriever.py`: Rank-BM25 sparse keyword retriever.
+- `retrieval/hybrid_retriever.py`: Min-Max score standardization and weighted fusion ($\alpha=0.35, \beta=0.30, \gamma=0.35$).
+- `reranker/reranker.py`: `BAAI/bge-reranker-base` cross-encoder with Jaccard dedup ($\tau=0.65$).
+- `generator/sentence_grounder.py`: NLI entailment claim verifier ($\tau=0.70$).
+- `generator/generator.py`: Ollama local LLM generator (`llama3.2:latest`, $T=0.0$).
 
 ---
 
-## Quickstart Execution Commands
+## 5. Technology Stack & Provenance Table
+
+| Component | Framework / Library | Model Identifier / Version | Execution Context |
+| :--- | :--- | :--- | :--- |
+| **Language** | Python | 3.11.8 | Virtualenv (`.venv`) |
+| **PDF Loader** | PyMuPDF | `fitz` v1.23 | Local CPU |
+| **Biomedical NER** | SciSpaCy | `en_core_sci_sm` v0.5.4 | Local CPU |
+| **Knowledge Graph** | NetworkX | Undirected Graph | In-Memory |
+| **Dense Embeddings** | ChromaDB | `BAAI/bge-base-en-v1.5` (768-dim) | Local CPU |
+| **Sparse Search** | Rank-BM25 | BM25Okapi | In-Memory |
+| **Reranker** | Cross-Encoder | `BAAI/bge-reranker-base` | Local CPU / PyTorch |
+| **Local LLM Generator** | Ollama | `llama3.2:latest` (3.8B, 4-bit `q4_K_M`, $T=0.0$) | Local Daemon |
+| **Grounding Engine** | NLI Checker | Sentence-level claim verifier ($\tau = 0.70$) | In-Memory |
+
+---
+
+## 6. Quickstart Execution & Verification
 
 ```bash
-# 1. Environment Setup
+# Environment setup
 git clone git@github.com:khushal15jain/RAGupdated.git
 cd RAGupdated
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# 2. Local LLM Pull
+# Ollama local LLM setup
 ollama pull llama3.2:latest
 
-# 3. Test Suite & Main Pipeline Execution
+# Run pytest reproducibility test suite
 pytest tests/test_reproducibility.py tests/test_publication_reproducibility.py
+
+# Run main execution & ablation benchmark
 python main.py
 python run_ablations.py --num-questions 100
 python evaluation/p_test_evaluator.py
