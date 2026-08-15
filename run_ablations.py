@@ -154,7 +154,7 @@ def main():
                     for ev in prev_data.get("evaluations", []):
                         evaluated_ids.add(ev["id"])
                         rows.append(ev)
-                print(f"Resuming {mode_name}: {len(rows)}/100 already evaluated.")
+                print(f"Resuming {mode_name}: {len(rows)}/200 already evaluated.")
             except Exception:
                 pass
 
