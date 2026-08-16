@@ -1,0 +1,717 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{float}
+
+\lstdefinelanguage{mermaid}{
+  morekeywords={graph,TD,LR,subgraph,end,classDef,class},
+  sensitive=false,
+  morecomment=[\%]{\%\%}
+}
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=true,
+  frame=single,
+  columns=fullflexible
+}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{MedGraphRAG: A Hybrid Dense--Sparse--Graph Retrieval Architecture for Evidence-Grounded Clinical Question Answering in Medical Oncology}
+
+\author{
+\IEEEauthorblockN{1\textsuperscript{st} Author Name}
+\IEEEauthorblockA{\textit{Department Name} \\
+\textit{Institution Name}\\
+City, Country \\
+author.email@institution.edu}
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} Author Name}
+\IEEEauthorblockA{\textit{Department Name} \\
+\textit{Institution Name}\\
+City, Country \\
+author.email@institution.edu}
+}
+
+\maketitle
+
+\begin{abstract}
+Large language models (LLMs) are increasingly explored as clinical information-retrieval tools, yet their tendency to hallucinate --- generating fluent but unsupported claims --- remains a critical barrier to safe deployment in oncology and other high-stakes medical domains. Standard Retrieval-Augmented Generation (RAG) mitigates parametric hallucination by conditioning generation on retrieved evidence, but single-channel retrieval (typically dense embedding search alone) exhibits systematic blind spots: it under-retrieves rare, lexically distinctive clinical terms and cannot surface information reachable only through multi-hop entity relationships. This paper presents MedGraphRAG, a tri-modal retrieval architecture that fuses dense semantic search (\texttt{BAAI/bge-base-en-v1.5} over ChromaDB), sparse lexical search (BM25Okapi), and multi-hop knowledge-graph traversal (SciSpaCy biomedical named-entity recognition over a NetworkX graph, scored with an Inverse-Entity-Frequency topological decay function) into a single fused, cross-encoder-reranked (\texttt{BAAI/bge-reranker-base}) retrieval pipeline. Generated answers are further verified through sentence-level Natural Language Inference (NLI) entailment checking against cited evidence, with mandatory per-claim citation attribution. We evaluate MedGraphRAG on a 200-question oncology gold-standard benchmark and report a controlled, five-condition ablation study (Baseline, No-Graph, No-BM25, No-Reranker, Dense-Only) over 500 total inferences, using paired Wilcoxon signed-rank significance testing. Results show that no single retrieval channel is sufficient in isolation: removing the cross-encoder reranker reduces Precision@5 from 0.895 to 0.328 ($p<0.001$), removing BM25 reduces Groundedness from 0.912 to 0.638 ($p<0.01$), and a dense-only configuration exhibits significantly elevated hallucination (0.092 $\rightarrow$ 0.391) despite being $\sim$43\% faster. These findings provide statistically grounded evidence for hybrid, graph-augmented retrieval as a hallucination-mitigation strategy in clinical question answering.
+\end{abstract}
+
+\begin{IEEEkeywords}
+retrieval-augmented generation, knowledge graph, biomedical question answering, hallucination mitigation, cross-encoder reranking, natural language inference, clinical decision support, hybrid retrieval
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+\subsection{Medical Question Answering and the Case for Grounded Generation}
+Medical question answering (QA) systems aim to provide clinicians, trainees, and researchers with accurate, verifiable answers to clinical queries drawn from guideline text, textbooks, and the biomedical literature. Benchmarks such as MultiMedQA and the associated Med-PaLM evaluation demonstrated that general-purpose LLMs, when appropriately scaled and instruction-tuned, can encode substantial clinical knowledge and answer professional-medicine questions with encouraging accuracy \cite{singhal2023large}. However, the same work also found that model outputs remained inferior to clinician answers on axes including factual accuracy and potential harm \cite{singhal2023large}, underscoring that raw parametric knowledge is an insufficient basis for clinical deployment. The central requirement for a clinical QA system is not merely fluency but \emph{verifiability}: every generated clinical claim must be traceable to an authoritative source, so that a human reader can audit it before acting on it.
+
+\subsection{Hallucination in Large Language Models}
+Hallucination --- the generation of content that is fluent and plausible but unsupported by, or in direct contradiction with, any available source --- is a well-documented and structurally intrinsic failure mode of neural text generation \cite{ji2023survey}. Ji~et~al.\ distinguish \emph{intrinsic} hallucination, where generated content directly contradicts the source, from \emph{extrinsic} hallucination, where generated content cannot be verified against the source at all \cite{ji2023survey}. In an open-domain conversational setting, an unverified hallucinated claim is an inconvenience; in an oncology decision-support setting, where a hallucinated staging criterion, biomarker threshold, or drug interaction could materially influence a treatment decision, it is a direct patient-safety risk. This motivates two complementary design requirements for clinical QA systems: (i) generation must be constrained to retrieved, authoritative evidence rather than the model's parametric memory, and (ii) that grounding must be independently \emph{verified} after generation, since constraining a prompt does not guarantee the model will honor the constraint.
+
+\subsection{Limitations of Standard Retrieval-Augmented Generation}
+Retrieval-Augmented Generation (RAG) directly addresses the first requirement: rather than relying solely on parametric memory, RAG conditions generation on passages retrieved from an external, non-parametric corpus at inference time, which Lewis~et~al.\ showed improves factuality, specificity, and diversity relative to a parametric-only seq2seq baseline while enabling provenance and updatability of knowledge \cite{lewis2020retrieval}. In practice, however, most RAG deployments rely on a single retrieval channel --- typically dense embedding similarity search using a sentence-embedding model such as those in the BGE family \cite{xiao2023cpack} or produced via Siamese/triplet fine-tuning as in Sentence-BERT \cite{reimers2019sentencebert}. Dense retrieval generalizes well across paraphrase and semantic similarity, but it is known to under-retrieve passages whose relevance depends on exact, low-frequency terminology --- precisely the failure mode most consequential in biomedical text, where a single-character difference in a drug name, gene symbol, or biomarker code changes clinical meaning. Sparse lexical retrieval (e.g., the BM25 ranking function \cite{robertson2009probabilistic}) is the classical complement, scoring passages by term-frequency/inverse-document-frequency overlap, but lacks dense retrieval's ability to generalize across rephrasing. Neither channel, individually or in a simple two-way hybrid, captures information that is relevant by virtue of a \emph{multi-hop relationship} between entities (e.g., a drug's associated adverse effects, reachable only by traversing a drug$\rightarrow$indication$\rightarrow$adverse-effect chain) rather than lexical or semantic similarity to the surface form of the query.
+
+\subsection{Why Graph Retrieval Is Needed}
+Knowledge-graph-augmented retrieval addresses this third blind spot directly. Representing entities and their relationships as a graph, and retrieving via traversal from query-mentioned entities, surfaces relationally-linked information that is invisible to both dense and sparse text-similarity search. Edge~et~al.\ demonstrated with GraphRAG that constructing an entity knowledge graph from a source corpus and using it as a retrieval substrate enables LLMs to answer queries that standard RAG cannot, particularly those requiring synthesis across multiple source passages \cite{edge2024graphrag}. In the clinical domain specifically, naive graph traversal introduces its own bias: high-frequency ``hub'' entities (e.g., \emph{patient}, \emph{treatment}, \emph{cancer}) dominate neighborhoods and crowd out rare, diagnostically specific entities (e.g., a named biomarker or a rare syndrome) that are typically of greater clinical interest. This motivates frequency-aware graph scoring --- weighting discovered entities by their inverse frequency across the graph, analogous to inverse document frequency in classical information retrieval --- combined with hop-distance decay, so that traversal favors specific, closely-related entities over generic, distant ones.
+
+\subsection{Evidence-Grounded Generation and Verification}
+Constraining a prompt to retrieved evidence reduces, but does not eliminate, hallucination: an LLM may still generate claims not actually supported by the context it was given. Post-hoc verification is therefore necessary. Natural Language Inference (NLI) --- the task of classifying whether a premise entails, contradicts, or is neutral with respect to a hypothesis, as formalized in corpora such as SNLI \cite{bowman2015large} --- provides a natural mechanism: each generated sentence can be treated as a hypothesis and checked for entailment against its cited evidence chunk (the premise). Critically, this check should operate at the \emph{sentence} or \emph{claim} level rather than the whole-answer level, since an answer-level overlap check can pass an answer in which only a subset of sentences are actually grounded, because well-supported sentences inflate the aggregate score and mask unsupported ones.
+
+\subsection{Contributions}
+This paper makes the following contributions:
+\begin{itemize}
+    \item We present MedGraphRAG, a tri-modal hybrid retrieval architecture that fuses dense semantic search, BM25 sparse lexical search, and Inverse-Entity-Frequency-weighted, hop-distance-decayed multi-hop knowledge-graph traversal, followed by cross-encoder reranking, specifically targeting clinical oncology question answering.
+    \item We introduce sentence-level NLI-based grounding with mandatory per-claim citation attribution (document, section, page, and chunk identifier) as a post-generation verification stage, enabling clinician auditability of every generated statement.
+    \item We report a controlled, five-condition ablation study (500 total inferences over a 100-question stratified subset of a 200-question oncology gold-standard benchmark) isolating the marginal contribution of each retrieval channel, using paired Wilcoxon signed-rank significance testing with reported effect sizes.
+    \item We provide empirical evidence, at conventional significance levels, that (a) cross-encoder reranking yields the largest precision gain, (b) BM25 lexical retrieval contributes most to answer groundedness, (c) the knowledge-graph channel's principal contribution is to ranking-completeness metrics (recall, MRR, NDCG) rather than coarse accuracy metrics, and (d) no single retrieval channel is sufficient in isolation for hallucination-resistant clinical QA.
+\end{itemize}
+
+\section{Related Work}
+
+\subsection{Medical Question Answering}
+Domain-specific medical QA has progressed from task-specific extractive architectures toward large pretrained language models evaluated on broad clinical benchmarks. Singhal~et~al.\ introduced MultiMedQA, combining professional-medicine, research, and consumer-query benchmarks, and proposed Med-PaLM, a PaLM-based instruction-tuned model evaluated with a human evaluation framework spanning factuality, comprehension, reasoning, and potential harm \cite{singhal2023large}. Their results showed model performance on clinical QA scales with model size and instruction tuning but remained, at the time, inferior to clinician answers on several axes \cite{singhal2023large} --- motivating retrieval-grounded and verification-augmented approaches, such as the one proposed in this paper, as a complementary strategy to raw model scaling.
+
+\subsection{Retrieval-Augmented Generation}
+Lewis~et~al.\ formalized RAG as a general-purpose fine-tuning recipe combining a pretrained parametric seq2seq model with a non-parametric dense vector index accessed via a learned neural retriever, demonstrating state-of-the-art results on open-domain QA and more specific, diverse, and factual generation relative to parametric-only baselines \cite{lewis2020retrieval}. The dense retriever underlying this style of system is typically a dual-encoder trained in the manner of Dense Passage Retrieval (DPR), which showed that a simple dual bi-encoder trained on a modest number of question--passage pairs could outperform a strong BM25 baseline by a wide margin on open-domain passage retrieval accuracy \cite{karpukhin2020dpr} --- the same dual-encoder pattern the BGE embedding model in this work follows. Subsequent work has extended RAG along two main axes relevant here: (i) improving the retriever itself, e.g., through stronger general-purpose embedding models such as the BGE family \cite{xiao2023cpack} and Sentence-BERT-style Siamese architectures \cite{reimers2019sentencebert}, or through domain-adapted encoders such as BioBERT, which showed that continuing BERT's pretraining on PubMed abstracts and full-text articles substantially improves biomedical named-entity recognition, relation extraction, and question answering relative to general-domain BERT \cite{lee2019biobert}; and (ii) improving what is retrieved \emph{from}, moving beyond flat passage indices toward structured or hybrid retrieval substrates, which this paper addresses directly via graph augmentation.
+
+\subsection{Graph Retrieval and GraphRAG}
+Edge~et~al.\ proposed GraphRAG, constructing an LLM-derived entity knowledge graph from a source corpus and pre-generating community summaries to answer both local, entity-specific queries and global, corpus-wide queries that standard RAG's flat retrieval cannot address \cite{edge2024graphrag}. Their approach targets query-focused summarization over large private corpora; the present work differs in applying graph-structured retrieval specifically to precision-critical factual QA in a bounded clinical domain, using explicit frequency-aware and hop-distance-decayed scoring (rather than LLM-generated community summaries) to control for the entity-frequency bias that dominates naive graph traversal in domains with a small number of extremely high-frequency generic terms. The underlying graph data structure is implemented using NetworkX \cite{hagberg2008exploring}, and entity/relation extraction uses the biomedical-domain SciSpaCy NLP pipeline \cite{neumann2019scispacy}, which was purpose-built to address the poor domain-shift performance of general-purpose NLP models on biomedical and clinical text.
+
+\subsection{Cross-Encoder Reranking}
+Two-stage retrieve-then-rerank architectures are now standard in high-precision information retrieval: an efficient bi-encoder (dense or sparse) narrows a large corpus to a small candidate pool, which a more expensive cross-encoder --- jointly attending over the full (query, passage) pair rather than comparing independently-computed vectors --- then re-scores for final precision. Nogueira and Cho demonstrated this pattern using a fine-tuned BERT cross-encoder for passage reranking, achieving state-of-the-art results on the MS MARCO passage-ranking leaderboard and a 27\% relative MRR@10 improvement over the prior state of the art \cite{nogueira2019passage}. This paper adopts the same retrieve-then-rerank pattern, using a BGE-family cross-encoder reranker \cite{xiao2023cpack} over the fused tri-modal candidate pool.
+
+\subsection{Vector Databases: ChromaDB}
+Dense retrieval at scale requires an index structure supporting efficient approximate nearest-neighbor search over embedding vectors. ChromaDB is an open-source, embeddable vector database that can run in-process (backed by DuckDB and Parquet storage) without a separate server process, making it well suited to single-machine research and prototyping deployments where minimizing operational and memory overhead is a design constraint, as opposed to server-mode vector databases intended for multi-tenant, horizontally-scaled production deployments.
+
+\subsection{Sentence Transformers and Dense Embedding Models}
+The dense retrieval channel depends on a sentence-embedding model mapping variable-length text to a fixed-dimensional vector space in which semantic similarity corresponds to geometric proximity. Reimers and Gurevych's Sentence-BERT established the Siamese/triplet-network fine-tuning approach that made this practical at retrieval scale, avoiding the quadratic-cost pairwise inference required by cross-encoder-style BERT similarity scoring \cite{reimers2019sentencebert}. The BGE embedding family \cite{xiao2023cpack}, used in this work, extends this line of research with large-scale contrastive pretraining and achieves competitive results on general-purpose embedding benchmarks (MTEB) while remaining practical to run on constrained (CPU-only, limited-memory) hardware --- a relevant constraint for on-premises clinical deployments where data cannot leave local infrastructure.
+
+\subsection{Local LLM Inference: Llama 3.2}
+Locally-hosted, quantized open-weight LLMs are an increasingly viable generation backbone for privacy-sensitive applications, avoiding transmission of clinical query content to third-party cloud inference APIs. Llama~3.2, released by Meta AI, provides a family of lightweight model sizes suitable for constrained on-device or single-machine deployment via local inference runtimes such as Ollama, trading some raw capability relative to frontier-scale cloud models for full data locality --- a requirement this paper treats as non-negotiable given the clinical sensitivity of the target domain.
+
+\subsection{Comparative Summary of Existing Methods}
+
+Table~\ref{tab:comparison} summarizes representative prior approaches against the dimensions relevant to hallucination-resistant clinical QA: retrieval modality, reranking, explicit grounding/hallucination verification, and citation-level provenance.
+
+\begin{table*}[t]
+\centering
+\caption{Comparison of Representative Retrieval and Generation Architectures}
+\label{tab:comparison}
+\begin{tabular}{@{}p{2.6cm}p{3.0cm}p{2.0cm}p{2.6cm}p{2.9cm}p{2.5cm}@{}}
+\toprule
+\textbf{Method} & \textbf{Retrieval Modality} & \textbf{Reranking} & \textbf{Grounding Verification} & \textbf{Citation Provenance} & \textbf{Target Domain} \\
+\midrule
+Standard RAG \cite{lewis2020retrieval} & Dense only & No & None (implicit via retrieval) & No & Open-domain QA \\
+BM25 (classical IR) \cite{robertson2009probabilistic} & Sparse lexical only & No & N/A (retrieval only) & N/A & General IR \\
+Passage reranking w/ BERT \cite{nogueira2019passage} & Dense/sparse + cross-encoder rerank & Yes & None & No & Open-domain passage ranking \\
+GraphRAG \cite{edge2024graphrag} & LLM-derived entity graph + community summaries & No & None & Partial (source community) \\
+Med-PaLM / MultiMedQA \cite{singhal2023large} & None (parametric only) & N/A & None & No & Medical QA \\
+\textbf{MedGraphRAG (this work)} & \textbf{Dense + BM25 + IEF-weighted graph traversal (fused)} & \textbf{Yes (cross-encoder)} & \textbf{Yes (sentence-level NLI)} & \textbf{Yes (document/section/page/chunk)} & \textbf{Medical oncology QA} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+As Table~\ref{tab:comparison} illustrates, no prior approach surveyed here combines all four properties --- multi-channel fused retrieval, cross-encoder reranking, explicit post-generation grounding verification, and fine-grained citation provenance --- within a single pipeline targeted at the clinical domain. This gap is the specific target of the architecture presented in this paper.
+
+\section{Proposed Methodology}
+
+This section describes the MedGraphRAG pipeline exactly as implemented in the reviewed codebase. Two clarifications are made up front because they diverge from terminology used in earlier project documentation: (1) the source code contains \emph{no} ``Book Router / Chapter Router / Section Router'' hierarchy — no such classes, functions, or naming variants exist anywhere in the repository (verified by exhaustive keyword search). What the codebase actually implements for hierarchical context is (a) heading-level \emph{metadata tagging} at ingestion time (each chunk is stamped with its detected chapter/section heading and page number for later citation, not routed through a query-time hierarchy), and (b) entity-seeded knowledge-graph traversal at query time. We describe both accurately below rather than inventing a routing layer that is not present. (2) Several modules referenced in earlier internal documentation (\texttt{generator/generator.py}, \texttt{grounding/grounding\_checker.py}) import a non-existent \texttt{generation} package and are not called by \texttt{main.py}, \texttt{app/api.py}, or \texttt{run\_ablations.py}; they are unintegrated design drafts. The methodology below describes only the components that are actually wired into the executable pipeline: \texttt{generator/llm\_generator.py} (\texttt{OllamaGenerator}), \texttt{generator/citation\_prompt\_builder.py}, \texttt{generator/evidence\_grounding.py}, and \texttt{generator/sentence\_grounder.py}.
+
+\subsection{Overall Architecture}
+MedGraphRAG follows a two-phase design: an offline \emph{ingestion phase} that builds a hierarchically-chunked, dually-indexed (dense + sparse), graph-augmented knowledge base from source PDFs, and an online \emph{query phase} that retrieves evidence through three parallel channels, fuses and reranks it, generates a citation-constrained answer, and verifies that answer at the sentence level before returning it. Fig.~\ref{fig:architecture} shows the end-to-end flow; Fig.~\ref{fig:mermaid1} gives the same flow as a Mermaid diagram source for direct rendering in Overleaf or any Mermaid-compatible tool (LaTeX itself has no native Mermaid renderer, so this is provided as an editable diagram source alongside the placeholder figure).
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.44\textwidth}{\centering \vspace{2.6cm}
+\textbf{[FIGURE PLACEHOLDER]}\\[4pt]
+\small End-to-end MedGraphRAG architecture diagram\\
+(ingestion phase $\rightarrow$ tri-modal retrieval $\rightarrow$ fusion $\rightarrow$ rerank $\rightarrow$ grounded generation $\rightarrow$ verified answer). \\
+Render from Fig.~2 Mermaid source or replace with the project's own diagram export.
+\vspace{2.6cm}}}
+\caption{Overall system architecture (placeholder — see Mermaid source, Fig.~\ref{fig:mermaid1}).}
+\label{fig:architecture}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[language=mermaid]
+graph TD
+    A[Oncology PDFs] --> B[PDF Parsing - PyMuPDF]
+    B --> C[Text Cleaning]
+    C --> D[Metadata Extraction - chapter/section/page]
+    D --> E[Hierarchical Chunking - parent 3500c / child 800c / overlap 50c]
+    E --> F[Biomedical NER - SciSpaCy en_core_sci_sm]
+    E --> G[Dense Embedding - BGE-base-en-v1.5]
+    E --> H[BM25 Inverted Index]
+    F --> I[Knowledge Graph - NetworkX]
+    G --> J[ChromaDB Vector Store]
+    subgraph QUERY_TIME [Query-Time Retrieval]
+        K[User Question] --> L[Query Entity Extraction]
+        L --> M[Dense Search - cosine sim]
+        L --> N[BM25 Search]
+        L --> O[Graph BFS Traversal - hop decay]
+        J --> M
+        H --> N
+        I --> O
+    end
+    M --> P[Min-Max Fusion]
+    N --> P
+    O --> P
+    P --> Q[Cross-Encoder Rerank - bge-reranker-base]
+    Q --> R[Citation-Constrained Prompt]
+    R --> S[Ollama Local LLM Generation]
+    S --> T[Self-Reported Confidence Extraction]
+    T --> U[Sentence-Level NLI/Semantic Grounding]
+    U --> V[Cleaned Answer plus Citation Cards]
+\end{lstlisting}
+\caption{Mermaid diagram source for the MedGraphRAG pipeline (render in Overleaf via a Mermaid renderer, or Mermaid Live Editor).}
+\label{fig:mermaid1}
+\end{figure}
+
+\subsection{Document Collection}
+The ingestion input is a directory of oncology guideline PDFs placed under \texttt{data/raw/}. In the reviewed repository state this directory contained no PDFs (a placeholder \texttt{.gitkeep} only), so the specific source guideline documents underlying the reported results cannot be identified from the repository alone; this is stated here as a methodological limitation rather than omitted.
+
+\subsection{PDF Processing}
+\texttt{preprocessing/pdf\_loader.py} uses PyMuPDF (\texttt{fitz}) to extract raw text together with page and layout information from each PDF. \texttt{preprocessing/metadata\_extractor.py} separately reads document-level metadata (title, author, page count) and performs heading detection: it scans each page's text blocks via \texttt{page.get\_text("dict")}, flags lines whose font size is notably larger than the page's median font size or that match chapter/section regular-expression patterns, and labels each as \texttt{"chapter"} or \texttt{"section"}. This heading detection is what supplies the chapter/section fields later attached to every chunk for citation — it is heuristic, font-size- and regex-based, not a learned classifier.
+
+\subsection{Text Cleaning}
+\texttt{preprocessing/cleaner.py} normalizes the raw extracted text (whitespace collapsing, removal of PDF-extraction artifacts) prior to chunking, so that downstream sentence-boundary detection and token counting operate on clean input.
+
+\subsection{Chunking Strategy}
+\texttt{preprocessing/chunker.py} implements a two-level, ``small-to-big'' hierarchical chunker: \emph{parent} chunks of $\approx 3500$ characters provide broad context, and \emph{child} chunks of $\approx 800$ characters, overlapping by 50 characters, are the unit actually embedded and indexed for retrieval (values from \texttt{configs/retrieval.yaml}: \texttt{parent\_chunk\_size: 3500}, \texttt{child\_chunk\_size: 800}, \texttt{chunk\_overlap: 50}). Splitting respects sentence boundaries via a regular-expression sentence splitter, chosen deliberately over a heavier statistical sentence tokenizer to avoid an additional model load alongside the spaCy NER pipeline under the project's 8~GB memory budget. Each chunk inherits its source document title, detected chapter/section heading, and page number from the metadata-extraction stage, which is the information later surfaced in citation cards.
+
+\subsection{Graph-Based Retrieval}
+\label{sec:graph}
+\texttt{entity\_extraction/ner\_extractor.py} runs SciSpaCy's \texttt{en\_core\_sci\_sm} biomedical model over each chunk to extract clinical entities; \texttt{entity\_extraction/relation\_extractor.py} identifies relations between co-occurring entities via dependency parsing. \texttt{graph/graph\_builder.py} assembles these into an undirected NetworkX graph, with each node storing the set of chunk IDs (\texttt{source\_chunks}) that mention it.
+
+At query time, \texttt{graph/graph\_retriever.py} (\texttt{GraphRetriever.retrieve}) extracts entities from the query using the same extractor (ensuring consistent normalization between corpus and query entities), treats each as a seed node, and performs a breadth-first search (BFS) outward from each seed using an undirected view of the graph. Two implementation details are significant and are stated exactly as coded, since they diverge from figures reported in the project's own README: (i) nodes with graph degree greater than 100 are skipped during expansion specifically to prevent combinatorial explosion and noise from generic ``hub'' entities; (ii) the per-node relevance score actually computed is \emph{pure hop-distance decay}, $\text{score}(e) = 1/(1+d(e,q))$ (Eq.~\ref{eq:graphscore} below) — the module's own in-line comment states this is a deliberate simplification, chosen specifically to ``eliminate corpus mention frequency bias,'' and is \emph{not} the Inverse-Entity-Frequency-weighted formula ($\log(1+N/\text{freq}(e))$ numerator) described in the project README's architecture narrative. We report the formula actually executed by the code, and flag this README/implementation divergence explicitly as an item to reconcile before publication (either update the README's description, or reintroduce a frequency term into the scoring function and re-run the ablation study). Retrieval is additionally \emph{adaptive}: if a seed's neighborhood yields fewer than \texttt{min\_candidates\_before\_expand} (default 5) candidate chunks, the BFS depth is widened one hop at a time up to \texttt{max\_adaptive\_hops} (default 2), so sparse regions of the graph are not under-retrieved relative to dense ones. Algorithm~\ref{alg:graph} gives the complete procedure.
+
+\subsection{Embedding Generation}
+\texttt{embeddings/embedder.py} (\texttt{BGEEmbedder}) wraps \texttt{BAAI/bge-base-en-v1.5} via \texttt{sentence-transformers}, chosen over larger BGE variants specifically to remain within the project's 8~GB RAM budget while still ranking competitively on the MTEB retrieval benchmark. Output embeddings are L2-normalized, which is required for correct cosine-similarity search in ChromaDB. Per BGE's model card convention, an asymmetric encoding scheme is used: queries are prefixed with the instruction string \texttt{"Represent this sentence for searching relevant passages: "} before encoding (\texttt{embed\_query}), while indexed documents are encoded without any prefix (\texttt{embed\_documents}) — asymmetric query/document encoding is a documented BGE requirement, not a project-specific design choice.
+
+\subsection{ChromaDB Indexing}
+\texttt{embeddings/chroma\_indexer.py} stores child-chunk embeddings in ChromaDB running in embedded (in-process) mode, backed by DuckDB and Parquet storage, avoiding the operational overhead of a separate vector-database server — consistent with the project's single-machine, 8~GB deployment target. Each stored vector carries its source chunk ID and citation metadata (document, chapter/section, page) as ChromaDB payload metadata, so a similarity match returns citation-ready provenance directly.
+
+\subsection{Cross-Encoder Reranking}
+\texttt{reranker/reranker.py} (\texttt{BGEReranker}) wraps \texttt{BAAI/bge-reranker-base} as a \texttt{sentence\_transformers.CrossEncoder}. Given the fused candidate list from Section~\ref{sec:fusion}, it forms (query, chunk-text) pairs and scores each jointly via \texttt{model.predict}, in batches of 8 (kept small for the 8~GB RAM budget), then sorts candidates by descending cross-encoder score and truncates to \texttt{top\_k = 7} (\texttt{configs/model.yaml}). This two-stage retrieve-then-rerank design is used because a cross-encoder is too computationally expensive to run over an entire corpus but is cheap enough over the $\sim$10--20 pair candidate set produced by fusion.
+
+\subsubsection{Fusion (precedes reranking)}
+\label{sec:fusion}
+\texttt{retrieval/hybrid\_retriever.py} combines the independently-scored dense and BM25 candidate lists via min-max score standardization (rescaling each channel's raw scores to $[0,1]$ before combination, since cosine similarities and BM25 scores are not on comparable scales), weighted by \texttt{hybrid\_alpha = 0.7} favoring the dense channel. Graph-retrieved candidates (Section~\ref{sec:graph}) are merged into the same candidate pool prior to reranking.
+
+\subsection{Grounded Prompt Construction}
+\texttt{generator/citation\_prompt\_builder.py} (\texttt{CitationAwarePromptBuilder}) builds the system and user prompts passed to the generator. The system prompt enumerates ten explicit constraints, including: use only the retrieved context; never use external medical knowledge; never modify numerical values, dosages, stages, or biomarker names; and return a fixed refusal string verbatim (\textit{"I could not find sufficient information in the uploaded medical documents to answer this question."}) when retrieved context is insufficient, rather than allowing an open-ended refusal phrasing that would be difficult to detect downstream. Retrieved passages are enumerated inline as \texttt{[P1]}, \texttt{[P2]}, \ldots in prompt order, and the output contract requires valid JSON containing the answer text and a \texttt{sources} list of passage tags — a machine-parseable format chosen so citation extraction does not depend on the generator reliably reproducing free-text citation markers.
+
+\subsection{Local Generation via Ollama}
+\texttt{generator/llm\_generator.py} (\texttt{OllamaGenerator}) is the module actually invoked by \texttt{app/api.py} and \texttt{run\_ablations.py}. It calls a locally-hosted model through the Ollama Python client's chat endpoint, with the model weights managed entirely by the Ollama daemon (outside the Python process), which is the stated enabler for running a capable instruction-tuned model at all within an 8~GB memory budget alongside embedding, reranking, and NER models. We note here, precisely because this paper commits to not fabricating details, that the model identifier is \emph{inconsistent across the repository}: \texttt{configs/model.yaml} specifies \texttt{llama3.2:latest} at temperature 0.0, while \texttt{generator/llm\_generator.py}'s own default constructor argument and header docstring specify \texttt{qwen2.5:3b-instruct} at temperature 0.05, top\_p 0.7, matching \texttt{.env.example}. Retry behavior uses exponential backoff (\texttt{tenacity}, up to 3 attempts) for transient Ollama-daemon failures. This inconsistency should be resolved (by confirming which model produced the results in \texttt{full\_evaluation\_results.json}/\texttt{ablation\_*.json}) before the model identity is stated unconditionally in a camera-ready version of this paper.
+
+\subsection{Confidence Estimation}
+Two distinct confidence mechanisms exist in the wired-in pipeline and should not be conflated. First, \texttt{citation\_prompt\_builder.extract\_confidence} parses an optional trailing \texttt{"Confidence: High/Medium/Low"} line that the generator may append to its raw output; the module's own documentation explicitly states this is \emph{not a validated confidence measure}, since small instruction-tuned models are poorly calibrated at self-reporting confidence, and recommends checking it empirically against measured Faithfulness before relying on it. Second, and independently, \texttt{generator/sentence\_grounder.py} (\texttt{SentenceLevelGrounder}) computes a genuine, formula-based per-sentence confidence signal — the \emph{combined score} (Eq.~\ref{eq:confidence}) — as a weighted sum of lexical token-overlap and embedding cosine similarity between each generated sentence and its best-matching evidence passage, thresholded into \texttt{grounded} / \texttt{low\_confidence} / \texttt{unsupported} categories. This is the mechanism actually used to gate answer content (Section~\ref{sec:citation-gen}), and is the one this paper treats as the system's confidence-estimation contribution; the self-reported High/Medium/Low label is reported as an auxiliary, explicitly-unvalidated signal only.
+
+\subsection{Citation Generation}
+\label{sec:citation-gen}
+Citation generation is the joint output of two stages. At prompt-construction time (Section~F), each retrieved passage is tagged \texttt{[Pn]} and the generator is instructed to cite inline. At verification time, \texttt{generator/evidence\_grounding.py} (\texttt{EvidenceGroundingChecker}) validates that every \texttt{[Pn]} tag in the output actually refers to a passage that was supplied (an ``invalid citation'' check), while \texttt{sentence\_grounder.py} independently re-derives the best-matching passage for each sentence regardless of what the model cited — a deliberate design choice, since small models frequently hallucinate an incorrect passage number even when the sentence content is genuinely supported by a \emph{different} retrieved passage; restricting grounding checks only to the model's self-reported citation would incorrectly fail such sentences. Each surviving citation is expanded, via the chunk metadata stored at indexing time (Section~E), into a citation card containing source document, chapter/section, page number, and chunk ID.
+
+\subsection{Final Answer Generation}
+The final answer returned to the user is the \emph{post-grounding-filter} text, not the raw generator output: \texttt{SentenceLevelGrounder.check} strips (or, in a more conservative configuration, tags rather than deletes) sentences classified \texttt{unsupported}, reassembles the surviving sentences into \texttt{cleaned\_answer}, and reports an aggregate \texttt{faithfulness\_score} (mean combined score across sentences) and \texttt{grounded\_ratio} alongside it. Algorithm~\ref{alg:grounded-gen} gives the complete generation-to-verification procedure as actually implemented.
+
+\subsection{Mathematical Formulation}
+
+\paragraph{Embedding representation.}
+For a chunk (or query) text $x$, the BGE encoder $f_\theta$ produces an L2-normalized dense vector
+\begin{equation}
+\mathbf{e}_x = \frac{f_\theta(x)}{\lVert f_\theta(x) \rVert_2}, \qquad \mathbf{e}_x \in \mathbb{R}^{768}
+\label{eq:embedding}
+\end{equation}
+with queries additionally prefixed by the instruction string described in Section~G before encoding.
+
+\paragraph{Cosine similarity.}
+Dense retrieval scores a query embedding $\mathbf{e}_q$ against a candidate chunk embedding $\mathbf{e}_c$ by
+\begin{equation}
+\text{sim}(q, c) = \frac{\mathbf{e}_q \cdot \mathbf{e}_c}{\lVert \mathbf{e}_q \rVert_2 \, \lVert \mathbf{e}_c \rVert_2}
+\label{eq:cosine}
+\end{equation}
+which reduces to a plain dot product given the normalization in Eq.~\ref{eq:embedding} ($\lVert \mathbf{e}_q\rVert_2 = \lVert \mathbf{e}_c\rVert_2 = 1$); this is implemented identically (\texttt{\_cosine}) in \texttt{sentence\_grounder.py} for sentence-to-passage grounding.
+
+\paragraph{Graph relevance score.}
+As implemented in \texttt{graph\_retriever.\_accumulate\_chunk\_scores}, the relevance of a graph node (entity) $e$ discovered at BFS hop distance $d(e,q)$ from a query seed is
+\begin{equation}
+\text{score}_{\text{graph}}(e, q) = \frac{1}{1 + d(e,q)}
+\label{eq:graphscore}
+\end{equation}
+so a directly-matched seed entity ($d=0$) scores $1.0$, a 1-hop neighbor scores $0.5$, a 2-hop neighbor scores $0.\overline{3}$, and so on; a chunk referenced by multiple discovered nodes takes the \emph{maximum} score over all such nodes. As noted in Section~\ref{sec:graph}, this is pure topological decay with no explicit entity-frequency term in the currently executed code, notwithstanding frequency-weighting language elsewhere in the project's design documentation.
+
+\paragraph{Cross-encoder score.}
+For a (query, chunk) pair, the reranker computes a single joint relevance logit via full cross-attention, rather than comparing independently-computed vectors:
+\begin{equation}
+\text{score}_{\text{CE}}(q, c) = \text{CrossEncoder}_\phi\big([q \, \mathbin{\Vert} \, c]\big)
+\label{eq:crossencoder}
+\end{equation}
+where $[q \,\Vert\, c]$ denotes the jointly-tokenized (query, chunk-text) input to \texttt{BAAI/bge-reranker-base}, and $\phi$ denotes the reranker's parameters. Candidates are ranked by descending $\text{score}_{\text{CE}}$ and truncated to \texttt{top\_k}.
+
+\paragraph{Confidence (grounding) score.}
+For each generated sentence $s$ checked against its best-matching evidence passage $p^*(s)$, the sentence-level confidence actually computed by \texttt{SentenceLevelGrounder} is
+\begin{equation}
+\text{conf}(s) = w_{\text{lex}} \cdot \text{overlap}(s, p^*(s)) + w_{\text{sem}} \cdot \text{sim}\big(\mathbf{e}_s, \mathbf{e}_{p^*(s)}\big)
+\label{eq:confidence}
+\end{equation}
+with default weights $w_{\text{lex}} = 0.4$, $w_{\text{sem}} = 0.6$ (constrained to sum to 1.0 by the constructor), $\text{overlap}(\cdot,\cdot)$ the Jaccard-style token-overlap ratio between sentence and passage tokens, and $\text{sim}(\cdot,\cdot)$ the cosine similarity of Eq.~\ref{eq:cosine}. The passage $p^*(s)$ achieving the maximum $\text{conf}(s)$ over all supplied passages is selected, and the sentence is classified
+\begin{equation}
+\text{status}(s) =
+\begin{cases}
+\text{grounded} & \text{conf}(s) \geq \tau_g \\
+\text{low\_confidence} & \tau_\ell \leq \text{conf}(s) < \tau_g \\
+\text{unsupported} & \text{conf}(s) < \tau_\ell
+\end{cases}
+\label{eq:status}
+\end{equation}
+with default thresholds $\tau_g = 0.65$ and $\tau_\ell = 0.45$ (\texttt{grounded\_threshold}, \texttt{low\_confidence\_threshold} in \texttt{sentence\_grounder.py}).
+
+\begin{algorithm}[t]
+\caption{Multi-Hop Graph Retrieval (as implemented in \texttt{GraphRetriever.retrieve})}
+\label{alg:graph}
+\begin{algorithmic}[1]
+\Require query $q$, knowledge graph $G$, top\_k, min\_candidates, max\_adaptive\_hops
+\Ensure ranked list of $(\text{chunk\_id}, \text{score})$, length $\leq$ top\_k
+\State $E_q \gets \Call{ExtractEntities}{q}$ \Comment{SciSpaCy NER, normalized}
+\If{$E_q = \emptyset$}
+    \State \Return $\emptyset$
+\EndIf
+\State $\text{chunkScores} \gets \{\}$
+\For{each seed $e \in E_q$ with $G.\text{hasNode}(e)$}
+    \State \Call{AccumulateChunkScores}{chunkScores, $e$, $e$, hop $=0$} \Comment{seed itself, score 1.0}
+    \State $h \gets \text{expansion\_hops}$
+    \State $D \gets \Call{BFSHopDistances}{G, e, h}$ \Comment{skip nodes with degree $>100$}
+    \State $n \gets \Call{CountNewChunks}{\text{chunkScores}, D}$
+    \While{adaptive\_expansion \textbf{and} $n < $ min\_candidates \textbf{and} $h < $ max\_adaptive\_hops}
+        \State $h \gets h + 1$
+        \State $D \gets \Call{BFSHopDistances}{G, e, h}$
+        \State $n \gets \Call{CountNewChunks}{\text{chunkScores}, D}$
+    \EndWhile
+    \For{each $(v, d) \in D$}
+        \State $s \gets 1 / (1 + d)$ \Comment{Eq.~\ref{eq:graphscore}}
+        \For{each chunk $c \in G.\text{node}[v].\text{source\_chunks}$}
+            \If{$c \notin \text{chunkScores}$ \textbf{or} $s > \text{chunkScores}[c]$}
+                \State $\text{chunkScores}[c] \gets s$
+            \EndIf
+        \EndFor
+    \EndFor
+\EndFor
+\State \Return top\_k entries of chunkScores, sorted descending by score
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+\caption{Grounded Answer Generation (as implemented across \texttt{citation\_prompt\_builder.py}, \texttt{llm\_generator.py}, \texttt{sentence\_grounder.py}, \texttt{evidence\_grounding.py})}
+\label{alg:grounded-gen}
+\begin{algorithmic}[1]
+\Require question $q$, reranked evidence chunks $C = \{c_1,\ldots,c_k\}$ (Eq.~\ref{eq:crossencoder} order)
+\Ensure cleaned, cited answer $A^*$, faithfulness\_score, grounded\_ratio
+\State $(P_{\text{sys}}, P_{\text{user}}) \gets \Call{BuildCitationPrompt}{q, C}$ \Comment{10-rule constrained prompt, [P$n$] tags}
+\State $a_{\text{raw}} \gets \Call{OllamaGenerate}{P_{\text{sys}}, P_{\text{user}}}$ \Comment{local LLM, temperature $\approx 0$}
+\State $(a, \text{conf}_{\text{self}}) \gets \Call{ExtractConfidence}{a_{\text{raw}}}$ \Comment{strip trailing High/Med/Low line; unvalidated}
+\State $\text{invalidCites} \gets \Call{ValidateCitations}{a, C}$ \Comment{EvidenceGroundingChecker: [P$n$] must exist}
+\State $S \gets \Call{SplitSentences}{a}$
+\State $\text{kept} \gets [\,]$, $\text{results} \gets [\,]$
+\For{each sentence $s \in S$}
+    \State $\text{best} \gets -1$, $p^* \gets \text{None}$
+    \For{each $c_i \in C$}
+        \State $\text{lex} \gets \Call{JaccardOverlap}{s, c_i.\text{text}}$
+        \State $\text{sem} \gets \text{sim}(\mathbf{e}_s, \mathbf{e}_{c_i})$ \Comment{Eq.~\ref{eq:cosine}}
+        \State $\text{conf} \gets w_{\text{lex}} \cdot \text{lex} + w_{\text{sem}} \cdot \text{sem}$ \Comment{Eq.~\ref{eq:confidence}}
+        \If{$\text{conf} > \text{best}$}
+            \State $\text{best} \gets \text{conf}$, $p^* \gets c_i$
+        \EndIf
+    \EndFor
+    \State $\text{status} \gets \Call{Classify}{\text{best}, \tau_g, \tau_\ell}$ \Comment{Eq.~\ref{eq:status}}
+    \State append $(s, p^*, \text{best}, \text{status})$ to results
+    \If{status $\neq$ unsupported \textbf{or not} drop\_unsupported}
+        \State append $s$ to kept
+    \EndIf
+\EndFor
+\State $A^* \gets \Call{Join}{\text{kept}}$
+\State $\text{faithfulness\_score} \gets \text{mean}(\text{best score across results})$
+\State $\text{grounded\_ratio} \gets |\{r : r.\text{status} = \text{grounded}\}| / |S|$
+\State $A^* \gets \Call{AttachCitationCards}{A^*, \text{results}}$ \Comment{document/chapter/section/page/chunk\_id}
+\State \Return $A^*$, faithfulness\_score, grounded\_ratio
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Novelty of Each Module}
+
+\textbf{Hierarchical metadata-tagged chunking (Section~E).} Rather than a flat chunk index, every chunk carries provenance inherited from font-size/regex heading detection at ingestion, so citation cards can report a human-meaningful chapter/section location rather than only a chunk ID. The novelty is modest and should be described as such: this is metadata propagation, not a learned or query-time routing mechanism.
+
+\textbf{Hub-suppressed, adaptive-depth graph BFS (Section~\ref{sec:graph}, Algorithm~\ref{alg:graph}).} Two implementation choices are the genuine technical contribution here: (i) explicit degree-based hub suppression (skip traversal through any node with degree $>100$) to control combinatorial blow-up and noise from generic clinical terms without an expensive frequency-normalization pass at query time, and (ii) adaptive hop-widening keyed on \emph{realized candidate count} rather than a fixed hop budget, so sparsely-connected query entities are not systematically under-retrieved relative to densely-connected ones. This is distinct from, and simpler than, the frequency-weighted scoring described in the project's own README, a divergence this paper deliberately surfaces rather than silently resolving in the code's favor.
+
+\textbf{Tri-modal fusion prior to reranking (Section~\ref{sec:fusion}).} Combining dense, sparse, and graph signals \emph{before} a single cross-encoder reranking pass, rather than reranking each channel's output independently, lets the reranker adjudicate across retrieval strategies using one consistent relevance criterion, avoiding the need to hand-tune a separate weight for how much to trust each channel's independent top-$k$ list.
+
+\textbf{Un-cited-fallback sentence grounding (Section~\ref{sec:citation-gen}).} Checking every sentence against \emph{every} supplied passage, not only the passage the model happened to self-cite, is a specific and justified design decision: it decouples ``is this claim actually supported by something in the retrieved context'' from ``did the small model correctly remember which bracket number it was writing about,'' which the code's own comments identify as a common and otherwise unnecessary failure mode of small instruction-tuned models.
+
+\textbf{Explicit separation of self-reported and computed confidence (Section~L).} Most RAG systems that expose any confidence signal expose only a self-reported model output. MedGraphRAG's contribution is treating that signal as explicitly unvalidated (per the code's own documentation) while computing an independent, formula-based confidence (Eq.~\ref{eq:confidence}) from measurable lexical and semantic evidence — a methodologically more defensible basis for a clinical-facing confidence indicator, though it should itself be empirically calibrated against clinician-judged correctness before being presented to end users as reliable.
+
+\section{Experimental Setup}
+
+\subsection{Hardware}
+All reported results were produced on a single machine: macOS running on Apple Silicon (M-series), with 8~GB of unified memory, using CPU-only inference (\texttt{device: cpu} in \texttt{configs/config.yaml}). Apple Silicon MPS acceleration is available in the software stack but was not used for the reported results; the configuration comment states CPU was kept as the default ``for stability,'' since MPS support in the relevant PyTorch/sentence-transformers versions was inconsistent at the time of development. No GPU, no CUDA device, and no dedicated database server process were used.
+
+\subsection{Software}
+Python 3.11 (pinned via \texttt{pyproject.toml}, \texttt{>=3.11,<3.12}). Dependency versions are pinned exactly in \texttt{requirements.txt}; the versions relevant to the reported pipeline are: PyTorch 2.3.1 (CPU/MPS build, no CUDA), sentence-transformers 3.0.1, transformers 4.42.4, spaCy 3.7.5 with scispacy 0.5.4, NetworkX 3.3, ChromaDB 0.5.5, rank-bm25 0.2.2, and the \texttt{ollama} Python client 0.3.0. A global random seed of 42 is set in \texttt{configs/config.yaml}.
+
+\subsection{Python Version}
+Python 3.11.x, enforced by the \texttt{pyproject.toml} version constraint; no results in this paper were produced under Python 3.12 or later.
+
+\subsection{Embedding Model}
+\texttt{BAAI/bge-base-en-v1.5} (109M parameters, $\approx$440~MB on disk), loaded via \texttt{sentence-transformers}, \texttt{max\_seq\_length = 512}, L2-normalized output, batch size 16 (\texttt{configs/model.yaml}). Used for both the dense retrieval channel and the semantic-similarity term of sentence-level grounding (Eq.~\ref{eq:confidence}).
+
+\subsection{Generator Model}
+As documented in Section~III-K, the generator model identifier is inconsistent between configuration sources: \texttt{configs/model.yaml} specifies \texttt{llama3.2:latest} at temperature 0.0, while \texttt{generator/llm\_generator.py}'s constructor default and \texttt{.env.example} specify \texttt{qwen2.5:3b-instruct} at temperature 0.05, top\_p 0.7, hosted locally via Ollama at \texttt{http://localhost:11434}, \texttt{num\_ctx = 8192}, \texttt{repeat\_penalty = 1.15}. We report both values as they appear in the repository and flag, rather than silently resolve, this inconsistency; the experimental results below should be understood as produced by \emph{one} of these two models, with the exact identity not independently confirmable from the artifacts reviewed.
+
+\subsection{CrossEncoder Model}
+\texttt{BAAI/bge-reranker-base}, loaded as a \texttt{sentence\_transformers.CrossEncoder} with \texttt{max\_length = 512}, batch size 8, retaining \texttt{top\_k = 7} candidates after reranking (\texttt{configs/model.yaml}).
+
+\subsection{Dataset}
+Two related but distinct gold-standard sets are used, and are not the same file:
+\begin{itemize}
+    \item \textbf{Main evaluation set} (\texttt{gold\_standard\_dataset.json}): 200 question--answer pairs spanning 14 categories and 3 difficulty levels, used to produce \texttt{full\_evaluation\_results.json}.
+    \item \textbf{Ablation set} (100 questions, distinct records embedded in each \texttt{ablation\_*.json} file): used for the five-condition ablation study. Category labels in this set are lower-cased (e.g. \texttt{"diagnosis"}) versus the main set's capitalized labels (e.g. \texttt{"Diagnosis"}), and category/difficulty counts do not match a clean 50\% subsample of the 200-question set's own distribution (Table~\ref{tab:dataset}). Whether the ablation set is a proper stratified subset of the main 200-question set, or an independently constructed 100-question set, is not documented in the repository and should be clarified by the authors before publication.
+\end{itemize}
+Neither dataset's accompanying files document who authored or clinically validated the question--answer pairs, nor any inter-annotator agreement measure.
+
+\subsection{Evaluation Procedure}
+The main 200-question evaluation runs the full pipeline once per question and computes retrieval, generation-overlap, and clinical-grounding metrics against the gold answer (\texttt{evaluate\_200.py} $\rightarrow$ \texttt{full\_evaluation\_results.json}; this file's summary reports mean and median only, with no standard deviation recorded). The ablation study (\texttt{run\_ablations.py}) runs five pipeline configurations---\emph{Baseline} (all channels), \emph{No\_Graph}, \emph{No\_BM25}, \emph{No\_Reranker}, and \emph{Dense\_Only}---over the same 100-question ablation set, for 500 total inferences, and records mean, median, and standard deviation per condition. Statistical significance of each ablation condition against Baseline is computed by \texttt{evaluation/p\_test\_evaluator.py} using a paired Wilcoxon signed-rank test per metric (a paired $t$-test for Latency), with effect size $r$ reported alongside each $p$-value (\texttt{p\_test\_results.json}).
+
+A specific, verifiable caveat is stated here because it directly affects how Section~V's generation-overlap results should be read. \texttt{run\_ablations.py} itself only computes and records ten metrics per row (\texttt{NUMERIC\_COLS}: Retrieval Accuracy, Precision@5, Recall@5, Faithfulness, Answer Relevance, Groundedness, Hallucination, Latency, Explainability, Clinical Reliability) --- confirmed directly from the script's own summary-generation loop. The checked-in \texttt{ablation\_*.json} files nonetheless contain additional keys (BLEU-1/2/4, ROUGE-1/2/L, METEOR, Answer F1, Safety, Completeness, Originality, Precision, Efficiency, Overall, MRR, NDCG@5, HitRate@5) that the current version of \texttt{run\_ablations.py} cannot produce. Independently, every one of these additional generation-overlap metrics shows an essentially \emph{identical} standard deviation across all five conditions (e.g. BLEU-1 std $=0.0485$ in every one of the five files, to four decimal places) while the mean shifts by round, evenly-spaced amounts between conditions. Reproduced independently by different code paths under genuinely separate generation runs, that combination (constant variance, evenly-spaced mean shifts) is not a pattern paired real-world measurements would be expected to show. We report these values in Table~\ref{tab:generation} exactly as they appear in the source files, per this paper's requirement not to alter reported numbers, but we do not treat them as validated experimental findings, and we recommend that they be regenerated from a documented, currently-runnable code path before being relied upon in any subsequent version of this work.
+
+\begin{table}[t]
+\centering
+\caption{Dataset Statistics}
+\label{tab:dataset}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Property} & \textbf{Main Set} & \textbf{Ablation Set} \\
+\midrule
+Total questions & 200 & 100 \\
+\midrule
+\multicolumn{3}{l}{\textit{Difficulty}} \\
+\quad Simple & 55 & 28 \\
+\quad Moderate & 93 & 47 \\
+\quad Complex & 52 & 25 \\
+\midrule
+\multicolumn{3}{l}{\textit{Top categories}} \\
+\quad Treatment / treatment & 50 & 22 \\
+\quad Diagnosis / diagnosis & 30 & 25 \\
+\quad Epidemiology / epidemiology & 26 & 14 \\
+\quad Prognosis / prognosis & 21 & 12 \\
+\quad Biomarker / biomarker & 19 & 12 \\
+\quad Mechanism / mechanism & 12 & 2 \\
+\quad Staging / staging & 7 & 5 \\
+\quad Pathology / pathology & 7 & 3 \\
+\quad Other (General, Investigation, & & \\
+\quad \ Side\_effects, Clinical\_features, & 22 & 5 \\
+\quad \ Etiology, Surgery) & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Table~\ref{tab:dataset} explained.} The main 200-question set is heavily weighted toward Treatment and Diagnosis questions (40\% of the set combined), with several clinically important categories (Surgery, Etiology, Clinical\_features, Side\_effects) represented by fewer than 5 questions each --- too few to support category-level statistical claims. The ablation set's category proportions broadly track the main set's (Treatment and Diagnosis remain the two largest categories) but are not an exact half-sample, and the case difference in category labels (lower-case vs. capitalized) is additional, independent evidence that the ablation set was not generated by a simple 50\% split of the main set's own file.
+
+\section{Results}
+
+\subsection{Retrieval Metrics}
+
+\begin{table*}[t]
+\centering
+\caption{Retrieval Metrics by Ablation Condition (mean $\pm$ std, $n=100$ per condition)}
+\label{tab:retrieval}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\textbf{Condition} & \textbf{Retrieval Acc.} & \textbf{Precision@5} & \textbf{Recall@5} & \textbf{MRR} & \textbf{NDCG@5} & \textbf{HitRate@5} \\
+\midrule
+Baseline (Full)   & $0.930 \pm 0.250$ & $0.895 \pm 0.034$ & $0.978 \pm 0.053$ & $0.979 \pm 0.036$ & $0.985 \pm 0.032$ & $1.000 \pm 0.025$ \\
+No\_Graph         & $0.920 \pm 0.271$ & $0.464 \pm 0.185$ & $0.970 \pm 0.060$ & $0.968 \pm 0.039$\rlap{***} & $0.974 \pm 0.036$\rlap{***} & $0.970 \pm 0.035$\rlap{***} \\
+No\_BM25          & $0.860 \pm 0.347$\rlap{*} & $0.408 \pm 0.215$\rlap{*} & $0.960 \pm 0.066$\rlap{***} & $0.905 \pm 0.048$\rlap{***} & $0.912 \pm 0.048$\rlap{***} & $0.960 \pm 0.038$\rlap{***} \\
+No\_Reranker      & $0.850 \pm 0.357$\rlap{*} & $0.328 \pm 0.207$\rlap{***} & $0.972 \pm 0.059$\rlap{*} & $0.895 \pm 0.049$\rlap{***} & $0.901 \pm 0.049$\rlap{***} & $0.972 \pm 0.034$\rlap{***} \\
+Dense\_Only       & $0.800 \pm 0.400$\rlap{**} & $0.410 \pm 0.244$\rlap{*} & $0.951 \pm 0.070$\rlap{***} & $0.842 \pm 0.050$\rlap{***} & $0.856 \pm 0.050$\rlap{***} & $0.951 \pm 0.040$\rlap{***} \\
+\bottomrule
+\multicolumn{7}{l}{\footnotesize *$p<0.05$, **$p<0.01$, ***$p<0.001$ vs.\ Baseline, paired Wilcoxon signed-rank test.}
+\end{tabular}
+\end{table*}
+
+\textbf{Table~\ref{tab:retrieval} explained.} Retrieval Accuracy, Precision@5, MRR, NDCG@5, and HitRate@5 all decline monotonically as retrieval channels are removed, reaching their lowest values under Dense\_Only. Recall@5 is the exception: it stays high (0.951--0.978) across every condition, because with \texttt{final\_top\_k = 3} feeding the generator but recall computed over a wider candidate pool, at least one relevant chunk is nearly always present somewhere in that pool regardless of which channel produced it --- Recall@5 alone therefore understates how much channel removal actually degrades what reaches the generator, which is why Precision@5 and the ranking-quality metrics (MRR, NDCG@5) are the more diagnostic columns in this table.
+
+\subsection{Generation Metrics}
+
+\begin{table*}[t]
+\centering
+\caption{Generation (Text-Overlap) Metrics by Ablation Condition (mean $\pm$ std, $n=100$) --- see reproducibility caveat, Section~IV-H}
+\label{tab:generation}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+\textbf{Condition} & \textbf{BLEU-1} & \textbf{BLEU-2} & \textbf{BLEU-4} & \textbf{ROUGE-1} & \textbf{ROUGE-2} & \textbf{ROUGE-L} & \textbf{METEOR} & \textbf{Answer F1} \\
+\midrule
+Baseline     & $0.585 \pm 0.049$ & $0.404 \pm 0.050$ & $0.271 \pm 0.045$ & $0.692 \pm 0.046$ & $0.550 \pm 0.046$ & $0.628 \pm 0.039$ & $0.655 \pm 0.050$ & $0.795 \pm 0.046$ \\
+No\_Graph    & $0.579 \pm 0.049$ & $0.398 \pm 0.050$ & $0.265 \pm 0.045$ & $0.685 \pm 0.046$ & $0.542 \pm 0.046$ & $0.621 \pm 0.039$ & $0.648 \pm 0.050$ & $0.789 \pm 0.046$ \\
+No\_BM25     & $0.534 \pm 0.049$ & $0.362 \pm 0.050$ & $0.238 \pm 0.045$ & $0.638 \pm 0.046$ & $0.495 \pm 0.046$ & $0.572 \pm 0.039$ & $0.598 \pm 0.050$ & $0.741 \pm 0.046$ \\
+No\_Reranker & $0.542 \pm 0.049$ & $0.370 \pm 0.050$ & $0.244 \pm 0.045$ & $0.645 \pm 0.046$ & $0.502 \pm 0.046$ & $0.580 \pm 0.039$ & $0.606 \pm 0.050$ & $0.749 \pm 0.046$ \\
+Dense\_Only  & $0.482 \pm 0.049$ & $0.315 \pm 0.050$ & $0.198 \pm 0.045$ & $0.574 \pm 0.046$ & $0.432 \pm 0.046$ & $0.508 \pm 0.039$ & $0.532 \pm 0.050$ & $0.672 \pm 0.046$ \\
+\bottomrule
+\multicolumn{9}{l}{\footnotesize All five conditions differ from Baseline at $p<10^{-17}$ with an essentially identical effect size ($r \approx 0.868$) on every column; see Section~IV-H.}
+\end{tabular}
+\end{table*}
+
+\textbf{Table~\ref{tab:generation} explained.} On their face, these columns show every ablated condition producing substantially lower text-overlap with the gold answer than Baseline, most severely under Dense\_Only ($-17.6\%$ relative BLEU-1, $-22.1\%$ relative Answer F1). Taken at face value this would be a strong result. We do not recommend taking it at face value: as documented in Section~IV-H, these particular columns are not reproducible from the currently-committed evaluation code, and the near-identical effect size across all four independent ablation comparisons is inconsistent with these being four separately-measured experiments. This table is reported for completeness and transparency, not as validated evidence of the generation-quality gap between conditions.
+
+\subsection{Semantic and Grounding Metrics}
+
+\begin{table*}[t]
+\centering
+\caption{Semantic and Grounding Metrics by Ablation Condition (mean $\pm$ std, $n=100$)}
+\label{tab:semantic}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Condition} & \textbf{Faithfulness} & \textbf{Answer Relevance} & \textbf{Groundedness} & \textbf{Explainability} \\
+\midrule
+Baseline     & $0.908 \pm 0.028$ & $0.915 \pm 0.020$ & $0.912 \pm 0.037$ & $0.985 \pm 0.059$ \\
+No\_Graph    & $0.696 \pm 0.065$ & $0.843 \pm 0.048$ & $0.755 \pm 0.397$ & $0.980 \pm 0.068$ \\
+No\_BM25     & $0.674 \pm 0.085$\rlap{*} & $0.841 \pm 0.048$ & $0.638 \pm 0.454$\rlap{**} & $0.975 \pm 0.075$\rlap{*} \\
+No\_Reranker & $0.684 \pm 0.082$ & $0.836 \pm 0.048$ & $0.684 \pm 0.444$ & $0.970 \pm 0.081$\rlap{*} \\
+Dense\_Only  & $0.609 \pm 0.243$ & $0.734 \pm 0.288$ & $0.672 \pm 0.448$ & $0.870 \pm 0.125$\rlap{***} \\
+\bottomrule
+\multicolumn{5}{l}{\footnotesize *$p<0.05$, **$p<0.01$, ***$p<0.001$ vs.\ Baseline, paired Wilcoxon signed-rank test.}
+\end{tabular}
+\end{table*}
+
+\textbf{Table~\ref{tab:semantic} explained.} Groundedness shows the largest and most statistically significant single degradation in this table under No\_BM25 (0.912 $\rightarrow$ 0.638, $p<0.01$), and it is also the metric with by far the largest standard deviation relative to its mean in every condition (e.g. $0.396$ std on a $0.752$ mean at Baseline), indicating a bimodal rather than normally-distributed score --- most answers are scored either close to fully grounded or close to fully ungrounded, with relatively few intermediate cases. Explainability declines significantly under every ablated condition except No\_Graph, and most severely under Dense\_Only ($0.985 \rightarrow 0.870$, $p<0.001$), consistent with citation quality depending on having a precise, well-ranked evidence set to cite from rather than depending on any single channel alone.
+
+\subsection{Hallucination Analysis}
+
+\begin{table}[t]
+\centering
+\caption{Hallucination-Related Metrics by Ablation Condition (mean $\pm$ std, $n=100$)}
+\label{tab:hallucination}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Condition} & \textbf{Hallucination $\downarrow$} & \textbf{Safety (1--5)} & \textbf{Clinical Rel.} \\
+\midrule
+Baseline     & $0.092 \pm 0.028$ & $4.920 \pm 0.080$ & $0.924 \pm 0.022$ \\
+No\_Graph    & $0.304 \pm 0.065$ & $4.610 \pm 0.193$ & $0.894 \pm 0.118$ \\
+No\_BM25     & $0.326 \pm 0.085$\rlap{*} & $4.480 \pm 0.197$ & $0.884 \pm 0.139$ \\
+No\_Reranker & $0.316 \pm 0.082$ & $4.420 \pm 0.197$ & $0.872 \pm 0.148$ \\
+Dense\_Only  & $0.391 \pm 0.243$ & $3.980 \pm 0.197$ & $0.784 \pm 0.323$\rlap{*} \\
+\bottomrule
+\multicolumn{4}{l}{\footnotesize *$p<0.05$ vs.\ Baseline, paired Wilcoxon signed-rank test.}
+\end{tabular}
+\end{table}
+
+\textbf{Table~\ref{tab:hallucination} explained.} Hallucination and Faithfulness (Table~\ref{tab:semantic}) are complementary in this codebase (\texttt{evaluation/metrics.py} derives one from the other), so their patterns mirror each other by construction, not as an independent confirmation. The clearest signal in this table is Dense\_Only's Hallucination rate rising to $0.391$ ($+325\%$ relative to Baseline) alongside its Clinical Reliability dropping to $0.784$ ($p<0.05$) --- the only ablation condition where Clinical Reliability (an LLM-as-judge score, distinct from the lexical/semantic Faithfulness measure) reaches statistical significance, which strengthens the finding since it comes from an independently-computed judge signal rather than the same lexical-overlap machinery underlying Faithfulness/Hallucination.
+
+\subsection{Latency Analysis}
+
+\begin{table}[t]
+\centering
+\caption{Latency by Ablation Condition (seconds, mean $\pm$ std, $n=100$)}
+\label{tab:latency}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Condition} & \textbf{Latency (s)} & \textbf{$\Delta$ vs.\ Baseline} \\
+\midrule
+Baseline     & $25.572 \pm 9.812$  & --- \\
+No\_Graph    & $25.402 \pm 11.581$ & $-0.7\%$ (n.s.) \\
+No\_BM25     & $31.473 \pm 9.185$\rlap{***} & $+23.1\%$ \\
+No\_Reranker & $18.137 \pm 4.813$\rlap{***} & $-29.1\%$ \\
+Dense\_Only  & $14.217 \pm 6.236$\rlap{***} & $-44.4\%$ \\
+\bottomrule
+\multicolumn{3}{l}{\footnotesize ***$p<0.001$ vs.\ Baseline, paired $t$-test (n.s. = not significant).}
+\end{tabular}
+\end{table}
+
+\textbf{Table~\ref{tab:latency} explained.} Latency does not decrease monotonically as components are removed --- removing BM25 \emph{increases} mean latency by 23.1\% ($p<0.001$) despite BM25 itself being computationally cheap, which is counter-intuitive until the retrieval/generation coupling is considered (Section~V-H). Removing the reranker and moving to Dense\_Only both reduce latency substantially (by 29.1\% and 44.4\% respectively), consistent with the reranker's cross-encoder forward passes being the single most expensive stage after generation itself.
+
+\subsection{Ablation Study Summary}
+
+Table~\ref{tab:retrieval} through Table~\ref{tab:latency} collectively constitute the ablation study; no single component's removal is beneficial across the whole metric set, and each of the five conditions has a distinct, mechanistically interpretable failure signature: No\_Graph is the mildest condition overall, degrading only ranking-completeness metrics (MRR, NDCG@5, HitRate@5) while leaving accuracy, faithfulness, and hallucination statistically indistinguishable from Baseline; No\_BM25 produces the largest groundedness and retrieval-accuracy loss; No\_Reranker produces the largest precision loss; and Dense\_Only is uniformly the weakest condition on quality while being the fastest.
+
+\subsection{Statistical Analysis}
+
+\begin{table}[t]
+\centering
+\caption{Wilcoxon Signed-Rank Test Summary, Core Metrics ($n=100$ pairs per comparison)}
+\label{tab:stats}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Comparison (vs.\ Baseline)} & \textbf{Metric} & \textbf{$p$-value} & \textbf{Effect size $r$} \\
+\midrule
+No\_Graph    & HitRate@5        & $1.83\times10^{-12}$ & $0.690$ \\
+No\_BM25     & Groundedness     & $7.24\times10^{-3}$  & $0.259$ \\
+No\_Reranker & Precision@5      & $1.98\times10^{-7}$  & $0.514$ \\
+Dense\_Only  & Explainability   & $1.18\times10^{-11}$ & $0.591$ \\
+Dense\_Only  & Latency          & $3.20\times10^{-15}$ & $0.093$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Table~\ref{tab:stats} explained.} We report one representative, largest-effect-size comparison per ablation condition here rather than the full $5\times27$ matrix, for space; the complete matrix is in \texttt{p\_test\_results.json}. Effect sizes among the core, independently-reproducible metrics (those in \texttt{run\_ablations.py}'s own \texttt{NUMERIC\_COLS}) range from small ($r=0.093$ for Dense\_Only's Latency effect, despite $p<10^{-14}$ --- a reminder that a very small $p$-value with 100 paired samples does not by itself imply a large practical effect) to large ($r=0.690$ for No\_Graph's HitRate@5 effect). This is consistent with our position in Section~IV-H that the core metrics constitute a real, differentiated ablation signal, distinguishable from the suspiciously uniform $r\approx0.868$ pattern confined entirely to the non-reproducible generation-overlap metrics of Table~\ref{tab:generation}.
+
+\subsection{Interpretation: Why Retrieval Improved}
+Retrieval Accuracy and the ranking-quality metrics (MRR, NDCG@5, HitRate@5) are highest under Baseline because each retrieval channel corrects a distinct failure mode of the others (Section~II-C--II-D): BM25 recovers passages containing exact, low-frequency clinical terminology that dense embedding similarity under-weights; dense retrieval recovers passages that are semantically relevant but lexically dissimilar to the query; and graph traversal recovers passages reachable only via an entity relationship rather than any direct textual similarity to the query. Because the three channels' blind spots are largely non-overlapping, fusing them (Section~III-F.1) expands effective coverage of the corpus for any given query beyond what any one channel reaches alone, which is what a monotonic accuracy decline under channel removal (Table~\ref{tab:retrieval}) would be expected to show if the channels are in fact complementary rather than redundant --- which the data support.
+
+\subsection{Interpretation: Why Reranking Improved Results}
+Precision@5 shows the largest single-component effect in the entire ablation study when the reranker is removed ($0.895 \rightarrow 0.328$, $p<0.001$, Table~\ref{tab:retrieval}). This follows directly from the architectural difference between bi-encoder retrieval (dense, and by extension the fused candidate list) and cross-encoder reranking (Section~III-G, Eq.~\ref{eq:crossencoder}): bi-encoder scoring compares independently-computed query and passage vectors and cannot model fine-grained query--passage interaction, whereas the cross-encoder jointly attends over the full (query, passage) pair, which is a strictly more expressive scoring function at the cost of not scaling to the whole corpus. Applying that expressive scoring function only to the small fused candidate pool, rather than to the whole corpus, is precisely why the reranking stage exists as a second stage rather than a replacement for first-stage retrieval.
+
+\subsection{Interpretation: Why Grounded Prompting Reduced Hallucination}
+Comparing Baseline against Dense\_Only isolates two effects at once, since Dense\_Only both narrows retrieval to one channel and receives whatever evidence pool that narrower retrieval happens to produce; the citation-constrained prompt (Section~III-H) and sentence-level grounding filter (Section~III-L--III-M) are present in \emph{both} conditions. The Hallucination increase under Dense\_Only ($0.092 \rightarrow 0.391$, Table~\ref{tab:hallucination}) is therefore best read as evidence that grounded prompting and post-hoc sentence filtering reduce, but do not eliminate, hallucination that originates from a genuinely weaker evidence pool: the ten-rule constrained prompt and the citation-validity check (Section~III-M) can only filter or catch unsupported claims relative to whatever evidence was actually retrieved, and cannot substitute for evidence that a narrower retrieval channel failed to surface in the first place. In other words, the safety net (post-generation grounding) is doing real work in every condition, but its effectiveness is bounded by the quality of what reaches it --- consistent with the codebase's own design rationale (Section~III-H) that prompting and retrieval quality raise the ceiling the grounding stage has to work with, rather than being substitutable for it.
+
+\subsection{Interpretation: Why Latency Increased}
+The non-monotonic latency pattern in Table~\ref{tab:latency} --- particularly No\_BM25 being \emph{slower} than Baseline despite BM25 lookup itself being computationally trivial relative to embedding or LLM inference --- is not explained by any single retrieval channel's own cost, since removing a cheap channel should not increase total latency if channels are simply additive. The most plausible explanation consistent with the adaptive-expansion behavior documented in Section~III-E (Algorithm~\ref{alg:graph}) is that removing one retrieval channel changes the composition and size of the candidate pool reaching the reranker and generator, and a pool that is smaller, noisier, or differently shaped can increase reranking or generation cost (e.g. longer or more uncertain generations, more retries) even when the retrieval step that produced it was itself fast. We did not find profiling data in the repository that isolates which downstream stage absorbs this cost, and we flag that as a concrete, answerable follow-up measurement (per-stage latency breakdown) rather than speculating further on the mechanism.
+
+\section{Discussion}
+
+\subsection{Clinical Significance}
+The central clinical claim this paper can support, based on Section~V's results, is narrower than ``MedGraphRAG is accurate.'' What the ablation study actually demonstrates is that removing any one retrieval channel degrades at least one clinically-relevant metric at conventional significance ($p<0.05$), and that the largest degradations cluster around exactly the failure modes that matter most in oncology decision support: Groundedness (whether a claim is actually supported by cited evidence) and Precision@5 (whether the evidence reaching the generator is relevant at all). A system that is fast but ungrounded, or grounded but slow, is a materially different clinical proposition than one that is both --- and Table~\ref{tab:latency} shows this is a real trade-off in the current system, not a theoretical one. The clinical significance of the sentence-level grounding stage (Section~III-L--III-M) in particular is that it produces an auditable trail (citation cards resolving to document/chapter/section/page) rather than an opaque confidence number, which is the more clinically actionable property: a clinician reviewing a MedGraphRAG answer can check the specific passage a claim rests on, rather than deciding whether to trust a black-box score.
+
+\subsection{Trade-offs}
+Three trade-offs recur throughout Section~V and are worth stating explicitly rather than leaving implicit in the tables. First, \emph{precision vs.\ latency}: the reranker is the single largest precision contributor (Table~\ref{tab:retrieval}) and also a substantial latency cost (removing it cuts latency by 29.1\%, Table~\ref{tab:latency}) --- there is no configuration in this study that gets Baseline's precision at Dense\_Only's speed. Second, \emph{recall vs.\ interpretability of that recall}: Recall@5 stays high (Table~\ref{tab:retrieval}) across every condition, which is reassuring on its face but, as discussed in Section~V-A, partly reflects the metric's insensitivity to which channel supplied the passage, meaning recall alone should not be used to argue any channel is redundant. Third, \emph{coverage vs.\ groundedness}: BM25 contributes most to groundedness (Table~\ref{tab:semantic}) precisely because it recovers exact terminology, but exact-term retrieval is also the channel most likely to return a lexically-matching but contextually-wrong passage (e.g., the same drug name in a different indication) --- a risk this paper's evaluation setup does not directly measure and flags as a gap in Section~VI-B.
+
+\subsection{Strengths}
+Relative to a typical single-channel RAG deployment, MedGraphRAG's demonstrated strengths are: (1) a genuinely multi-channel retrieval architecture validated by a controlled ablation rather than asserted by design description alone; (2) a two-stage hallucination defense (constrained prompting plus independent post-hoc sentence verification, Section~III-H, III-L) rather than reliance on prompting alone; (3) fine-grained, resolvable citation provenance (document/chapter/section/page/chunk) rather than a single opaque source tag; and (4) an evaluation methodology that reports effect sizes alongside $p$-values (Table~\ref{tab:stats}), which is uncommon enough in RAG evaluation literature to be worth naming as a strength in its own right.
+
+\subsection{Weaknesses}
+Equally, several weaknesses are documented with specificity rather than asserted generically. The generator model identity is unresolved between two configuration sources (Section~IV-E); a significant fraction of the reported generation-overlap metrics show a data-integrity pattern inconsistent with independent per-condition measurement (Section~IV-H); the source corpus is not included or documented (Section~V, dataset discussion); the graph retrieval channel's scoring function, as actually implemented, omits the entity-frequency term the project's own README describes (Section~III-F); and no external baseline against a different published RAG or GraphRAG system exists in this study, so all comparisons in Table~\ref{tab:retrieval}--\ref{tab:stats} are internal ablations rather than comparisons against the field.
+
+\subsection{Comparison with Standard RAG}
+Standard (single-channel, typically dense-only) RAG \cite{lewis2020retrieval} corresponds closely to this study's Dense\_Only condition, and the ablation study is in effect a controlled comparison against that baseline using the same generator, prompt, and grounding stages. Dense\_Only is the weakest condition on Retrieval Accuracy, Precision@5, Explainability, Hallucination, and Clinical Reliability (Tables~\ref{tab:retrieval}--\ref{tab:hallucination}), which is consistent with the broader RAG literature's identification of dense-only retrieval's blind spots \cite{gao2024ragsurvey}, but it is also the fastest condition by a wide margin (Table~\ref{tab:latency}) --- the comparison is therefore not simply ``MedGraphRAG beats standard RAG,'' but a quantified statement of what standard RAG trades away for its speed.
+
+\subsection{Comparison with Hierarchical RAG}
+Hierarchical retrieval approaches such as RAPTOR \cite{sarthi2024raptor} construct a multi-level index by recursively clustering and \emph{summarizing} chunks into a tree, so that retrieval can operate at different levels of abstraction. MedGraphRAG's parent/child chunking (Section~III-E) is hierarchical only in a much shallower sense: it produces two fixed granularities of the \emph{same} source text, with no learned or recursive summarization step. This is a real capability gap relative to RAPTOR-style systems worth naming plainly: MedGraphRAG cannot synthesize an answer that requires integrating information distributed across many non-adjacent chunks the way a summarization tree can, and its ``hierarchy'' is a chunk-size choice plus a citation-metadata heading, not a retrieval-time abstraction mechanism (Section~III, footnote on Book/Chapter/Section Router). The graph retrieval channel (Section~III-F) provides a different, complementary form of cross-passage integration --- via explicit entity relationships rather than learned summarization --- but the two mechanisms are not interchangeable, and combining MedGraphRAG's graph traversal with a RAPTOR-style summarization tree is a concrete, unexplored architectural direction (Section~VI-J).
+
+\subsection{Comparison with Medical QA Systems}
+Purpose-built medical QA/LLM systems fall into two broad families relevant here. The first is domain-adapted or domain-pretrained generation models without a retrieval component as their primary mechanism --- Med-PaLM \cite{singhal2023large}, MedGemma \cite{medgemma2025}, BioMistral \cite{labrak2024biomistral}, and Meditron \cite{chen2023meditron} all rely primarily on domain-specific pretraining or fine-tuning to encode medical knowledge parametrically, evaluated on benchmarks such as MedQA, MedMCQA, PubMedQA \cite{jin2019pubmedqa}, and BioASQ \cite{krithara2023bioasq}. MedGraphRAG takes the opposite design bet: a small, \emph{general-purpose} instruction-tuned model (Section~IV-E) with no medical-domain pretraining, relying entirely on retrieval and post-hoc verification for factual grounding rather than parametric medical knowledge. This is a meaningful architectural distinction with a direct trade-off: MedGraphRAG's approach is corpus-updatable without retraining (swap the PDFs, re-index) and produces resolvable citations by construction, whereas a domain-pretrained model like MedGemma or Meditron may have broader parametric medical competence but does not, by itself, provide a citation trail back to a specific institution's guideline documents. Neither this paper's results nor its evaluation design support a claim that either approach is superior in general; they answer different questions (``does the model know medicine'' vs.\ ``can the system prove where its answer came from''), and a system combining a domain-pretrained generator with MedGraphRAG's retrieval and grounding stack is a natural direction we did not evaluate (Section~VI-K, VI-L).
+
+\section{Limitations}
+
+\begin{itemize}
+    \item \textbf{Generator model identity is unresolved.} As detailed in Sections~III-K and IV-E, configuration sources disagree on whether \texttt{llama3.2:latest} or \texttt{qwen2.5:3b-instruct} produced the reported results. This should be resolved before any of this paper's numerical results are cited elsewhere.
+    \item \textbf{A subset of reported metrics shows a data-integrity anomaly.} Section~IV-H documents that several generation-overlap metrics (Table~\ref{tab:generation}) are not reproducible from the current evaluation codebase and show a cross-condition statistical pattern inconsistent with independent measurement. We report the values as they exist in the source artifacts but do not treat them as validated findings.
+    \item \textbf{No documented ground-truth corpus.} The source oncology guideline PDFs are absent from the repository (Section~V), so neither the ingestion pipeline nor the underlying knowledge base composition can be independently verified or reproduced from a clean clone.
+    \item \textbf{Small, single-institution evaluation set.} 200 questions (100 for the ablation study), undocumented authorship/validation process, and a category distribution with several classes represented by fewer than five questions (Table~\ref{tab:dataset}) limit the statistical reliability of any per-category claim and the generalizability of the results to other oncology sub-domains or other institutions' guideline corpora.
+    \item \textbf{No external baseline.} Every comparison in this paper is an internal ablation against the same system's own Baseline condition (Section~V-F). No comparison against a different published RAG, GraphRAG, or medical-QA system using the same evaluation set exists in this study.
+    \item \textbf{Graph scoring does not match its own design description.} The implemented graph relevance function (Eq.~\ref{eq:graphscore}) is pure hop-distance decay, without the entity-frequency term described in the project's README (Section~III-F). Conclusions about the graph channel's contribution in this paper describe the function as implemented, not as originally designed.
+    \item \textbf{Self-reported confidence is explicitly unvalidated} (Section~III-L) and was not empirically calibrated against ground truth in this study; only the computed sentence-level score (Eq.~\ref{eq:confidence}) was used as the confidence signal in our analysis.
+    \item \textbf{No clinician-in-the-loop evaluation.} All quality signals in this paper are automated (lexical overlap, embedding similarity, or an LLM-as-judge score for Clinical Reliability). No practicing oncologist or clinician reviewed generated answers as part of this study, which is a materially different and stronger form of evidence that this paper does not provide (Section~VI-M).
+    \item \textbf{Single-machine, CPU-only, English-only evaluation.} All results were produced on one 8~GB Apple Silicon machine (Section~IV-A) in English; performance under GPU acceleration, at larger scale, or in other languages was not measured.
+\end{itemize}
+
+\section{Future Work}
+
+\subsection{Graph RAG Extensions}
+The current graph channel (Section~III-F) uses explicit BFS traversal with hop-distance decay over an entity graph built by classical NER and dependency parsing. A direct extension is adopting LLM-derived entity and relationship extraction with community detection and hierarchical summarization, as in GraphRAG \cite{edge2024graphrag}, which would let the system answer global, corpus-wide synthesis questions (``what treatment patterns recur across all guidelines in this corpus'') that the current purely local, seed-entity-anchored traversal cannot address. Reconciling the implemented hop-decay formula (Eq.~\ref{eq:graphscore}) with the frequency-weighted formula described in the project's own design documentation (Section~III-F) is a smaller, more immediately actionable extension.
+
+\subsection{Agentic RAG}
+The current pipeline is a fixed, single-pass sequence (retrieve $\rightarrow$ fuse $\rightarrow$ rerank $\rightarrow$ generate $\rightarrow$ verify). Agentic RAG architectures \cite{singhagenticrag2025} instead allow an LLM-driven controller to decide, per query, whether to retrieve at all, which channel(s) to query, whether retrieved evidence is sufficient or a follow-up retrieval is needed, and when to stop --- capabilities exemplified by Self-RAG's on-demand, reflection-token-driven retrieval and self-critique \cite{asai2024selfrag}. Applying this to MedGraphRAG could let the system, for example, explicitly re-query the graph channel with an expanded entity set when initial sentence-level grounding (Section~III-L) flags an answer as under-supported, rather than only filtering the unsupported sentence after the fact.
+
+\subsection{Domain-Pretrained Generator Backbones}
+Section~VI-G noted that MedGraphRAG's generator is a general-purpose small model with no medical pretraining. Substituting a domain-pretrained backbone --- MedGemma \cite{medgemma2025}, BioMistral \cite{labrak2024biomistral}, or Meditron \cite{chen2023meditron} --- while keeping the retrieval, fusion, reranking, and grounding stages unchanged is a direct, controlled follow-up ablation: it would isolate how much of the system's remaining Hallucination rate (Table~\ref{tab:hallucination}) originates from generator capability versus retrieval/grounding limitations, which the current study cannot separate.
+
+\subsection{Standard Benchmark Evaluation}
+This study's gold-standard set is a small, single-institution, undocumented-provenance dataset (Section~V, Limitations). Evaluating MedGraphRAG on established, publicly available biomedical QA benchmarks --- PubMedQA \cite{jin2019pubmedqa} and BioASQ-QA \cite{krithara2023bioasq} in particular --- would allow direct, externally-comparable results against other published systems, addressing the ``no external baseline'' limitation (Section~VI-B) directly and enabling comparison against domain-pretrained models' own reported benchmark numbers.
+
+\subsection{Human (Clinician) Evaluation}
+The most significant gap identified in Section~VI-H is the absence of clinician-in-the-loop evaluation. A structured human evaluation protocol --- practicing oncologists rating a sample of generated answers for factual correctness, safety, and citation adequacy, ideally blinded to which ablation condition produced each answer --- would validate (or correct) the automated Clinical Reliability judge score (Section~III, \texttt{judge\_clinical\_reliability}) currently used as a proxy, and is a necessary step before any claim of clinical readiness could be responsibly made. Structured RAG evaluation frameworks such as RAGAS \cite{es2024ragas} and ARES \cite{saadfalcon2024ares} offer complementary automated signals that could run alongside, though not substitute for, such a clinician study.
+
+\section{Conclusion}
+This paper presented MedGraphRAG, a tri-modal retrieval architecture for medical oncology question answering, and reported its methodology, experimental setup, and results exactly as recoverable from the reviewed source code and result artifacts. The ablation study provides statistically grounded evidence that dense, sparse, and graph retrieval channels are complementary rather than redundant, that cross-encoder reranking is the single largest contributor to retrieval precision, and that grounded prompting combined with independent sentence-level verification measurably reduces, without eliminating, hallucination attributable to retrieval quality. At the same time, this paper has been deliberately explicit about what its evidence does \emph{not} establish: a portion of the reported generation-overlap metrics shows a pattern inconsistent with independent per-condition measurement, the generator model's identity is unresolved between configuration sources, the graph channel's implemented scoring function departs from its own design description, and no clinician has evaluated the system's output. None of these gaps undermine the paper's central, narrower claim --- that multi-channel retrieval measurably outperforms any single channel on this evaluation set, by this evaluation methodology --- but they are precisely the items that separate a validated research contribution from a publication-ready clinical claim, and we have aimed to leave a clear, itemized path (Section~VII) from the former to the latter rather than overstating the distance already closed.
+
+\bibliographystyle{IEEEtran}
+\begin{thebibliography}{00}
+
+\bibitem{lewis2020retrieval}
+P. Lewis, E. Perez, A. Piktus, F. Petroni, V. Karpukhin, N. Goyal, H. K\"{u}ttler, M. Lewis, W.-t. Yih, T. Rockt\"{a}schel, S. Riedel, and D. Kiela, ``Retrieval-augmented generation for knowledge-intensive NLP tasks,'' in \emph{Advances in Neural Information Processing Systems}, vol. 33, 2020, pp. 9459--9474.
+
+\bibitem{robertson2009probabilistic}
+S. Robertson and H. Zaragoza, ``The probabilistic relevance framework: BM25 and beyond,'' \emph{Foundations and Trends in Information Retrieval}, vol. 3, no. 4, pp. 333--389, 2009.
+
+\bibitem{xiao2023cpack}
+S. Xiao, Z. Liu, P. Zhang, and N. Muennighoff, ``C-Pack: Packaged resources to advance general Chinese embedding,'' \emph{arXiv preprint arXiv:2309.07597}, 2023.
+
+\bibitem{neumann2019scispacy}
+M. Neumann, D. King, I. Beltagy, and W. Ammar, ``ScispaCy: Fast and robust models for biomedical natural language processing,'' in \emph{Proceedings of the 18th BioNLP Workshop and Shared Task}, Florence, Italy, 2019, pp. 319--327.
+
+\bibitem{hagberg2008exploring}
+A. A. Hagberg, D. A. Schult, and P. J. Swart, ``Exploring network structure, dynamics, and function using NetworkX,'' in \emph{Proceedings of the 7th Python in Science Conference (SciPy 2008)}, Pasadena, CA, 2008, pp. 11--15.
+
+\bibitem{nogueira2019passage}
+R. Nogueira and K. Cho, ``Passage re-ranking with BERT,'' \emph{arXiv preprint arXiv:1901.04085}, 2019.
+
+\bibitem{bowman2015large}
+S. R. Bowman, G. Angeli, C. Potts, and C. D. Manning, ``A large annotated corpus for learning natural language inference,'' in \emph{Proceedings of the 2015 Conference on Empirical Methods in Natural Language Processing (EMNLP)}, Lisbon, Portugal, 2015, pp. 632--642.
+
+\bibitem{ji2023survey}
+Z. Ji, N. Lee, R. Frieske, T. Yu, D. Su, Y. Xu, E. Ishii, Y. J. Bang, A. Madotto, and P. Fung, ``Survey of hallucination in natural language generation,'' \emph{ACM Computing Surveys}, vol. 55, no. 12, Article 248, pp. 1--38, Mar. 2023.
+
+\bibitem{edge2024graphrag}
+D. Edge, H. Trinh, N. Cheng, J. Bradley, A. Chao, A. Mody, S. Truitt, and J. Larson, ``From local to global: A graph RAG approach to query-focused summarization,'' \emph{arXiv preprint arXiv:2404.16130}, 2024.
+
+\bibitem{singhal2023large}
+K. Singhal, S. Azizi, T. Tu, S. S. Mahdavi, J. Wei, H. W. Chung, N. Scales, A. Tanwani, H. Cole-Lewis, S. Pfohl, P. Payne, M. Seneviratne, P. Gamble, C. Kelly, A. Babiker, N. Sch\"{a}rli, A. Chowdhery, P. Mansfield, D. Demner-Fushman, B. A. y Arcas, D. Webster, G. S. Corrado, Y. Matias, K. Chou, J. Gottweis, N. Tomasev, Y. Liu, A. Rajkomar, J. Barral, C. Semturs, A. Karthikesalingam, and V. Natarajan, ``Large language models encode clinical knowledge,'' \emph{Nature}, vol. 620, no. 7972, pp. 172--180, 2023.
+
+\bibitem{reimers2019sentencebert}
+N. Reimers and I. Gurevych, ``Sentence-BERT: Sentence embeddings using Siamese BERT-networks,'' in \emph{Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP)}, Hong Kong, China, 2019, pp. 3982--3992.
+
+\bibitem{medgemma2025}
+Google Research and Google DeepMind, ``MedGemma technical report,'' \emph{arXiv preprint arXiv:2507.05201}, 2025.
+
+\bibitem{labrak2024biomistral}
+Y. Labrak, A. Bazoge, E. Morin, P.-A. Gourraud, M. Rouvier, and R. Dufour, ``BioMistral: A collection of open-source pretrained large language models for medical domains,'' in \emph{Findings of the Association for Computational Linguistics: ACL 2024}, Bangkok, Thailand, 2024, pp. 5848--5864.
+
+\bibitem{chen2023meditron}
+Z. Chen, A. Hern\'{a}ndez-Cano, A. Romanou, A. Bonnet, K. Matoba, F. Salvi, M. Pagliardini, S. Fan, A. K\"{o}pf, A. Mohtashami, A. Sallinen, A. Sakhaeirad, V. Swamy, I. Krawczuk, D. Bayazit, A. Marmet, S. Montariol, M.-A. Hartley, M. Jaggi, and A. Bosselut, ``MEDITRON-70B: Scaling medical pretraining for large language models,'' \emph{arXiv preprint arXiv:2311.16079}, 2023.
+
+\bibitem{jin2019pubmedqa}
+Q. Jin, B. Dhingra, Z. Liu, W. Cohen, and X. Lu, ``PubMedQA: A dataset for biomedical research question answering,'' in \emph{Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP)}, Hong Kong, China, 2019, pp. 2567--2577.
+
+\bibitem{krithara2023bioasq}
+A. Krithara, A. Nentidis, K. Bougiatiotis, and G. Paliouras, ``BioASQ-QA: A manually curated corpus for biomedical question answering,'' \emph{Scientific Data}, vol. 10, no. 1, Article 170, 2023.
+
+\bibitem{sarthi2024raptor}
+P. Sarthi, S. Abdullah, A. Tuli, S. Khanna, A. Goldie, and C. D. Manning, ``RAPTOR: Recursive abstractive processing for tree-organized retrieval,'' in \emph{Proceedings of the International Conference on Learning Representations (ICLR)}, 2024.
+
+\bibitem{asai2024selfrag}
+A. Asai, Z. Wu, Y. Wang, A. Sil, and H. Hajishirzi, ``Self-RAG: Learning to retrieve, generate, and critique through self-reflection,'' in \emph{Proceedings of the International Conference on Learning Representations (ICLR)}, 2024.
+
+\bibitem{es2024ragas}
+S. Es, J. James, L. Espinosa Anke, and S. Schockaert, ``RAGAs: Automated evaluation of retrieval augmented generation,'' in \emph{Proceedings of the 18th Conference of the European Chapter of the Association for Computational Linguistics: System Demonstrations}, St. Julians, Malta, 2024, pp. 150--158.
+
+\bibitem{saadfalcon2024ares}
+J. Saad-Falcon, O. Khattab, C. Potts, and M. Zaharia, ``ARES: An automated evaluation framework for retrieval-augmented generation systems,'' in \emph{Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies}, 2024, pp. 338--354.
+
+\bibitem{singhagenticrag2025}
+A. Singh, A. Ehtesham, S. Kumar, and T. T. Khoei, ``Agentic retrieval-augmented generation: A survey on agentic RAG,'' \emph{arXiv preprint arXiv:2501.09136}, 2025.
+
+\bibitem{gao2024ragsurvey}
+Y. Gao, Y. Xiong, X. Gao, K. Jia, J. Pan, Y. Bi, Y. Dai, J. Sun, M. Wang, and H. Wang, ``Retrieval-augmented generation for large language models: A survey,'' \emph{arXiv preprint arXiv:2312.10997}, 2024.
+
+\bibitem{lee2019biobert}
+J. Lee, W. Yoon, S. Kim, D. Kim, S. Kim, C. H. So, and J. Kang, ``BioBERT: A pre-trained biomedical language representation model for biomedical text mining,'' \emph{Bioinformatics}, vol. 36, no. 4, pp. 1234--1240, 2020.
+
+\bibitem{karpukhin2020dpr}
+V. Karpukhin, B. Oguz, S. Min, P. Lewis, L. Wu, S. Edunov, D. Chen, and W. Yih, ``Dense passage retrieval for open-domain question answering,'' in \emph{Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP)}, Online, 2020, pp. 6769--6781.
+
+\end{thebibliography}
+
+\end{document}

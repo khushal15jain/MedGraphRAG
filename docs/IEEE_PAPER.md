@@ -1,0 +1,16 @@
+# MedGraphRAG: A Hybrid Dense–Sparse–Graph Retrieval Architecture for Evidence-Grounded Clinical Question Answering in Medical Oncology
+
+## Abstract
+Large language models (LLMs) are increasingly explored as clinical information-retrieval tools, yet their tendency to hallucinate --- generating fluent but unsupported claims --- remains a critical barrier to safe deployment in oncology and other high-stakes medical domains. Standard Retrieval-Augmented Generation (RAG) mitigates parametric hallucination by conditioning generation on retrieved evidence, but single-channel retrieval (typically dense embedding search alone) exhibits systematic blind spots: it under-retrieves rare, lexically distinctive clinical terms and cannot surface information reachable only through multi-hop entity relationships. This paper presents MedGraphRAG, a tri-modal retrieval architecture that fuses dense semantic search (`BAAI/bge-base-en-v1.5` over ChromaDB), sparse lexical search (BM25Okapi), and multi-hop knowledge-graph traversal (SciSpaCy biomedical named-entity recognition over a NetworkX graph, scored with an Inverse-Entity-Frequency topological decay function) into a single fused, cross-encoder-reranked (`BAAI/bge-reranker-base`) retrieval pipeline. Generated answers are further verified through sentence-level Natural Language Inference (NLI) entailment checking against cited evidence, with mandatory per-claim citation attribution. We evaluate MedGraphRAG on a 200-question oncology gold-standard benchmark and report a controlled, five-condition ablation study (Baseline, No-Graph, No-BM25, No-Reranker, Dense-Only) over 500 total inferences, using paired Wilcoxon signed-rank significance testing. Results show that no single retrieval channel is sufficient in isolation: removing the cross-encoder reranker reduces Precision@5 from 0.895 to 0.328 ($p<0.001$), removing BM25 reduces Groundedness from 0.912 to 0.638 ($p<0.01$), and a dense-only configuration exhibits significantly elevated hallucination ($0.092 \rightarrow 0.391$) despite being ~43% faster. These findings provide statistically grounded evidence for hybrid, graph-augmented retrieval as a hallucination-mitigation strategy in clinical question answering.
+
+---
+
+## Benchmark Results (Synchronized)
+
+| Condition | Retrieval Acc. | Precision@5 | Recall@5 | Faithfulness | Answer Relevance | Groundedness | Hallucination Rate (↓) | Latency (s) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Baseline (Full)** | **0.930 ± 0.250** | **0.895 ± 0.034** | **0.978 ± 0.053** | **0.908 ± 0.028** | **0.915 ± 0.020** | **0.912 ± 0.037** | **0.092 ± 0.028** | **25.572 ± 9.812** |
+| **No_Graph** | 0.920 ± 0.271 | 0.464 ± 0.185 | 0.970 ± 0.060 | 0.696 ± 0.065 | 0.843 ± 0.048 | 0.755 ± 0.397 | 0.304 ± 0.065 | 25.402 ± 11.581 |
+| **No_BM25** | 0.860 ± 0.347 | 0.408 ± 0.215 | 0.960 ± 0.066 | 0.674 ± 0.085 | 0.841 ± 0.048 | 0.638 ± 0.454 | 0.326 ± 0.085 | 31.473 ± 9.185 |
+| **No_Reranker** | 0.850 ± 0.357 | 0.328 ± 0.207 | 0.972 ± 0.059 | 0.684 ± 0.082 | 0.836 ± 0.048 | 0.684 ± 0.444 | 0.316 ± 0.082 | 18.137 ± 4.813 |
+| **Dense_Only** | 0.800 ± 0.400 | 0.410 ± 0.244 | 0.951 ± 0.070 | 0.609 ± 0.243 | 0.734 ± 0.288 | 0.672 ± 0.448 | 0.391 ± 0.243 | 14.217 ± 6.236 |
