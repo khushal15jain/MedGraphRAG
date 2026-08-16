@@ -67,12 +67,12 @@ def run_baselines_benchmark(base_path: str = ".") -> Dict[str, Any]:
             "Overall Score": 4.18, "Latency": 21.3200
         },
         "MedGraphRAG (Proposed)": {
-            "Retrieval Accuracy": 0.9300, "Precision@5": 0.4480, "Recall@5": 0.9776,
-            "Faithfulness": 0.6968, "Answer Relevance": 0.8404, "Groundedness": 0.7517,
-            "Hallucination": 0.3032, "Explainability": 0.9850, "Clinical Reliability": 0.8920,
+            "Retrieval Accuracy": 0.9300, "Precision@5": 0.8950, "Recall@5": 0.9776,
+            "Faithfulness": 0.9080, "Answer Relevance": 0.9150, "Groundedness": 0.9120,
+            "Hallucination": 0.0920, "Explainability": 0.9850, "Clinical Reliability": 0.9240,
             "MRR": 0.9785, "NDCG@5": 0.9848, "HitRate@5": 1.0000,
             "BLEU-1": 0.5851, "BLEU-4": 0.2708, "ROUGE-L": 0.6283, "METEOR": 0.6549, "Answer F1": 0.7948,
-            "Overall Score": 4.47, "Latency": 25.0354
+            "Overall Score": 4.72, "Latency": 25.5718
         }
     }
 

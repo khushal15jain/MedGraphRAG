@@ -6,8 +6,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/khushal15jain/RAGupdated">Repository</a> ·
-  <a href="https://github.com/khushal15jain/RAGupdated/tree/main/docs">Documentation</a>
+  <a href="https://github.com/khushal15jain/MegGraphRAG">Repository</a> ·
+  <a href="https://github.com/khushal15jain/MegGraphRAG/tree/main/docs">Documentation</a>
 </p>
 
 ---
@@ -18,15 +18,13 @@
 
 - **Dense semantic retrieval** using `BAAI/bge-base-en-v1.5` in ChromaDB
 - **Sparse lexical retrieval** using BM25 with entity expansion
-- **Multi-hop biomedical knowledge-graph retrieval** using SciSpaCy and NetworkX
-- **IDF-weighted graph scoring** using shortest-path distance decay ($\frac{1.0}{1.0 + d(e, v)}$)
+- **Hub-suppressed multi-hop graph retrieval with hop-distance decay** ($S_{\mathrm{graph}}(e, q) = \frac{1}{1 + d(e, q)}$) using SciSpaCy and NetworkX
 - **Cross-encoder reranking** using `BAAI/bge-reranker-base`
-- **Safety/refusal gating** ($\tau_{\mathrm{refusal}} = 0.35$)
-- **Sentence-level NLI grounding** ($\tau_{\mathrm{grounding}} = 0.70$)
-- **Source-level provenance tracking** ($98.5\%$ sentence citation coverage)
-- **Local LLM generation through Ollama (`llama3.2:latest`, 3.8B, $T=0.0$)**
+- **Sentence-level grounding**: $\tau_g = 0.65$ (grounded threshold), $\tau_{\mathrm{low}} = 0.45$ (low confidence threshold)
+- **Source-level provenance tracking** (Sentence citation coverage: $98.5\%$)
+- **Local LLM generation through Ollama** (configuration specifies `llama3.2:latest`, 3.8B, $T=0.0$)
 
-The repository contains a 200-question gold-standard benchmark, a 100-question 5-condition ablation sweep ($N=500$ evaluations), baseline comparisons, statistical evaluation utilities, and publication-oriented result artifacts.
+The repository contains a 200-question gold-standard benchmark, a 100-question 5-condition ablation sweep ($N=500$ evaluations), statistical evaluation utilities, and publication-oriented result artifacts.
 
 > **Research disclaimer:** MedGraphRAG is a research prototype designed for evidence-grounded medical information retrieval and question answering. It is **not a medical device and must not be used as a substitute for qualified clinical judgment, diagnosis, or treatment decisions.**
 
@@ -56,8 +54,6 @@ Multi-Hop Biomedical Graph Retrieval
           ↓
    Cross-Encoder Reranking
           ↓
-      Safety Gate
-          ↓
     Local LLM Generation
           ↓
  Sentence-Level NLI Grounding
@@ -81,23 +77,25 @@ Three complementary retrieval channels are combined:
 
 This combination reduces dependence on any single retrieval mechanism.
 
-## 2. Inverse Entity Frequency (IEF) Topological Graph Scoring
+## 2. Hub-Suppressed Hop-Distance-Decayed Graph Scoring
 
-The graph retriever uses inverse entity frequency together with BFS shortest-path distance decay:
+The graph retriever uses BFS shortest-path distance decay with hub suppression (skipping nodes with degree $>100$):
 
-$$S_{\mathrm{graph}}(c) = \max_{e \in \mathcal{E}_q} \left( \sum_{v \in \mathcal{N}_H(e) \cap \mathrm{ChunkEntities}(c)} \frac{1.0}{1.0 + \mathrm{dist}_{\mathcal{G}}(e, v)} \right)$$
+$$S_{\mathrm{graph}}(e, q) = \frac{1.0}{1.0 + d(e, q)}$$
 
-where $\mathrm{dist}_{\mathcal{G}}(e, v)$ is the exact shortest-path hop distance in NetworkX ($0$ for seed entity, $1$ for 1-hop neighbor, $2$ for 2-hop neighbor). This prevents common generic terms (*patient*, *treatment*) from dominating graph retrieval while granting specific biomarkers (*Osimertinib*, *EGFR*) greater weight.
+where $d(e, q)$ is the exact shortest-path hop distance in NetworkX ($0$ for seed entity, $1$ for 1-hop neighbor, $2$ for 2-hop neighbor). This prevents common generic terms (*patient*, *treatment*) from dominating graph retrieval while granting specific biomarkers (*Osimertinib*, *EGFR*) greater weight.
 
 ## 3. Cross-Encoder Reranking
 
-Candidate passages from the retrieval layer are reranked with `BAAI/bge-reranker-base`. The pipeline uses Jaccard candidate deduplication (threshold = 0.65) followed by reranking and selection of the top-5 retrieved chunks handed to the LLM context window.
+Candidate passages from the retrieval layer are reranked with `BAAI/bge-reranker-base`. The pipeline uses Jaccard candidate deduplication (threshold = 0.65) followed by reranking and selection of top-k retrieved chunks handed to the LLM context window.
 
-## 4. Sentence-Level Citation Provenance Coverage
+## 4. Sentence Citation Coverage
 
 Every generated factual claim undergoes sentence-level verification, measuring structured citation presence ($98.5\%$ sentence citation coverage):
 
 $$\mathcal{P}_{\mathrm{citation}} = \frac{\sum_{j=1}^{M} \mathbb{I}(\text{Sentence } s_j \text{ contains valid } [\text{Book, Chapter, Page, Chunk ID}] \text{ citation})}{\text{Total Generated Factual Sentences } M}$$
+
+*Note:* This metric measures valid citation presence according to the structural definition, rather than clinical correctness.
 
 ---
 
@@ -109,7 +107,7 @@ To ensure experimental clarity, system models used during inference are explicit
 - **Dense Embedding Encoder**: `BAAI/bge-base-en-v1.5` (768 dimensions)
 - **Cross-Encoder Reranker**: `BAAI/bge-reranker-base`
 - **Biomedical NER Engine**: SciSpaCy `en_core_sci_sm` (v0.5.4)
-- **Local LLM Generator**: Ollama `llama3.2:latest` (3.8B parameters, 4-bit `llama3.2:3b-instruct-q4_K_M`, $T=0.0$, `top_p=0.9`)
+- **Local LLM Generator**: Ollama local LLM; the released configuration specifies `llama3.2:latest`, while an alternate constructor default specifies `qwen2.5:3b-instruct`. The exact generator used for the reported benchmark should be confirmed from the experiment log.
 
 ### Evaluator Models (Offline Benchmark Suite)
 - **Primary Judge**: `Qwen2.5-3B-Instruct`
@@ -135,23 +133,7 @@ Evaluated across a 100-question stratified subset of the 200 gold clinical quest
 | **Clinical** | **Clinical Reliability** | **0.9240 ± 0.0215** | 0.8940 ± 0.1182 \*\* | 0.8840 ± 0.1391 \*\* | 0.8720 ± 0.1484 \*\*\* | 0.7840 ± 0.3233 \*\*\* | **$p_{\mathrm{adj}} = 8.76 \times 10^{-14}$ \*\*\*** |
 | **Operational** | **Latency (s)** | **25.5718 ± 9.8122** | 25.4019 ± 11.5814 | 31.4729 ± 9.1852 \*\*\* | 18.1372 ± 4.8129 \*\*\* | 14.2173 ± 6.2356 \*\*\* | **$p_{\mathrm{adj}} = 4.39 \times 10^{-11}$ \*\*\* (Paired $t$-test)** |
 
-> **Note:** These figures are reproduced verbatim from Table I of the accompanying IEEE paper (`docs/`). If a future run of `run_ablations.py` / `generate_publication_figures.py` produces different numbers, regenerate this table from that output rather than editing it by hand — see "Known Issue" below.
-
----
-
-## 📈 Comparison to Standard Baseline Architectures
-
-> **⚠ Unverified — not present in the paper.** This table does not appear anywhere in the IEEE manuscript (`docs/`), and I could not confirm its numbers against `full_evaluation_results.json` or any other tracked artifact in this pass. Before publishing, verify it comes from a real run of `benchmark/baselines.py` (or remove it) — do not treat it as validated just because it's internally consistent with the table above.
-
-Evaluated across the 200 gold clinical questions comparing MedGraphRAG against standard baseline architectures defined in `benchmark/baselines.py`:
-
-| Method Architecture | Retrieval Accuracy | Precision@5 | Recall@5 | Faithfulness | Groundedness | Answer F1 | Overall Rubric Score | Latency (s) |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Vanilla RAG (Dense Only)** | 0.8000 | 0.4100 | 0.9507 | 0.6087 | 0.6717 | 0.6720 | 3.91 / 5.0 | 14.22s |
-| **BM25 Only (Sparse)** | 0.8200 | 0.3950 | 0.9450 | 0.6350 | 0.6520 | 0.7020 | 4.05 / 5.0 | 11.85s |
-| **Hybrid (Dense + BM25)** | 0.8800 | 0.4250 | 0.9650 | 0.6750 | 0.7150 | 0.7580 | 4.31 / 5.0 | 19.45s |
-| **GraphRAG Only** | 0.8400 | 0.3650 | 0.9380 | 0.6480 | 0.6820 | 0.7250 | 4.18 / 5.0 | 21.32s |
-| **MedGraphRAG (Optimized)**| **0.9300** | **0.8950** | **0.9776** | **0.9080** | **0.9120** | **0.7948** | **4.72 / 5.0** | 25.57s |
+> **Note:** These figures correspond to the ablation results reported in Tables 3–6 of the accompanying manuscript.
 
 ---
 
@@ -174,8 +156,8 @@ Evaluation metrics were verified using a **Dual-Judge Framework**:
 
 ```bash
 # 1. Clone repository and setup virtual environment
-git clone git@github.com:khushal15jain/RAGupdated.git
-cd RAGupdated
+git clone git@github.com:khushal15jain/MegGraphRAG.git
+cd MegGraphRAG
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
