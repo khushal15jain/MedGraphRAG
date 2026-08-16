@@ -58,25 +58,29 @@ llama-index-llms-ollama==0.1.3
 
 # --------------------------------------------------------------------------
 # Local LLM (Stage 14: Generation)
-# Ollama daemon hosts the model (qwen2.5:3b-instruct) outside Python's
-# memory space; this package is a thin HTTP client.
+# Ollama daemon hosts the model (llama3.2:latest / llama3.2:3b-instruct-q4_K_M)
+# outside Python's memory space; this package is a thin HTTP client.
 # --------------------------------------------------------------------------
 ollama==0.3.0
 
 # --------------------------------------------------------------------------
 # Evaluation (Stage 16)
 # --------------------------------------------------------------------------
-
 datasets==2.20.0
 langchain-community==0.2.9  # wraps local Ollama model as a RAGAS-compatible judge LLM
+ragas==0.1.11
+deepeval==1.1.0
 
 # --------------------------------------------------------------------------
 # Experiment Tracking
 # --------------------------------------------------------------------------
+mlflow==2.14.3
 
 # --------------------------------------------------------------------------
 # Configuration Management
 # --------------------------------------------------------------------------
+hydra-core==1.3.2
+omegaconf==2.3.0
 
 
 # --------------------------------------------------------------------------

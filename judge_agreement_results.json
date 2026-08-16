@@ -4,31 +4,31 @@
   "primary_judge": "Local Qwen2.5-3B-Instruct / Llama-3.2-3B",
   "strong_judge": "GPT-4o-mini / Llama-3.1-70B-Instruct API",
   "faithfulness_agreement": {
-    "pearson_r": 0.9643936801783071,
-    "spearman_rho": 0.965265005584247,
-    "cohen_kappa": 0.6815286624203823,
-    "human_primary_pearson_r": 0.895103493492441,
-    "human_strong_pearson_r": 0.9683199755065502,
-    "human_primary_cohen_kappa": 0.5408163265306123,
-    "human_strong_cohen_kappa": 0.5408163265306123
+    "pearson_r": 0.828190156952405,
+    "spearman_rho": 0.8137235783030592,
+    "cohen_kappa": 1.0,
+    "human_primary_pearson_r": 0.7207953880215155,
+    "human_strong_pearson_r": 0.9315302182749937,
+    "human_primary_cohen_kappa": 1.0,
+    "human_strong_cohen_kappa": 1.0
   },
   "groundedness_agreement": {
-    "pearson_r": 0.999823894112368,
-    "spearman_rho": 0.8637110167461165,
+    "pearson_r": 0.9338884867921526,
+    "spearman_rho": 0.9240356689175125,
     "cohen_kappa": 1.0,
-    "human_primary_pearson_r": 0.9993962291585,
-    "human_strong_pearson_r": 0.9996312178703175,
+    "human_primary_pearson_r": 0.8792879529597494,
+    "human_strong_pearson_r": 0.9555794840714275,
     "human_primary_cohen_kappa": 1.0,
     "human_strong_cohen_kappa": 1.0
   },
   "summary": {
-    "faithfulness_inter_judge_pearson_r": 0.9644,
-    "faithfulness_inter_judge_cohen_kappa": 0.6815,
-    "faithfulness_human_llm_pearson_r": 0.9683,
-    "faithfulness_human_llm_cohen_kappa": 0.5408,
-    "groundedness_inter_judge_pearson_r": 0.9998,
+    "faithfulness_inter_judge_pearson_r": 0.8282,
+    "faithfulness_inter_judge_cohen_kappa": 1.0,
+    "faithfulness_human_llm_pearson_r": 0.9315,
+    "faithfulness_human_llm_cohen_kappa": 1.0,
+    "groundedness_inter_judge_pearson_r": 0.9339,
     "groundedness_inter_judge_cohen_kappa": 1.0,
-    "groundedness_human_llm_pearson_r": 0.9996,
+    "groundedness_human_llm_pearson_r": 0.9556,
     "groundedness_human_llm_cohen_kappa": 1.0
   }
 }

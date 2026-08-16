@@ -340,24 +340,39 @@ def generate_pdf_document(md_path: str, pdf_paths: list[str]):
         print(f"Copied PDF to destination: {second_path}")
 
 
+def main():
+    base_dir = Path(__file__).resolve().parent.parent
+
+    # 1. PROJECT_DOCUMENTATION.pdf
+    generate_pdf_document(
+        str(base_dir / "docs" / "PROJECT_DOCUMENTATION.md"),
+        [
+            str(base_dir / "PROJECT_DOCUMENTATION.pdf"),
+            str(base_dir / "docs" / "PROJECT_DOCUMENTATION.pdf"),
+            f"/Users/khushaljain/.gemini/antigravity/brain/08d67381-7f1d-4787-afc6-8ffb35978b8a/PROJECT_DOCUMENTATION.pdf"
+        ]
+    )
+
+    # 2. ABLATION_STUDY_REPORT.pdf
+    generate_pdf_document(
+        str(base_dir / "docs" / "ABLATION_STUDY_REPORT.md"),
+        [
+            str(base_dir / "ABLATION_STUDY_REPORT.pdf"),
+            str(base_dir / "docs" / "ABLATION_STUDY_REPORT.pdf"),
+            f"/Users/khushaljain/.gemini/antigravity/brain/08d67381-7f1d-4787-afc6-8ffb35978b8a/ABLATION_STUDY_REPORT.pdf"
+        ]
+    )
+
+    # 3. IEEE_PAPER.pdf
+    generate_pdf_document(
+        str(base_dir / "docs" / "IEEE_PAPER.md"),
+        [
+            str(base_dir / "IEEE_PAPER.pdf"),
+            str(base_dir / "docs" / "IEEE_PAPER.pdf"),
+            f"/Users/khushaljain/.gemini/antigravity/brain/08d67381-7f1d-4787-afc6-8ffb35978b8a/IEEE_PAPER.pdf"
+        ]
+    )
+
+
 if __name__ == "__main__":
-    artifact_dir = "/Users/khushaljain/.gemini/antigravity/brain/08d67381-7f1d-4787-afc6-8ffb35978b8a"
-    base_dir = "/Users/khushaljain/Desktop/MedGraphRAG"
-
-    # Build PROJECT_DOCUMENTATION.pdf
-    doc_md = os.path.join(base_dir, "docs/PROJECT_DOCUMENTATION.md")
-    doc_pdfs = [
-        os.path.join(base_dir, "PROJECT_DOCUMENTATION.pdf"),
-        os.path.join(base_dir, "docs/PROJECT_DOCUMENTATION.pdf"),
-        os.path.join(artifact_dir, "PROJECT_DOCUMENTATION.pdf")
-    ]
-    generate_pdf_document(doc_md, doc_pdfs)
-
-    # Build ABLATION_STUDY_REPORT.pdf
-    ablation_md = os.path.join(base_dir, "docs/ABLATION_STUDY_REPORT.md")
-    ablation_pdfs = [
-        os.path.join(base_dir, "ABLATION_STUDY_REPORT.pdf"),
-        os.path.join(base_dir, "docs/ABLATION_STUDY_REPORT.pdf"),
-        os.path.join(artifact_dir, "ABLATION_STUDY_REPORT.pdf")
-    ]
-    generate_pdf_document(ablation_md, ablation_pdfs)
+    main()

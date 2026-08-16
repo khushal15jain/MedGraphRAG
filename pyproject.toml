@@ -15,7 +15,7 @@ build-backend = "setuptools.build_meta"
 include = [
     "utils*", "preprocessing*", "entity_extraction*", "graph*",
     "embeddings*", "retrieval*", "reranker*", "generator*",
-    "evaluation*", "benchmark*", "app*"
+    "evaluation*", "benchmark*", "app*", "grounding*", "explainability*"
 ]
 
 [tool.black]
