@@ -139,7 +139,7 @@ Evaluated across a 100-question stratified subset of the 200 gold clinical quest
 
 ## ⚖ Evaluator Judge Framework & Human Expert Alignment
 
-Evaluation metrics were verified using a **Dual-Judge Framework**:
+Evaluation metrics were assessed using a **Multi-Judge Evaluation Framework**:
 1. **Primary Judge**: Local `Qwen2.5-3B-Instruct` (fast 1–5 scoring pass).
 2. **Secondary Meta-Judge**: `GPT-4o-mini` / `Llama-3.1-70B-Instruct`.
 3. **Human Expert Alignment Study**: A 30-item random subsample evaluated independently by 3 clinical oncology specialists on a 1–5 Likert scale across Factual Accuracy, Patient Safety, and Completeness (`evaluation/judge_agreement.py`).
