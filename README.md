@@ -81,7 +81,13 @@ Evaluated using a **Multi-Judge Evaluation Framework** backed by empirical agree
 5. **Naive Vector RAG Collapse:** Dense Only RAG suffers a **+29.9% surge in hallucinations** ($0.3913$ vs $0.0920$) and significant drops in accuracy ($p < 0.01$).
 6. **Groundedness Dynamics & Nuance:** The Baseline achieves top groundedness (**0.9120 ± 0.0370**) under NLI sentence grounding thresholding ($\tau_g = 0.65$). On un-thresholded passes, No Graph reaches 0.7550 vs 0.7517, which is not statistically significant ($p > 0.05$). Baseline leads across all primary grounding metrics (Faithfulness, Hallucination Reduction, Explainability).
 
-> **Methodology Note on Metric Revisions:** Early exploratory baseline runs computed metrics over un-reranked candidate pools (yielding raw Precision@5 $\approx 0.4480$ and un-thresholded Faithfulness $\approx 0.6968$). The production system introduces full Cross-Encoder Candidate Reranking (`BAAI/bge-reranker-base`) and NLI Sentence-Level Entailment Grounding ($\tau_g = 0.65$, $\tau_{\mathrm{low}} = 0.45$). This elevates top-5 precision to **0.8950**, sentence faithfulness to **0.9080**, groundedness to **0.9120**, and suppresses ungrounded hallucinations down to **0.0920**.
+### 📜 Version History & Methodological Evolution (v0.1.0 ➔ v1.0.0)
+
+For full architectural logs, see [`CHANGELOG.md`](file:///Users/khushaljain/Desktop/MedGraphRAG/CHANGELOG.md).
+
+1. **Graph Scoring Refinement**: Fused graph scoring upgraded from linear IDF decay ($S = \mathrm{IDF} \cdot (1 - 0.2d)$) to **Hub-Suppressed Hop-Distance Decay Scoring** ($S_{\mathrm{graph}}(e, q) = \frac{1}{1 + d(e, q)} \cdot \frac{1}{\log(2 + \deg(e))}$), which explicitly suppresses generic clinical hub terms (e.g., *"patient"*, *"dose"*) in favor of high-specificity oncology entity nodes.
+2. **Post-Reranking Precision Evaluation**: Precision@5 was upgraded from raw candidate pool measurement ($0.4480 \rightarrow \mathbf{0.8950}$) by evaluating post Cross-Encoder (`BAAI/bge-reranker-base`) context windows.
+3. **NLI Entailment Gating ($\tau_g = 0.65$)**: Sentence-level entailment thresholding via DeBERTa-v3 raised Faithfulness ($0.6968 \rightarrow \mathbf{0.9080}$), Groundedness ($0.7517 \rightarrow \mathbf{0.9120}$), and suppressed Hallucinations ($0.3032 \rightarrow \mathbf{0.0920}$).
 
 ---
 
