@@ -1,4 +1,13 @@
-# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+.venv/
+.env
+*.pt
+*.bin
+*.safetensors
+chroma_db/
+.ipynb_checkpoints/
+.DS_Store# Byte-compiled / cache
 __pycache__/
 *.py[cod]
 *.egg-info/
