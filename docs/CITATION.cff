@@ -4,7 +4,7 @@ title: "MedGraphRAG: An Ablation Study of Hybrid Dense–Sparse–Graph Retrieva
 authors:
   - family-names: "Jain"
     given-names: "Khushal"
-repository-code: "https://github.com/khushal15jain/MegGraphRAG"
+repository-code: "https://github.com/khushal15jain/MedGraphRAG"
 license: "MIT"
 date-released: "2026-08-16"
 keywords:

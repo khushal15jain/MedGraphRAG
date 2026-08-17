@@ -1,6 +1,6 @@
 # MedGraphRAG: Medical Oncology Graph-Augmented RAG System
 
-[![Python 3.11](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/khushal15jain/MegGraphRAG/blob/main/LICENSE) [![Framework](https://img.shields.io/badge/Architecture-GraphRAG%20%2B%20Hybrid%20Retrieval-green.svg)](https://github.com/khushal15jain/MegGraphRAG/blob/main) [![LLM](https://img.shields.io/badge/LLM-Llama--3.2%20%2F%20Ollama-orange.svg)](https://ollama.com/)
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/khushal15jain/MedGraphRAG/blob/main/LICENSE) [![Framework](https://img.shields.io/badge/Architecture-GraphRAG%20%2B%20Hybrid%20Retrieval-green.svg)](https://github.com/khushal15jain/MedGraphRAG/blob/main) [![LLM](https://img.shields.io/badge/LLM-Llama--3.2%20%2F%20Ollama-orange.svg)](https://ollama.com/)
 
 An end-to-end, deterministic, explainable, and hallucination-resistant clinical question-answering architecture designed specifically for medical oncology guidelines and textbooks.
 
@@ -130,7 +130,7 @@ MedGraphRAG/
 
 ```bash
 # Clone the repository
-git clone https://github.com/khushal15jain/MegGraphRAG.git
+git clone https://github.com/khushal15jain/MedGraphRAG.git
 cd MedGraphRAG
 
 # Create virtual environment

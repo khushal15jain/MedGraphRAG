@@ -5,8 +5,8 @@ We welcome contributions to MedGraphRAG! Please review the guidelines below befo
 ## Development Setup
 
 ```bash
-git clone https://github.com/khushal15jain/MegGraphRAG.git
-cd MegGraphRAG
+git clone https://github.com/khushal15jain/MedGraphRAG.git
+cd MedGraphRAG
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
