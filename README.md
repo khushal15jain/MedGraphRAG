@@ -52,7 +52,9 @@ MedGraphRAG/
 │   ├── ablation_summary_table.md   # Canonical metric ablation summary table
 │   ├── qualitative_examples.md     # Qualitative clinical QA outputs & citation cards
 │   ├── reproducibility.md          # Full evaluation setup & hardware replication guide
-│   └── source_corpus.md            # Guidelines corpus provenance & entity graph spec
+│   ├── source_corpus.md            # Guidelines corpus provenance & entity graph spec
+│   ├── CITATION.cff                # Citation metadata specification file
+│   └── CONTRIBUTING.md             # Developer & reviewer contribution guidelines
 ├── embeddings/                     # BGE dense embedder & ChromaDB vector store wrapper
 ├── entity_extraction/              # SciSpaCy NER & dependency-parsed relation extractor
 ├── evaluation/                     # Statistical evaluation, p-tests & Holm-Bonferroni
