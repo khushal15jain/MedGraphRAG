@@ -81,7 +81,9 @@ def run_baselines_benchmark(base_path: str = ".") -> Dict[str, Any]:
         "baselines": baselines_def
     }
 
-    out_file = base_dir / "baseline_comparison.json"
+    out_dir = base_dir / "results"
+    out_dir.mkdir(exist_ok=True)
+    out_file = out_dir / "baseline_comparison.json"
     with open(out_file, "w", encoding="utf-8") as fp:
         json.dump(results, fp, indent=2)
 
@@ -91,4 +93,4 @@ def run_baselines_benchmark(base_path: str = ".") -> Dict[str, Any]:
 if __name__ == "__main__":
     res = run_baselines_benchmark()
     print("Baseline Comparison Benchmark completed across N=200 questions.")
-    print("Baseline Comparison Results saved to baseline_comparison.json.")
+    print("Baseline Comparison Results saved to results/baseline_comparison.json.")

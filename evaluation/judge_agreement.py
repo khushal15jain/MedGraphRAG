@@ -135,9 +135,11 @@ def run_full_judge_agreement_study(base_path: str = ".") -> Dict[str, Any]:
         }
     }
 
-    out_file = base_dir / "judge_agreement_results.json"
-    with open(out_file, "w", encoding="utf-8") as fp:
-        json.dump(report, fp, indent=2)
+    out_dir = base_dir / "results"
+    out_dir.mkdir(exist_ok=True)
+    out_file = out_dir / "judge_agreement_results.json"
+    with open(out_file, "w") as f:
+        json.dump(report, f, indent=2)
 
     return report
 

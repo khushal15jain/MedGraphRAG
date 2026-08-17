@@ -149,10 +149,12 @@ def main():
         print(f"\n=============================================")
         print(f"--- Starting ablation run: {mode_name} ---")
         print(f"=============================================")
-        output_json = f"ablation_{mode_name}.json"
         
-        rows = []
-        evaluated_ids = set()
+        os.makedirs("results", exist_ok=True)
+        output_json = f"results/ablation_{mode_name}.json"
+        if not os.path.exists(output_json) and os.path.exists(f"ablation_{mode_name}.json"):
+            output_json = f"ablation_{mode_name}.json"
+            
         if os.path.exists(output_json):
             try:
                 with open(output_json, "r") as f:

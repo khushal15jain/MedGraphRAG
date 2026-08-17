@@ -63,6 +63,15 @@ MedGraphRAG/
 ├── generator/                      # Citation-constrained prompt builder & local LLM
 ├── graph/                          # NetworkX knowledge graph builder & BFS retriever
 ├── reranker/                       # BGE cross-encoder reranker wrapper
+├── results/                        # Experimental JSON benchmark artifacts & p-test output
+│   ├── ablation_baseline.json      # Full MedGraphRAG 100-question evaluations
+│   ├── ablation_no_graph.json      # Ablation B evaluation logs
+│   ├── ablation_no_bm25.json       # Ablation C evaluation logs
+│   ├── ablation_no_reranker.json   # Ablation D evaluation logs
+│   ├── ablation_dense_only.json    # Ablation E evaluation logs
+│   ├── baseline_comparison.json    # Baseline method comparison results
+│   ├── judge_agreement_results.json # Multi-judge alignment metrics
+│   └── p_test_results.json         # Statistical significance test output
 ├── retrieval/                      # Hybrid retrieval fusion & adaptive graph expansion
 ├── tests/                          # Automated Pytest reproducibility test suite
 │   ├── test_reproducibility.py     # Schema, ID alignment, and scoring logic tests

@@ -71,12 +71,13 @@ def apply_holm_bonferroni(raw_p_values: List[float]) -> List[float]:
 
 def run_p_tests(base_path: str = ".") -> Dict[str, Any]:
     base_dir = Path(base_path)
+    results_dir = base_dir / "results"
     files = {
-        "Exp1_Baseline": base_dir / "ablation_baseline.json",
-        "Exp2_No_Graph": base_dir / "ablation_no_graph.json",
-        "Exp3_No_BM25": base_dir / "ablation_no_bm25.json",
-        "Exp4_No_Reranker": base_dir / "ablation_no_reranker.json",
-        "Exp5_Dense_Only": base_dir / "ablation_dense_only.json",
+        "Exp1_Baseline": results_dir / "ablation_baseline.json" if (results_dir / "ablation_baseline.json").exists() else base_dir / "ablation_baseline.json",
+        "Exp2_No_Graph": results_dir / "ablation_no_graph.json" if (results_dir / "ablation_no_graph.json").exists() else base_dir / "ablation_no_graph.json",
+        "Exp3_No_BM25": results_dir / "ablation_no_bm25.json" if (results_dir / "ablation_no_bm25.json").exists() else base_dir / "ablation_no_bm25.json",
+        "Exp4_No_Reranker": results_dir / "ablation_no_reranker.json" if (results_dir / "ablation_no_reranker.json").exists() else base_dir / "ablation_no_reranker.json",
+        "Exp5_Dense_Only": results_dir / "ablation_dense_only.json" if (results_dir / "ablation_dense_only.json").exists() else base_dir / "ablation_dense_only.json",
     }
 
     data = {}
@@ -188,13 +189,16 @@ def run_p_tests(base_path: str = ".") -> Dict[str, Any]:
 
         p_test_results["comparisons"][ab_key] = comp_dict
 
-    out_file = base_dir / "p_test_results.json"
+    out_dir = base_dir / "results"
+    out_dir.mkdir(exist_ok=True)
+    out_file = out_dir / "p_test_results.json"
     with open(out_file, "w", encoding="utf-8") as fp:
         json.dump(p_test_results, fp, indent=2)
+
+    print(f"P-test evaluation completed with strict ID alignment and Holm-Bonferroni correction. Saved to {out_file} across {n_samples} samples.")
 
     return p_test_results
 
 
 if __name__ == "__main__":
     res = run_p_tests()
-    print(f"P-test evaluation completed with strict ID alignment and Holm-Bonferroni correction. Saved to p_test_results.json across {res['n_samples']} samples.")
