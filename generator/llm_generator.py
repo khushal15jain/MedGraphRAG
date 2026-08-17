@@ -24,11 +24,11 @@ class OllamaGenerator:
 
     def __init__(
         self,
-        model_name: str = "qwen2.5:3b-instruct",
+        model_name: str = "llama3.2:latest",
         host: str = "http://localhost:11434",
-        temperature: float = 0.05,
+        temperature: float = 0.0,
         max_tokens: int = 512,
-        top_p: float = 0.7,
+        top_p: float = 0.9,
     ) -> None:
         """Configure the Ollama client and generation parameters.
 

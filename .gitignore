@@ -36,4 +36,13 @@ mlruns/
 # IDE
 .vscode/
 .idea/
-MedGraphRAG.zip
+
+# Archives & Large Outputs
+*.zip
+*.tar.gz
+*.bin
+*.pt
+*.onnx
+.coverage
+coverage.xml
+htmlcov/
