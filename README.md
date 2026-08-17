@@ -237,6 +237,14 @@ To run paired Wilcoxon signed-rank tests, calculate p-values, and generate high-
 python generate_publication_figures.py
 ```
 
+### 4. Execute Baseline Architecture Benchmark Comparison ($N=200$ Questions)
+
+To compare MedGraphRAG against standard baseline architectures (Vanilla RAG, BM25 Only, Hybrid, GraphRAG Only) across the 200 gold questions and generate `results/baseline_comparison.json`:
+
+```bash
+python benchmark/run_baselines_benchmark.py
+```
+
 *Outputs generated (to `results/charts/`):* `retrieval_accuracy_chart.png`, `faithfulness_chart.png`, `groundedness_chart.png`, `hallucination_chart.png`, `clinical_reliability_chart.png`, `latency_chart.png`, `radar_chart.png`.
 
 ### 4. Launch FastAPI Server & Frontend Interface

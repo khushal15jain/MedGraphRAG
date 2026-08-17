@@ -22,7 +22,11 @@ import numpy as np
 
 def run_baselines_benchmark(base_path: str = ".") -> Dict[str, Any]:
     base_dir = Path(base_path)
-    gold_path = base_dir / "gold_standard_dataset.json"
+    gold_path = base_dir / "data" / "qa_dataset.json"
+    if not gold_path.exists():
+        gold_path = base_dir / "data" / "gold_standard_dataset.json"
+    if not gold_path.exists():
+        gold_path = base_dir / "gold_standard_dataset.json"
 
     if not gold_path.exists():
         raise FileNotFoundError(f"Missing {gold_path}")
