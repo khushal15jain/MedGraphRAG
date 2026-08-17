@@ -170,7 +170,7 @@ def main():
     components = load_components()
 
     rows = []
-    output_csv = "fast_eval_results.csv"
+    output_csv = "results/fast_eval_results.csv"
     
     # Load existing evaluated IDs to avoid repetition
     evaluated_ids = set()
