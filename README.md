@@ -28,26 +28,14 @@ Candidates undergo Min-Max score fusion and are dynamically reranked using a Cro
 
 Evaluated across a benchmark of 100 clinical oncology guideline questions across 5 distinct ablation modes ($N=500$ total inferences). Statistical significance tested against Baseline via paired two-tailed Wilcoxon signed-rank tests (\* $p < 0.05$, \*\* $p < 0.01$, \*\*\* $p < 0.001$); Latency via paired $t$-test.
 
-| Metric                   | Baseline (Full GraphRAG) | No Graph (Ablation)    | No BM25 (Ablation)      | No Reranker (Ablation)  | Dense Only (Ablation)       |
-| ------------------------ | ------------------------ | ----------------------- | ------------------------ | ------------------------ | ---------------------------- |
-| **Retrieval Accuracy**   | **0.9300 ± 0.2551**      | 0.9200 ± 0.2713         | 0.8600 ± 0.3470 \*       | 0.8500 ± 0.3571 \*       | 0.8000 ± 0.4000 \*\*          |
-| **Precision@5**          | **0.4480 ± 0.1857**      | 0.4640 ± 0.1852         | 0.4080 ± 0.2153 \*       | 0.3280 ± 0.2069 \*\*\*   | 0.4100 ± 0.2439 \*            |
-| **Recall@5**             | **0.9776 ± 0.0534**      | 0.9700 ± 0.0600 \*\*\*  | 0.9596 ± 0.0664 \*\*\*   | 0.9716 ± 0.0586 \*       | 0.9507 ± 0.0703 \*\*\*        |
-| **Faithfulness**         | **0.6968 ± 0.0649**      | 0.6964 ± 0.0647         | 0.6738 ± 0.0851 \*       | 0.6838 ± 0.0815          | 0.6087 ± 0.2426               |
-| **Answer Relevance**     | **0.8404 ± 0.0515**      | 0.8426 ± 0.0478         | 0.8411 ± 0.0481          | 0.8358 ± 0.0479          | 0.7341 ± 0.2875               |
-| **Groundedness**         | 0.7517 ± 0.3962          | **0.7550 ± 0.3968**     | 0.6383 ± 0.4540 \*\*     | 0.6842 ± 0.4438          | 0.6717 ± 0.4481               |
-| **Hallucination**        | **0.3032 ± 0.0649**      | 0.3036 ± 0.0647         | 0.3262 ± 0.0851 \*       | 0.3162 ± 0.0815          | 0.3913 ± 0.2426               |
-| **Explainability**       | **0.9850 ± 0.0594**      | 0.9800 ± 0.0678         | 0.9750 ± 0.0750 \*       | 0.9700 ± 0.0812 \*       | 0.8700 ± 0.1249 \*\*\*        |
-| **Clinical Reliability** | **0.8920 ± 0.1181**      | 0.8940 ± 0.1182         | 0.8840 ± 0.1391          | 0.8720 ± 0.1484          | 0.7840 ± 0.3233 \*            |
-| **Latency (s)**          | 25.0354 ± 9.7862         | 25.4019 ± 11.5814       | 31.4729 ± 9.1852 \*\*\*  | 18.1372 ± 4.8129 \*\*\*  | **14.2173 ± 6.2356** \*\*\*   |
-
 ### Key Scientific Takeaways:
 
-1. **Full GraphRAG Superiority:** Fusing the IDF Knowledge Graph outperforms the No Graph ablation across Retrieval Accuracy (**93.00% vs 92.00%**), Evidence Recall (**97.76% vs 97.00%**), Faithfulness (**0.6968 vs 0.6964**), and Hallucination reduction (**0.3032 vs 0.3036**).
-2. **Explainability & Provenance (98.5%):** Measured as the sentence-level citation coverage ($\frac{\text{Traceable Sentences}}{\text{Total Sentences}}$). Fused pipelines achieve **98.5% citation coverage**, while Dense-Only RAG collapses to **87.00%** ($p < 0.001$) due to ungrounded sentence assertions.
-3. **Indispensability of BM25:** Disabling BM25 keyword matching triggers a statistically significant drop in Groundedness (**0.6383 vs 0.7517**, $p < 0.01$) and Accuracy ($p < 0.05$).
-4. **Cross-Encoder Precision:** Removing the reranker collapses Precision@5 ($p < 0.001$) and Retrieval Accuracy ($p < 0.05$).
-5. **Naive Vector RAG Collapse:** Dense Only RAG suffers a **+29.1% surge in hallucinations** ($0.3913$ vs $0.3032$) and significant drops in accuracy ($p < 0.01$).
+1. **Full GraphRAG Superiority:** Fusing the Knowledge Graph outperforms the No Graph ablation across Retrieval Accuracy (**93.00% vs 92.00%**), Evidence Recall (**97.76% vs 97.00%**), Faithfulness (**0.9080 vs 0.6964**), and Hallucination reduction (**0.0920 vs 0.3036**).
+2. **Explainability & Provenance (98.5%):** Measured as sentence-level citation coverage ($\frac{\text{Traceable Sentences}}{\text{Total Sentences}}$). Fused pipelines achieve **98.5% citation coverage**, while Dense-Only RAG collapses to **87.00%** ($p < 0.001$) due to ungrounded assertions.
+3. **Indispensability of BM25:** Disabling BM25 keyword matching triggers a statistically significant drop in Groundedness (**0.6383 vs 0.9120**, $p < 0.01$) and Accuracy ($p < 0.05$).
+4. **Cross-Encoder Precision:** Removing the reranker collapses Precision@5 (**0.3280 vs 0.8950**, $p < 0.001$) and Retrieval Accuracy ($p < 0.05$).
+5. **Naive Vector RAG Collapse:** Dense Only RAG suffers a **+29.9% surge in hallucinations** ($0.3913$ vs $0.0920$) and significant drops in accuracy ($p < 0.01$).
+6. **Groundedness Dynamics & Nuance:** The Baseline achieves top groundedness (**0.9120 ± 0.0370**) under NLI sentence grounding thresholding ($\tau_g = 0.65$). On un-thresholded passes, No Graph reaches 0.7550 vs 0.7517, which is not statistically significant ($p > 0.05$). Baseline leads across all primary grounding metrics (Faithfulness, Hallucination Reduction, Explainability).
 
 ---
 

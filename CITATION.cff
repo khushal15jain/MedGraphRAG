@@ -1,11 +1,22 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "MedGraphRAG: Medical Oncology Graph-Augmented RAG System"
-type: software
 authors:
   - family-names: Jain
     given-names: Khushal
-repository-code: "https://github.com/khushal15jain/MegGraphRAG"
+repository-code: "https://github.com/khushal15jain/MedGraphRAG"
 license: MIT
-version: 0.1.0
+version: 1.0.0
 date-released: 2026-08-17
+keywords:
+  - retrieval-augmented-generation
+  - knowledge-graph
+  - medical-nlp
+  - clinical-question-answering
+  - large-language-models
+abstract: >
+  An end-to-end, deterministic, explainable, and hallucination-resistant
+  clinical question-answering architecture designed for medical oncology
+  guidelines and textbooks. Combines dense semantic search, BM25 lexical
+  search, and IDF-weighted multi-hop knowledge graph traversal, fused and
+  reranked with a cross-encoder before grounded local generation.
