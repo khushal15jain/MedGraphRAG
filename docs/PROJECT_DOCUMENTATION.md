@@ -123,5 +123,5 @@ pytest tests/test_reproducibility.py tests/test_publication_reproducibility.py
 python main.py
 python run_ablations.py --num-questions 100
 python evaluation/p_test_evaluator.py
-python generate_paper_tables.py
+python evaluation/p_test_evaluator.py
 ```

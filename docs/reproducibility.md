@@ -55,5 +55,5 @@ python evaluation/p_test_evaluator.py
 
 # 7. Generate publication-grade figures and tables
 python generate_publication_figures.py
-python generate_paper_tables.py
+python evaluation/p_test_evaluator.py
 ```
