@@ -6,29 +6,29 @@
   "faithfulness_agreement": {
     "pearson_r": 0.828190156952405,
     "spearman_rho": 0.8137235783030592,
-    "cohen_kappa": 1.0,
+    "cohen_kappa": 0.5850622406639004,
     "human_primary_pearson_r": 0.7207953880215155,
     "human_strong_pearson_r": 0.9315302182749937,
-    "human_primary_cohen_kappa": 1.0,
-    "human_strong_cohen_kappa": 1.0
+    "human_primary_cohen_kappa": 0.4444444444444444,
+    "human_strong_cohen_kappa": 0.76
   },
   "groundedness_agreement": {
     "pearson_r": 0.9338884867921526,
     "spearman_rho": 0.9240356689175125,
-    "cohen_kappa": 1.0,
+    "cohen_kappa": 0.752679307502061,
     "human_primary_pearson_r": 0.8792879529597494,
     "human_strong_pearson_r": 0.9555794840714275,
-    "human_primary_cohen_kappa": 1.0,
-    "human_strong_cohen_kappa": 1.0
+    "human_primary_cohen_kappa": 0.7142857142857143,
+    "human_strong_cohen_kappa": 0.4736842105263158
   },
   "summary": {
     "faithfulness_inter_judge_pearson_r": 0.8282,
-    "faithfulness_inter_judge_cohen_kappa": 1.0,
+    "faithfulness_inter_judge_cohen_kappa": 0.5851,
     "faithfulness_human_llm_pearson_r": 0.9315,
-    "faithfulness_human_llm_cohen_kappa": 1.0,
+    "faithfulness_human_llm_cohen_kappa": 0.76,
     "groundedness_inter_judge_pearson_r": 0.9339,
-    "groundedness_inter_judge_cohen_kappa": 1.0,
+    "groundedness_inter_judge_cohen_kappa": 0.7527,
     "groundedness_human_llm_pearson_r": 0.9556,
-    "groundedness_human_llm_cohen_kappa": 1.0
+    "groundedness_human_llm_cohen_kappa": 0.4737
   }
 }

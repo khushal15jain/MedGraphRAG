@@ -65,10 +65,10 @@ Evaluated using a **Multi-Judge Evaluation Framework** backed by empirical agree
 3. **Human Expert Alignment Study**: A 30-item random subsample evaluated independently by 3 clinical oncology specialists on a 1–5 Likert scale (`evaluation/judge_agreement.py`).
 
 ### Inter-Judge & Human Alignment Metrics
-- **Faithfulness Inter-Judge Agreement**: Pearson $r = \mathbf{0.8282}$, Cohen's $\kappa = \mathbf{1.0000}$
-- **Faithfulness Human-LLM Alignment**: Pearson $r = \mathbf{0.9315}$, Cohen's $\kappa = \mathbf{1.0000}$
-- **Groundedness Inter-Judge Agreement**: Pearson $r = \mathbf{0.9339}$, Cohen's $\kappa = \mathbf{1.0000}$
-- **Groundedness Human-LLM Alignment**: Pearson $r = \mathbf{0.9556}$, Cohen's $\kappa = \mathbf{1.0000}$
+- **Faithfulness Inter-Judge Agreement**: Pearson $r = \mathbf{0.8282}$, Quadratic Cohen's $\kappa = \mathbf{0.5851}$
+- **Faithfulness Human-LLM Alignment**: Pearson $r = \mathbf{0.9315}$, Quadratic Cohen's $\kappa = \mathbf{0.7600}$
+- **Groundedness Inter-Judge Agreement**: Pearson $r = \mathbf{0.9339}$, Quadratic Cohen's $\kappa = \mathbf{0.7527}$
+- **Groundedness Human-LLM Alignment**: Pearson $r = \mathbf{0.9556}$, Quadratic Cohen's $\kappa = \mathbf{0.4737}$
 
 ---
 
@@ -80,6 +80,8 @@ Evaluated using a **Multi-Judge Evaluation Framework** backed by empirical agree
 4. **Cross-Encoder Precision:** Removing the reranker collapses Precision@5 (**0.3280 vs 0.8950**, $p < 0.001$) and Retrieval Accuracy ($p < 0.05$).
 5. **Naive Vector RAG Collapse:** Dense Only RAG suffers a **+29.9% surge in hallucinations** ($0.3913$ vs $0.0920$) and significant drops in accuracy ($p < 0.01$).
 6. **Groundedness Dynamics & Nuance:** The Baseline achieves top groundedness (**0.9120 ± 0.0370**) under NLI sentence grounding thresholding ($\tau_g = 0.65$). On un-thresholded passes, No Graph reaches 0.7550 vs 0.7517, which is not statistically significant ($p > 0.05$). Baseline leads across all primary grounding metrics (Faithfulness, Hallucination Reduction, Explainability).
+
+> **Methodology Note on Metric Revisions:** Early exploratory baseline runs computed metrics over un-reranked candidate pools (yielding raw Precision@5 $\approx 0.4480$ and un-thresholded Faithfulness $\approx 0.6968$). The production system introduces full Cross-Encoder Candidate Reranking (`BAAI/bge-reranker-base`) and NLI Sentence-Level Entailment Grounding ($\tau_g = 0.65$, $\tau_{\mathrm{low}} = 0.45$). This elevates top-5 precision to **0.8950**, sentence faithfulness to **0.9080**, groundedness to **0.9120**, and suppresses ungrounded hallucinations down to **0.0920**.
 
 ---
 
@@ -135,7 +137,7 @@ MedGraphRAG/
 ├── benchmark/               Baseline methods & benchmark evaluation runners
 ├── configs/                 YAML configuration files (model, retrieval, paths)
 ├── data/                    Raw PDF guidelines, interim files, processed chunks, and gold_standard_dataset.json
-├── docs/                    System documentation, IEEE papers, CITATION.cff, CONTRIBUTING.md, and reproducibility guides
+├── docs/                    System documentation, IEEE manuscripts, and reproducibility guides
 ├── embeddings/              BGE dense embedding wrapper & ChromaDB indexing pipeline
 ├── entity_extraction/       SciSpaCy NER and dependency-parsing relation extraction
 ├── evaluation/              Evaluators (Faithfulness, Groundedness, Accuracy, BLEU, ROUGE)
@@ -147,11 +149,15 @@ MedGraphRAG/
 ├── preprocessing/           Layout-aware PDF parsing, text cleaning, section detection, & chunking
 ├── prompts/                 System prompts and QA prompt templates
 ├── reranker/                BAAI/bge-reranker-base cross-encoder integration
-├── results/                 Ablation JSON results, summary tables, qualitative examples, and charts/
-│   └── charts/              Generated publication figures (PNG)
+├── results/                 Benchmark JSON results, p-test outputs, and subdirectories:
+│   ├── ablations/           Ablation sweep JSON result manifests
+│   └── figures/             Generated publication charts (PNG)
 ├── retrieval/                Dense, BM25, query expansion, and hybrid fusion algorithms
 ├── tests/                   Unit and integration test suite
 ├── utils/                   Shared I/O, exception, and helper utilities
+├── CITATION.cff             Citation Metadata File (mirrored in docs/)
+├── CONTRIBUTING.md           Contribution Guidelines (mirrored in docs/)
+├── LICENSE                  MIT License File
 ├── evaluate_extended_metrics.py  Resumable evaluator with BLEU/ROUGE/METEOR/F1 metrics
 ├── run_ablations.py         Full 500-evaluation ablation sweep runner
 ├── generate_publication_figures.py Statistical significance tester & chart generator
