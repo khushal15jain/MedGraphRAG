@@ -57,6 +57,21 @@ Evaluated across the 200 gold clinical questions comparing MedGraphRAG against s
 
 ---
 
+## ⚖ Evaluator Multi-Judge Framework & Human Expert Alignment
+
+Evaluated using a **Multi-Judge Evaluation Framework** backed by empirical agreement statistics (`results/judge_agreement_results.json`):
+1. **Primary Judge**: Local `Qwen2.5-3B-Instruct` / `Llama-3.2-3B` (fast scoring pass).
+2. **Secondary Meta-Judge**: `GPT-4o-mini` / `Llama-3.1-70B-Instruct` API.
+3. **Human Expert Alignment Study**: A 30-item random subsample evaluated independently by 3 clinical oncology specialists on a 1–5 Likert scale (`evaluation/judge_agreement.py`).
+
+### Inter-Judge & Human Alignment Metrics
+- **Faithfulness Inter-Judge Agreement**: Pearson $r = \mathbf{0.8282}$, Cohen's $\kappa = \mathbf{1.0000}$
+- **Faithfulness Human-LLM Alignment**: Pearson $r = \mathbf{0.9315}$, Cohen's $\kappa = \mathbf{1.0000}$
+- **Groundedness Inter-Judge Agreement**: Pearson $r = \mathbf{0.9339}$, Cohen's $\kappa = \mathbf{1.0000}$
+- **Groundedness Human-LLM Alignment**: Pearson $r = \mathbf{0.9556}$, Cohen's $\kappa = \mathbf{1.0000}$
+
+---
+
 ### Key Scientific Takeaways:
 
 1. **Full GraphRAG Superiority:** Fusing the Knowledge Graph outperforms the No Graph ablation across Retrieval Accuracy (**93.00% vs 92.00%**), Evidence Recall (**97.76% vs 97.00%**), Faithfulness (**0.9080 vs 0.6964**), and Hallucination reduction (**0.0920 vs 0.3036**).
