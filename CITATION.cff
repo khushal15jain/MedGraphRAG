@@ -1,15 +1,11 @@
 cff-version: 1.2.0
-message: "If you use MedGraphRAG in your research, please cite it as below."
-title: "MedGraphRAG: An Ablation Study of Hybrid Dense–Sparse–Graph Retrieval for Evidence-Grounded Clinical Question Answering"
+message: "If you use this software, please cite it as below."
+title: "MedGraphRAG: Medical Oncology Graph-Augmented RAG System"
+type: software
 authors:
-  - family-names: "Jain"
-    given-names: "Khushal"
+  - family-names: Jain
+    given-names: Khushal
 repository-code: "https://github.com/khushal15jain/MegGraphRAG"
-license: "MIT"
-date-released: "2026-08-16"
-keywords:
-  - "retrieval-augmented generation"
-  - "knowledge graph"
-  - "medical oncology"
-  - "hallucination mitigation"
-  - "cross-encoder reranking"
+license: MIT
+version: 0.1.0
+date-released: 2026-08-17
