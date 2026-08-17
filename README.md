@@ -47,13 +47,13 @@ Evaluated across a 100-question stratified subset of the 200 gold clinical quest
 ### 📈 Comparison to Standard Baseline Architectures ($N=200$ Questions)
 Evaluated across the 200 gold clinical questions comparing MedGraphRAG against standard baseline architectures defined in `benchmark/baselines.py`:
 
-| Method Architecture | Retrieval Accuracy | Precision@5 | Recall@5 | HitRate@5 | Faithfulness | Groundedness | Hallucination Rate | Answer F1 | Overall Rubric Score | Latency (s) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Vanilla RAG (Dense Only)** | 0.8000 | 0.4100 | 0.9507 | 0.9507 | 0.6087 | 0.6717 | 0.3913 | 0.6720 | 3.91 / 5.0 | 14.22s |
-| **BM25 Only (Sparse)** | 0.8200 | 0.3950 | 0.9450 | 0.9450 | 0.6350 | 0.6520 | 0.3650 | 0.7020 | 4.05 / 5.0 | 11.85s |
-| **Hybrid (Dense + BM25)** | 0.8800 | 0.4250 | 0.9650 | 0.9650 | 0.6750 | 0.7150 | 0.3250 | 0.7580 | 4.31 / 5.0 | 19.45s |
-| **GraphRAG Only** | 0.8400 | 0.3650 | 0.9380 | 0.9380 | 0.6480 | 0.6820 | 0.3520 | 0.7250 | 4.18 / 5.0 | 21.32s |
-| **MedGraphRAG (Optimized)** | **0.9300** | **0.8950** | **0.9776** | **1.0000** | **0.9080** | **0.9120** | **0.0920** | **0.7948** | **4.72 / 5.0** | **25.57s** |
+| Method Architecture | Retrieval Accuracy | Precision@5 | Recall@5 | Faithfulness | Groundedness | Answer F1 | Overall Rubric Score | Latency (s) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Vanilla RAG (Dense Only)** | 0.8000 | 0.4100 | 0.9507 | 0.6087 | 0.6717 | 0.6720 | 3.91 / 5.0 | 14.22s |
+| **BM25 Only (Sparse)** | 0.8200 | 0.3950 | 0.9450 | 0.6350 | 0.6520 | 0.7020 | 4.05 / 5.0 | 11.85s |
+| **Hybrid (Dense + BM25)** | 0.8800 | 0.4250 | 0.9650 | 0.6750 | 0.7150 | 0.7580 | 4.31 / 5.0 | 19.45s |
+| **GraphRAG Only** | 0.8400 | 0.3650 | 0.9380 | 0.6480 | 0.6820 | 0.7250 | 4.18 / 5.0 | 21.32s |
+| **MedGraphRAG (Optimized)** | **0.9300** | **0.8950** | **0.9776** | **0.9080** | **0.9120** | **0.7948** | **4.72 / 5.0** | **25.57s** |
 
 ---
 
