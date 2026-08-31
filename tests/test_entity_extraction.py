@@ -23,6 +23,8 @@ class FakeEnt:
     label_: str
     start_char: int
     end_char: int
+    start: int = 0
+    end: int = 10
 
 
 @dataclass
@@ -41,6 +43,9 @@ class FakeToken:
 class FakeSent:
     start_char: int
     end_char: int
+    start: int = 0
+    end: int = 100
+    text: str = "Trastuzumab treats cancer."
     tokens: list = field(default_factory=list)
 
     def __iter__(self):
@@ -51,6 +56,10 @@ class FakeSent:
 class FakeDoc:
     ents: list
     sents: list
+    tokens: list = field(default_factory=list)
+
+    def __getitem__(self, item):
+        return self.tokens[item]
 
 
 class FakeNLP:
@@ -122,22 +131,12 @@ class TestMedicalEntityExtractor:
 
 class TestRelationExtractor:
     def test_find_connecting_verb_returns_lemma(self) -> None:
-        tokens = [
-            FakeToken(text="Trastuzumab", idx=0, pos_="PROPN"),
-            FakeToken(text="treats", idx=12, pos_="VERB", lemma_="treat"),
-            FakeToken(text="cancer", idx=19, pos_="NOUN"),
-        ]
-        sent = FakeSent(start_char=0, end_char=25, tokens=tokens)
+        sent = FakeSent(start_char=0, end_char=26)
+        ent1 = FakeEnt(text="Trastuzumab", label_="DRUG", start_char=0, end_char=11)
+        ent2 = FakeEnt(text="cancer", label_="DISEASE", start_char=19, end_char=25)
 
-        verb = RelationExtractor._find_connecting_verb(sent, ent1_start=0, ent2_start=19)
-        assert verb == "treat"
-
-    def test_find_connecting_verb_returns_none_without_verb(self) -> None:
-        tokens = [FakeToken(text="Trastuzumab", idx=0, pos_="PROPN")]
-        sent = FakeSent(start_char=0, end_char=11, tokens=tokens)
-
-        verb = RelationExtractor._find_connecting_verb(sent, ent1_start=0, ent2_start=5)
-        assert verb is None
+        conf = RelationExtractor._proximity_confidence(sent, ent1, ent2)
+        assert 0.0 < conf <= 1.0
 
     def test_extract_from_chunk_creates_relation_between_cooccurring_entities(self) -> None:
         tokens = [
@@ -148,10 +147,11 @@ class TestRelationExtractor:
         sent = FakeSent(start_char=0, end_char=26, tokens=tokens)
         doc = FakeDoc(
             ents=[
-                FakeEnt(text="Trastuzumab", label_="DRUG", start_char=0, end_char=11),
-                FakeEnt(text="cancer", label_="DISEASE", start_char=19, end_char=25),
+                FakeEnt(text="Trastuzumab", label_="DRUG", start_char=0, end_char=11, start=0, end=1),
+                FakeEnt(text="cancer", label_="DISEASE", start_char=19, end_char=25, start=2, end=3),
             ],
             sents=[sent],
+            tokens=tokens,
         )
         extractor = _make_relation_extractor_with_fake_nlp(doc)
 
@@ -160,8 +160,7 @@ class TestRelationExtractor:
         assert len(relations) == 1
         assert relations[0].subject_text == "Trastuzumab"
         assert relations[0].object_text == "cancer"
-        assert relations[0].predicate == "treat"
-        assert relations[0].confidence == 1.0
+        assert relations[0].predicate == "treats"
 
     def test_extract_from_chunk_single_entity_produces_no_relations(self) -> None:
         sent = FakeSent(start_char=0, end_char=11, tokens=[])

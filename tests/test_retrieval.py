@@ -23,9 +23,9 @@ class TestMinMaxNormalize:
         assert result["c"] == 1.0
         assert result["b"] == 0.5
 
-    def test_uniform_scores_return_zero(self) -> None:
+    def test_uniform_scores_return_one(self) -> None:
         result = _min_max_normalize({"a": 2.0, "b": 2.0})
-        assert result == {"a": 0.0, "b": 0.0}
+        assert result == {"a": 1.0, "b": 1.0}
 
     def test_empty_dict_returns_empty(self) -> None:
         assert _min_max_normalize({}) == {}
@@ -71,7 +71,7 @@ class FakeDenseRetriever:
         self._hits = hits
         self.indexer = indexer or FakeIndexer()
 
-    def search(self, query: str, top_k: int = 10, level_filter: str | None = "child"):
+    def search(self, query: str, top_k: int = 10, level_filter: str | None = "child", section_filter: str | None = None, **kwargs):
         return self._hits[:top_k]
 
 
@@ -79,7 +79,7 @@ class FakeIndexer:
     """Fake ChromaIndexer providing get_by_ids fallback for hybrid retriever tests."""
 
     def get_by_ids(self, chunk_ids):
-        return {}
+        return {cid: {"text": f"text for {cid}", "metadata": {"source_file": "doc.pdf"}} for cid in chunk_ids}
 
 
 class FakeBM25Retriever:
@@ -98,7 +98,10 @@ class FakeGraphRetriever:
     def __init__(self, results) -> None:
         self._results = results
 
-    def retrieve(self, query: str, top_k: int = 5):
+    def extract_query_entities(self, query: str) -> list[str]:
+        return []
+
+    def retrieve(self, query: str, top_k: int = 5, query_entities: list[str] | None = None, **kwargs):
         return self._results[:top_k]
 
 

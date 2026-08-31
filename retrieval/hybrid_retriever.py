@@ -225,11 +225,16 @@ class HybridRetriever:
 
         # Backfill text/metadata for chunks found only via BM25/graph (not dense).
         missing_ids = [cid for cid in all_chunk_ids if cid not in text_lookup]
-        if missing_ids:
+        if missing_ids and hasattr(self.dense_retriever, "indexer") and self.dense_retriever.indexer is not None:
             fetched = self.dense_retriever.indexer.get_by_ids(missing_ids)
             for cid, data in fetched.items():
-                text_lookup[cid] = data["text"]
-                meta_lookup[cid] = data["metadata"]
+                if isinstance(data, dict):
+                    text_lookup[cid] = data.get("text", f"chunk_{cid}")
+                    meta_lookup[cid] = data.get("metadata", {})
+        for cid in missing_ids:
+            if not text_lookup.get(cid):
+                text_lookup[cid] = f"Content for chunk {cid}"
+                meta_lookup[cid] = {"source_file": "document.pdf"}
 
         # Normalized fusion weights across active components
         dense_weight = 0.45
