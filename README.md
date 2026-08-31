@@ -49,11 +49,11 @@ Evaluated across the 200 gold clinical questions comparing MedGraphRAG against s
 
 | Method Architecture | Retrieval Accuracy | Precision@5 | Recall@5 | Faithfulness | Groundedness | Answer F1 | Overall Rubric Score | Latency (s) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Vanilla RAG (Dense Only)** | 0.8000 | 0.4100 | 0.9507 | 0.6087 | 0.6717 | 0.6720 | 3.91 / 5.0 | 14.22s |
-| **BM25 Only (Sparse)** | 0.8200 | 0.3950 | 0.9450 | 0.6350 | 0.6520 | 0.7020 | 4.05 / 5.0 | 11.85s |
-| **Hybrid (Dense + BM25)** | 0.8800 | 0.4250 | 0.9650 | 0.6750 | 0.7150 | 0.7580 | 4.31 / 5.0 | 19.45s |
-| **GraphRAG Only** | 0.8400 | 0.3650 | 0.9380 | 0.6480 | 0.6820 | 0.7250 | 4.18 / 5.0 | 21.32s |
-| **MedGraphRAG (Optimized)** | **0.9300** | **0.8950** | **0.9776** | **0.9080** | **0.9120** | **0.7948** | **4.72 / 5.0** | **25.57s** |
+| **Vanilla RAG (Dense Only)** | 0.8000 | 0.4100 | 0.9507 | 0.6087 | 0.6717 | 0.2422 | 3.92 / 5.0 | 14.22s |
+| **BM25 Only (Sparse)** | 0.8600 | 0.4080 | 0.9596 | 0.6738 | 0.6383 | 0.2411 | 4.42 / 5.0 | 31.47s |
+| **Hybrid (Dense + BM25)** | 0.9200 | 0.4640 | 0.9700 | 0.6964 | 0.7550 | 0.2562 | 4.47 / 5.0 | 25.40s |
+| **GraphRAG Only** | 0.8500 | 0.3280 | 0.9716 | 0.6838 | 0.6842 | 0.2282 | 4.36 / 5.0 | 18.14s |
+| **MedGraphRAG (Optimized)** | **0.9314** | **0.9005** | **0.9776** | **0.9033** | **0.9115** | **0.2529** | **4.61 / 5.0** | **25.57s** |
 
 ---
 
@@ -74,16 +74,16 @@ Evaluated using a **Multi-Judge Evaluation Framework** backed by empirical agree
 
 ### Key Scientific Takeaways:
 
-1. **Full GraphRAG Superiority:** Fusing the Knowledge Graph outperforms the No Graph ablation across Retrieval Accuracy (**93.00% vs 92.00%**), Evidence Recall (**97.76% vs 97.00%**), Faithfulness (**0.9080 vs 0.6964**), and Hallucination reduction (**0.0920 vs 0.3036**).
+1. **Full GraphRAG Superiority:** Fusing the Knowledge Graph outperforms the No Graph ablation across Retrieval Accuracy (**93.14% vs 92.00%**), Evidence Recall (**97.76% vs 97.00%**), Faithfulness (**0.9033 vs 0.6964**), and Hallucination reduction (**0.0967 vs 0.3036**).
 2. **Explainability & Provenance (98.5%):** Measured as sentence-level citation coverage ($\frac{\text{Traceable Sentences}}{\text{Total Sentences}}$). Fused pipelines achieve **98.5% citation coverage**, while Dense-Only RAG collapses to **87.00%** ($p < 0.001$) due to ungrounded assertions.
-3. **Indispensability of BM25:** Disabling BM25 keyword matching triggers a statistically significant drop in Groundedness (**0.6383 vs 0.9120**, $p < 0.01$) and Accuracy ($p < 0.05$).
-4. **Cross-Encoder Precision:** Removing the reranker collapses Precision@5 (**0.3280 vs 0.8950**, $p < 0.001$) and Retrieval Accuracy ($p < 0.05$).
-5. **Naive Vector RAG Collapse:** Dense Only RAG suffers a **+29.9% surge in hallucinations** ($0.3913$ vs $0.0920$) and significant drops in accuracy ($p < 0.01$).
-6. **Groundedness Dynamics & Nuance:** The Baseline achieves top groundedness (**0.9120 ± 0.0370**) under NLI sentence grounding thresholding ($\tau_g = 0.65$). On un-thresholded passes, No Graph reaches 0.7550 vs 0.7517, which is not statistically significant ($p > 0.05$). Baseline leads across all primary grounding metrics (Faithfulness, Hallucination Reduction, Explainability).
+3. **Indispensability of BM25:** Disabling BM25 keyword matching triggers a statistically significant drop in Groundedness (**0.6383 vs 0.9115**, $p < 0.01$) and Accuracy ($p < 0.05$).
+4. **Cross-Encoder Precision:** Removing the reranker collapses Precision@5 (**0.3280 vs 0.9005**, $p < 0.001$) and Retrieval Accuracy ($p < 0.05$).
+5. **Naive Vector RAG Collapse:** Dense Only RAG suffers a **+29.5% surge in hallucinations** ($0.3913$ vs $0.0967$) and significant drops in accuracy ($p < 0.01$).
+6. **Groundedness Dynamics & Nuance:** The Baseline achieves top groundedness (**0.9115 ± 0.0370**) under NLI sentence grounding thresholding ($\tau_g = 0.65$). Baseline leads across all primary grounding metrics (Faithfulness, Hallucination Reduction, Explainability).
 
 ### 📜 Version History & Methodological Evolution (v0.1.0 ➔ v1.0.0)
 
-For full architectural logs, see [`CHANGELOG.md`](file:///Users/khushaljain/Desktop/MedGraphRAG/CHANGELOG.md).
+For full architectural logs, see [`CHANGELOG.md`](./CHANGELOG.md).
 
 1. **Graph Scoring Refinement**: Fused graph scoring upgraded from linear IDF decay ($S = \mathrm{IDF} \cdot (1 - 0.2d)$) to **Hub-Suppressed Hop-Distance Decay Scoring** ($S_{\mathrm{graph}}(e, q) = \frac{1}{1 + d(e, q)} \cdot \frac{1}{\log(2 + \deg(e))}$), which explicitly suppresses generic clinical hub terms (e.g., *"patient"*, *"dose"*) in favor of high-specificity oncology entity nodes.
 2. **Post-Reranking Precision Evaluation**: Precision@5 was upgraded from raw candidate pool measurement ($0.4480 \rightarrow \mathbf{0.8950}$) by evaluating post Cross-Encoder (`BAAI/bge-reranker-base`) context windows.

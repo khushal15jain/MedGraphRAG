@@ -108,9 +108,30 @@ def compute_meteor(candidate: str, reference: str) -> float:
 # --------------------------------------------------------------------------
 
 
+def _extract_clean_text(raw: str) -> str:
+    if not raw or not isinstance(raw, str):
+        return ""
+    s = raw.strip()
+    if (s.startswith("{") and "answer" in s) or s.startswith("```"):
+        try:
+            fenced = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", s, re.DOTALL)
+            payload_str = fenced.group(1) if fenced else s
+            data = json.loads(payload_str)
+            if isinstance(data, dict) and "answer" in data and isinstance(data["answer"], str):
+                s = data["answer"]
+        except Exception:
+            match = re.search(r'"answer"\s*:\s*"(.*?)"', s, re.DOTALL)
+            if match:
+                s = match.group(1).replace("\\n", "\n").replace('\\"', '"')
+    match = re.search(r"\n?\s*Confidence:\s*(High|Medium|Low)\s*\.?\s*$", s, re.IGNORECASE)
+    if match:
+        s = s[: match.start()].strip()
+    return s.strip()
+
+
 def compute_answer_f1(candidate: str, reference: str) -> float:
-    cand_tokens = _tokenize(candidate)
-    ref_tokens = _tokenize(reference)
+    cand_tokens = _tokenize(_extract_clean_text(candidate))
+    ref_tokens = _tokenize(_extract_clean_text(reference))
     if not cand_tokens or not ref_tokens:
         return 0.0
     common: Dict[str, int] = {}

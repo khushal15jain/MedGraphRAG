@@ -18,5 +18,5 @@ abstract: >
   An end-to-end, deterministic, explainable, and hallucination-resistant
   clinical question-answering architecture designed for medical oncology
   guidelines and textbooks. Combines dense semantic search, BM25 lexical
-  search, and IDF-weighted multi-hop knowledge graph traversal, fused and
-  reranked with a cross-encoder before grounded local generation.
+  search, and Hub-Suppressed Hop-Distance Decay Scoring for knowledge graph traversal,
+  fused and reranked with a cross-encoder before grounded local generation.

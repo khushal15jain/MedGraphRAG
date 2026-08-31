@@ -2,7 +2,7 @@
   "n_samples": 200,
   "baselines": {
     "Vanilla RAG (Dense)": {
-      "Retrieval Accuracy": 0.9,
+      "Retrieval Accuracy": 0.8,
       "Precision@5": 0.41,
       "Recall@5": 0.9507,
       "Faithfulness": 0.6087,
@@ -11,15 +11,12 @@
       "Hallucination": 0.3913,
       "Explainability": 0.87,
       "Clinical Reliability": 0.784,
-      "MRR": 0.85,
-      "NDCG@5": 0.88,
-      "HitRate@5": 0.95,
-      "Answer F1": 0.091,
+      "Answer F1": 0.2422,
       "Overall Score": 3.92,
       "Latency": 14.2173
     },
     "BM25 Only (Sparse)": {
-      "Retrieval Accuracy": 0.9,
+      "Retrieval Accuracy": 0.86,
       "Precision@5": 0.408,
       "Recall@5": 0.9596,
       "Faithfulness": 0.6738,
@@ -28,15 +25,12 @@
       "Hallucination": 0.3262,
       "Explainability": 0.975,
       "Clinical Reliability": 0.884,
-      "MRR": 0.85,
-      "NDCG@5": 0.88,
-      "HitRate@5": 0.95,
-      "Answer F1": 0.0,
+      "Answer F1": 0.2411,
       "Overall Score": 4.42,
       "Latency": 31.4729
     },
     "Hybrid (Dense + BM25)": {
-      "Retrieval Accuracy": 0.9,
+      "Retrieval Accuracy": 0.92,
       "Precision@5": 0.464,
       "Recall@5": 0.97,
       "Faithfulness": 0.6964,
@@ -45,15 +39,12 @@
       "Hallucination": 0.3036,
       "Explainability": 0.98,
       "Clinical Reliability": 0.894,
-      "MRR": 0.85,
-      "NDCG@5": 0.88,
-      "HitRate@5": 0.95,
-      "Answer F1": 0.0,
+      "Answer F1": 0.2562,
       "Overall Score": 4.47,
       "Latency": 25.4019
     },
     "GraphRAG Only (Graph)": {
-      "Retrieval Accuracy": 0.9,
+      "Retrieval Accuracy": 0.85,
       "Precision@5": 0.328,
       "Recall@5": 0.9716,
       "Faithfulness": 0.6838,
@@ -62,15 +53,12 @@
       "Hallucination": 0.3162,
       "Explainability": 0.97,
       "Clinical Reliability": 0.872,
-      "MRR": 0.85,
-      "NDCG@5": 0.88,
-      "HitRate@5": 0.95,
-      "Answer F1": 0.0,
+      "Answer F1": 0.2282,
       "Overall Score": 4.36,
       "Latency": 18.1372
     },
     "MedGraphRAG (Proposed)": {
-      "Retrieval Accuracy": 0.9,
+      "Retrieval Accuracy": 0.9314,
       "Precision@5": 0.9005,
       "Recall@5": 0.9776,
       "Faithfulness": 0.9033,
@@ -79,10 +67,7 @@
       "Hallucination": 0.0967,
       "Explainability": 0.985,
       "Clinical Reliability": 0.9213,
-      "MRR": 0.85,
-      "NDCG@5": 0.88,
-      "HitRate@5": 0.95,
-      "Answer F1": 0.0,
+      "Answer F1": 0.2529,
       "Overall Score": 4.61,
       "Latency": 25.5718
     }
