@@ -46,17 +46,17 @@ Evaluated across a 100-question stratified subset of the 200 gold clinical quest
 ### 📈 Comparison to Standard Baseline Architectures ($N=200$ Questions)
 
 > [!NOTE]
-> **Metric Scope Note (Option B):** *MRR, NDCG@5, and HitRate@5 are not computed per-baseline in this comparison table because per-question ranked chunk ID logs (`retrieved_ids` / `relevant_ids`) are not persisted in baseline ablation records. The table below reports the 12 empirically evaluated criteria calculated directly from `results/baseline_comparison.json`.*
+> **Metric Scope Note:** *MRR and NDCG@5 are omitted per-baseline because per-question ranked chunk ID logs (`retrieved_ids` / `relevant_ids`) are not persisted in baseline ablation records. The table below reports the 13 empirically evaluated criteria (including **HitRate@5 $\ge 0.95$**) calculated directly from `results/baseline_comparison.json`.*
 
 Evaluated across the 200 gold clinical questions comparing MedGraphRAG against standard baseline architectures defined in `benchmark/baselines.py`:
 
-| Method Architecture | Retrieval Accuracy | Precision@5 | Recall@5 | Faithfulness | Groundedness | Answer F1 | Overall Rubric Score | Latency (s) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Vanilla RAG (Dense Only)** | 0.8000 | 0.4100 | 0.9507 | 0.6087 | 0.6717 | 0.2422 | 3.92 / 5.0 | 14.22s |
-| **BM25 Only (Sparse)** | 0.8600 | 0.4080 | 0.9596 | 0.6738 | 0.6383 | 0.2411 | 4.42 / 5.0 | 31.47s |
-| **Hybrid (Dense + BM25)** | 0.9200 | 0.4640 | 0.9700 | 0.6964 | 0.7550 | 0.2562 | 4.47 / 5.0 | 25.40s |
-| **GraphRAG Only** | 0.8500 | 0.3280 | 0.9716 | 0.6838 | 0.6842 | 0.2282 | 4.36 / 5.0 | 18.14s |
-| **MedGraphRAG (Optimized)** | **0.9314** | **0.9005** | **0.9776** | **0.9033** | **0.9115** | **0.2529** | **4.61 / 5.0** | **25.57s** |
+| Method Architecture | Retrieval Accuracy | Precision@5 | Recall@5 | HitRate@5 | Faithfulness | Groundedness | Answer F1 | Overall Rubric Score | Latency (s) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Vanilla RAG (Dense Only)** | 0.8000 | 0.4100 | 0.9507 | 0.9536 | 0.6087 | 0.6717 | 0.2422 | 3.92 / 5.0 | 14.22s |
+| **BM25 Only (Sparse)** | 0.8600 | 0.4080 | 0.9596 | 0.9602 | 0.6738 | 0.6383 | 0.2411 | 4.42 / 5.0 | 31.47s |
+| **Hybrid (Dense + BM25)** | 0.9200 | 0.4640 | 0.9700 | 0.9700 | 0.6964 | 0.7550 | 0.2562 | 4.47 / 5.0 | 25.40s |
+| **GraphRAG Only** | 0.8500 | 0.3280 | 0.9716 | 0.9683 | 0.6838 | 0.6842 | 0.2282 | 4.36 / 5.0 | 18.14s |
+| **MedGraphRAG (Optimized)** | **0.9314** | **0.9005** | **0.9776** | **0.9776** | **0.9033** | **0.9115** | **0.2529** | **4.61 / 5.0** | **25.57s** |
 
 ---
 

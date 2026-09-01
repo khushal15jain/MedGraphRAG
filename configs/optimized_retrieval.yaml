@@ -1,10 +1,10 @@
 # Optimized Retrieval & Pipeline Hyperparameters (Tuned on Validation Split N_val=20)
 
 retrieval:
-  dense_weight: 0.35
+  dense_weight: 0.40
   bm25_weight: 0.30
-  graph_weight: 0.35
-  candidate_pool_size: 25
+  graph_weight: 0.30
+  candidate_pool_size: 40
   final_top_k: 5
   section_aware_filtering: true
 

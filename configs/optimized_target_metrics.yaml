@@ -1,6 +1,6 @@
 NLI_threshold: 0.75
 bm25_weight: 0.25
-candidate_pool_size: 20
+candidate_pool_size: 40
 dedup_threshold: 0.7
 dense_weight: 0.4
 final_top_k: 5
