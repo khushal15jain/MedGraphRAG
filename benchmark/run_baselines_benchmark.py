@@ -54,7 +54,13 @@ def run_baselines_benchmark(base_path: str = ".") -> Dict[str, Any]:
     no_graph_json = ablations_dir / "ablation_no_graph.json"
     no_rerank_json = ablations_dir / "ablation_no_reranker.json"
 
-    # Function to compute metrics dynamically from run data
+    # Note on Metric Scope (Option B):
+    # MRR, NDCG@5, and HitRate@5 are formally omitted from this baseline comparison runner
+    # as per-question ranked retrieval ID trajectories ("retrieved_ids" / "relevant_ids") are
+    # not persisted in results/ablations/*.json. The baseline comparison focuses on the
+    # 12 empirically evaluated metrics: Retrieval Accuracy, Precision@5, Recall@5, Faithfulness,
+    # Answer Relevance, Groundedness, Hallucination, Explainability, Clinical Reliability,
+    # Answer F1, Overall Score, and Latency.
     def compute_run_metrics(file_path: Path, fallback_dict: dict) -> dict:
         if not file_path.exists():
             return fallback_dict

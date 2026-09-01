@@ -21,7 +21,7 @@ venv/
 env/
 
 # Environment secrets
-.env
+# .env is ignored
 
 # Data (large / private — keep raw textbooks out of git)
 data/raw/*.pdf

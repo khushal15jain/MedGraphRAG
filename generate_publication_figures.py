@@ -29,7 +29,9 @@ metrics_to_test = [
 def load_data():
     results = {}
     for fname, label in modes:
-        path = f'results/ablation_{fname}.json'
+        path = f'results/ablations/ablation_{fname}.json'
+        if not os.path.exists(path):
+            path = f'results/ablation_{fname}.json'
         if not os.path.exists(path):
             path = f'ablation_{fname}.json'
         if os.path.exists(path):
