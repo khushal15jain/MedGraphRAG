@@ -26,18 +26,18 @@ from typing import Any, Iterator
 import hydra
 from omegaconf import DictConfig
 
-from medgraphrag.embeddings.vector_store import ChromaIndexer
-from medgraphrag.embeddings.encoder import BGEEmbedder
-from medgraphrag.extraction.ner import MedicalEntityExtractor
-from medgraphrag.extraction.relations import RelationExtractor
-from medgraphrag.graph.builder import KnowledgeGraphBuilder
+from medgraphrag.embeddings.chroma_indexer import ChromaIndexer
+from medgraphrag.embeddings.embedder import BGEEmbedder
+from medgraphrag.extraction.ner_extractor import MedicalEntityExtractor
+from medgraphrag.extraction.relation_extractor import RelationExtractor
+from medgraphrag.graph.graph_builder import KnowledgeGraphBuilder
 from medgraphrag.preprocessing.chunker import HierarchicalChunker
 from medgraphrag.preprocessing.cleaner import TextCleaner
 from medgraphrag.preprocessing.metadata_extractor import MetadataExtractor
 from medgraphrag.preprocessing.pdf_loader import PDFLoader
 from medgraphrag.utils.exceptions import MedGraphRAGError, VectorStoreError
-from medgraphrag.utils.io import save_pickle, write_jsonl
-from medgraphrag.utils.logging import get_logger
+from medgraphrag.utils.io_utils import save_pickle, write_jsonl
+from medgraphrag.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
