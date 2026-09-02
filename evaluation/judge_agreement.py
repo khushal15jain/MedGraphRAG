@@ -1,14 +1,10 @@
 """evaluation/judge_agreement.py
 ------------------------------
-Inter-Judge Agreement and Human-LLM Alignment Evaluator.
+Inter-Judge Agreement Evaluator.
 
-Evaluates scoring consistency between:
-1. Primary Judge (Local 3B model: qwen2.5:3b / llama3.2:3b)
-2. High-Capacity Strong Judge (GPT-4o-mini / Llama-3.1-70B)
-3. Human Expert Clinical Annotator (30-item manual subsample)
-
-Computes Pearson correlation coefficient (r), Spearman rank correlation (rho),
-and Cohen's Kappa (kappa) across Faithfulness and Groundedness metrics.
+Evaluates scoring consistency between local LLM judges (Qwen2.5-3B / Llama-3.2-3B)
+and strong reference evaluators across Faithfulness and Groundedness metrics.
+Note: Human expert validation was not conducted; no synthetic human scores are generated.
 """
 
 from __future__ import annotations
@@ -19,8 +15,6 @@ from typing import Dict, List, Optional, Sequence, Any
 
 import numpy as np
 from scipy import stats
-
-
 from sklearn.metrics import cohen_kappa_score as sklearn_kappa
 
 
@@ -33,14 +27,14 @@ def cohen_kappa_score(y1: Sequence[float], y2: Sequence[float], num_bins: int = 
     b1 = np.clip(np.round(np.array(y1) * (num_bins - 1) + 1), 1, num_bins).astype(int)
     b2 = np.clip(np.round(np.array(y2) * (num_bins - 1) + 1), 1, num_bins).astype(int)
 
-    if len(np.unique(b1)) == 1 and len(np.unique(b2)) == 1 and b1[0] == b2[0]:
-        return 0.8500  # High agreement default when all items land in top rating category
+    if len(np.unique(b1)) == 1 and len(np.unique(b2)) == 1:
+        return 1.0 if b1[0] == b2[0] else 0.0
 
     try:
         score = sklearn_kappa(b1, b2, weights="quadratic")
-        return float(score) if not np.isnan(score) else 0.7500
+        return float(score) if not np.isnan(score) else 0.0
     except Exception:
-        return 0.7500
+        return 0.0
 
 
 def compute_judge_agreement(

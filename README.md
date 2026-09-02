@@ -10,7 +10,7 @@ MedGraphRAG is a publication-quality research framework combining SciSpaCy biome
 
 ## 📌 Performance Overview
 
-Evaluated over $N=200$ complex clinical oncology queries from NCCN guidelines, ESMO handbooks, and FDA drug labeling:
+Primary system evaluation over $N=200$ complex clinical oncology queries from NCCN guidelines, ESMO handbooks, and FDA drug labeling. Retrieval metrics evaluate top-$K$ ($K=5$) passages against ground-truth evidence chunk IDs ($C_{\text{gold}}$):
 
 | Metric | MedGraphRAG (Optimized) |
 | :--- | :---: |
@@ -27,11 +27,13 @@ Evaluated over $N=200$ complex clinical oncology queries from NCCN guidelines, E
 | **Hallucination Rate** | **0.0967** |
 | **Operational Latency** | **25.5718 s** |
 
+*Note: Hallucination Rate is derived directly as the sentence-level NLI inverse ($1.0 - \text{Faithfulness}$). Human expert validation was not conducted for this release.*
+
 ---
 
 ## 📊 Ablation Study Results
 
-Evaluated across a 100-question stratified subset (500 total inferences, `seed=42`):
+System ablation study evaluating 5 system configurations across a 100-question stratified random subset (`seed=42`, $100 \times 5 = 500$ total inferences):
 
 | Metric | MedGraphRAG | No Graph | No BM25 | No Reranker | Dense Only |
 | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -61,7 +63,6 @@ MedGraphRAG/
 ├── embeddings/              # BAAI/bge-base-en-v1.5 embedder & Chroma indexer
 ├── entity_extraction/       # SciSpaCy biomedical NER & relation extraction
 ├── evaluation/              # Authoritative metrics & Holm-Bonferroni test evaluator
-├── explainability/          # Citation provenance & traceability engine
 ├── generator/               # Ollama/vLLM generator & DeBERTa NLI grounding
 ├── graph/                   # NetworkX Knowledge Graph & hop-decay retriever
 ├── notebooks/               # Data exploration notebooks
