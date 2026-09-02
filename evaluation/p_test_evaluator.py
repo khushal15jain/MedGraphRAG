@@ -95,12 +95,26 @@ def compute_bootstrap_ci(data: Any, num_bootstraps: int = 1000, n_bootstrap: int
 def run_p_tests(base_path: str = ".") -> Dict[str, Any]:
     base_dir = Path(base_path)
     results_dir = base_dir / "results"
+    ablations_dir = results_dir / "ablations"
+
+    def find_file(stem: str) -> Path:
+        cand1 = ablations_dir / f"{stem}.json"
+        if cand1.exists():
+            return cand1
+        cand2 = results_dir / f"{stem}.json"
+        if cand2.exists():
+            return cand2
+        cand3 = base_dir / f"{stem}.json"
+        if cand3.exists():
+            return cand3
+        return cand1
+
     files = {
-        "Exp1_Baseline": results_dir / "ablation_baseline.json" if (results_dir / "ablation_baseline.json").exists() else base_dir / "ablation_baseline.json",
-        "Exp2_No_Graph": results_dir / "ablation_no_graph.json" if (results_dir / "ablation_no_graph.json").exists() else base_dir / "ablation_no_graph.json",
-        "Exp3_No_BM25": results_dir / "ablation_no_bm25.json" if (results_dir / "ablation_no_bm25.json").exists() else base_dir / "ablation_no_bm25.json",
-        "Exp4_No_Reranker": results_dir / "ablation_no_reranker.json" if (results_dir / "ablation_no_reranker.json").exists() else base_dir / "ablation_no_reranker.json",
-        "Exp5_Dense_Only": results_dir / "ablation_dense_only.json" if (results_dir / "ablation_dense_only.json").exists() else base_dir / "ablation_dense_only.json",
+        "Exp1_Baseline": find_file("ablation_baseline"),
+        "Exp2_No_Graph": find_file("ablation_no_graph"),
+        "Exp3_No_BM25": find_file("ablation_no_bm25"),
+        "Exp4_No_Reranker": find_file("ablation_no_reranker"),
+        "Exp5_Dense_Only": find_file("ablation_dense_only"),
     }
 
     data = {}
@@ -221,6 +235,9 @@ def run_p_tests(base_path: str = ".") -> Dict[str, Any]:
     print(f"P-test evaluation completed with strict ID alignment and Holm-Bonferroni correction. Saved to {out_file} across {n_samples} samples.")
 
     return p_test_results
+
+
+run_statistical_suite = run_p_tests
 
 
 if __name__ == "__main__":

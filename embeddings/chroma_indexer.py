@@ -34,16 +34,21 @@ class ChromaIndexer:
         self,
         persist_dir: str = "outputs/chroma_db",
         collection_name: str = "medgraphrag_chunks",
+        persist_directory: str | None = None,
     ) -> None:
         """Initialize (or open) a persistent Chroma collection.
 
         Args:
             persist_dir: Directory where Chroma persists its DuckDB+Parquet store.
             collection_name: Name of the collection holding chunk embeddings.
+            persist_directory: Alias for persist_dir.
 
         Raises:
             VectorStoreError: If the Chroma client or collection cannot be created.
         """
+        if persist_directory is not None:
+            persist_dir = persist_directory
+
         try:
             self.client = chromadb.PersistentClient(
                 path=persist_dir,

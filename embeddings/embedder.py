@@ -92,6 +92,9 @@ class BGEEmbedder:
         logger.debug(f"Embedded {len(texts)} documents -> shape {embeddings.shape}")
         return embeddings
 
+    # Alias for API compatibility across pipeline modules
+    embed_passages = embed_documents
+
     def embed_query(self, query: str) -> np.ndarray:
         """Embed a single query, applying BGE's required query instruction prefix.
 

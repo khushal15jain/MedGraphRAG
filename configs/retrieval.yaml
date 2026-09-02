@@ -8,6 +8,9 @@ retrieval:
   top_k_dense: 35
   top_k_bm25: 35
   top_k_graph: 20
+  dense_weight: 0.40
+  bm25_weight: 0.30
+  graph_weight: 0.30
   hybrid_alpha: 0.40
   hybrid_beta: 0.30
   hybrid_gamma: 0.30

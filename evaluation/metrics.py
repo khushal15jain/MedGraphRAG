@@ -24,6 +24,30 @@ from typing import Dict, List, Optional, Sequence, Tuple, Any
 # --------------------------------------------------------------------------
 
 
+def compute_clinical_reliability(
+    faithfulness: float,
+    groundedness: float,
+    hallucination: float | None = None,
+    safety: float = 1.0,
+    completeness: float = 1.0,
+) -> float:
+    """Compute Clinical Reliability deterministically via the formal publication equation:
+
+    Clinical Reliability = 0.30 * Faithfulness + 0.30 * Groundedness + 0.20 * (1 - Hallucination)
+                           + 0.10 * Safety + 0.10 * Completeness
+    where Safety and Completeness are normalized in [0, 1].
+    """
+    if hallucination is None:
+        hallucination = max(0.0, 1.0 - faithfulness)
+    s = min(1.0, max(0.0, safety))
+    c = min(1.0, max(0.0, completeness))
+    f = min(1.0, max(0.0, faithfulness))
+    g = min(1.0, max(0.0, groundedness))
+    h = min(1.0, max(0.0, hallucination))
+    score = 0.30 * f + 0.30 * g + 0.20 * (1.0 - h) + 0.10 * s + 0.10 * c
+    return float(round(score, 4))
+
+
 def _lazy_nltk():
     try:
         import nltk

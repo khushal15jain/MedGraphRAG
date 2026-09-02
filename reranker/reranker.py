@@ -56,7 +56,20 @@ class BGEReranker:
     def _filter_and_deduplicate(
         self, query: str, candidates: list[dict], text_key: str = "text"
     ) -> list[dict]:
-        """Apply evidence quality filtering and candidate deduplication."""
+        """Apply evidence quality filtering and candidate deduplication.
+
+        Adjusted Reranking Scoring Function:
+            score_final(q, c) = score_CE(q, c)
+                                - 1.5 * I(words(c) < min_word_count)
+                                - 0.8 * I(tokens(q) ∩ tokens(c) = ∅)
+
+        where:
+            - score_CE(q, c): BGE cross-encoder raw relevance logit.
+            - Low-information penalty (-1.5): penalizes uninformative fragments (< 15 words).
+            - Query-mismatch penalty (-0.8): penalizes chunks lacking any non-stopword query keywords.
+            - Deduplication: greedy sequential suppression if Jaccard similarity with an already
+              selected candidate exceeds dedup_threshold (default 0.65).
+        """
         query_tokens = _tokenize(query) - _GENERIC_STOPWORDS
         selected: list[dict] = []
 

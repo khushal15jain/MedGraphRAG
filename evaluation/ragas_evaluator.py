@@ -1,12 +1,10 @@
-"""Stage 16: Evaluation (RAGAS metrics).
+"""Stage 16: Evaluation (RAGAS metrics) [EXPERIMENTAL / OPTIONAL REFERENCE WRAPPER].
 
-Computes the four core RAG evaluation metrics required by the research
-design using the RAGAS library, which itself uses an LLM-as-judge. To stay
-within hardware constraints and avoid cloud API dependency, the judge LLM
-is configured to be the same local Ollama model used for generation
-(Qwen2.5 3B Instruct) rather than GPT-4 — a documented trade-off (a smaller
-judge model is noisier) that we report explicitly in the paper's
-limitations section.
+NOTICE: This module is an experimental reference integration for external RAGAS
+comparisons. The authoritative, deterministic source of truth for publication
+evaluation in MedGraphRAG is `generator.sentence_grounder.SentenceLevelGrounder`
+(for Faithfulness, Groundedness, Hallucination) and `evaluation.metrics`
+(for retrieval and ranking metrics).
 
 Metrics computed:
   - faithfulness: does the answer's content follow from the retrieved context?

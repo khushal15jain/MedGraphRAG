@@ -234,11 +234,10 @@ class GraphRetriever:
     ) -> None:
         """Update chunk_scores with chunks referenced by a given graph node.
 
-        Score formula: score = mention_count / (1 + hop_distance), so
-        directly-matched entities outrank multi-hop expansions, and
-        frequently-mentioned entities (more textbook coverage) outrank rare
-        ones. hop_distance is now the REAL BFS distance (see _bfs_hop_distances),
-        not a flattened constant.
+        Score formula: score = 1.0 / (1.0 + hop_distance), so
+        directly-matched seed entities outrank multi-hop expansions (hop 0 -> 1.0,
+        hop 1 -> 0.5, hop 2 -> 0.333), eliminating corpus mention frequency bias.
+        hop_distance is the real BFS shortest-path distance (see _bfs_hop_distances).
         """
         if not self.graph_builder.graph.has_node(node_id):
             return

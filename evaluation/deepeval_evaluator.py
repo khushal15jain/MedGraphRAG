@@ -1,10 +1,10 @@
-"""Stage 16: Evaluation (DeepEval metrics).
+"""Stage 16: Evaluation (DeepEval metrics) [EXPERIMENTAL / OPTIONAL REFERENCE WRAPPER].
 
-Complements RAGAS with DeepEval's metric suite, providing a second,
-independently-implemented evaluation library — using two frameworks
-guards against metric-implementation idiosyncrasies skewing the paper's
-reported results, and DeepEval's pytest-style assertion API is convenient
-for CI-style regression testing of the RAG pipeline over time.
+NOTICE: This module is an experimental reference integration for external DeepEval
+comparisons. The authoritative, deterministic source of truth for publication
+evaluation in MedGraphRAG is `generator.sentence_grounder.SentenceLevelGrounder`
+(for Faithfulness, Groundedness, Hallucination) and `evaluation.metrics`
+(for retrieval and ranking metrics).
 """
 
 from __future__ import annotations

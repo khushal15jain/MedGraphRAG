@@ -14,10 +14,10 @@
 - [x] **Effect sizes verified**: Effect sizes ($r = \frac{z}{\sqrt{N}}$) computed and stored in `statistical_tests.json`.
 - [x] **Confidence intervals verified**: $95\%$ bootstrap confidence intervals calculated for all condition metrics.
 - [x] **README numbers verified**: README tables automatically match `results/publication_results.json`.
-- [x] **Figures verified**: `generate_publication_figures.py` reads exclusively from `publication_results.json`.
+- [x] **Figures verified**: `scripts/generate_figures.py` reads exclusively from `publication_results.json`.
 - [x] **Tables verified**: `publication_table.csv` and `publication_table.json` exported directly from pipeline.
 - [x] **Dataset provenance documented**: Gold dataset $N=200$ and ablation sample manifest persisted.
 - [x] **Evaluation methodology documented**: Retrieval equations, NLI thresholds, and judge models documented.
 - [x] **Limitations documented**: Honest limitations section covering $N=200$, LLM judge reliance, and hardware bounds.
-- [x] **Reproduction script works**: `python scripts/reproduce_publication_results.py` executes cleanly.
-- [x] **Tests pass**: 61/61 unit tests in `pytest` suite pass cleanly.
+- [x] **Reproduction script works**: `scripts/reproduce_results.py` and `scripts/run_ablations.py` execute end-to-end retrieval, reranking, generation, and sentence grounding from `data/qa_dataset.json`, regenerating `results/ablations/*.json`, `results/p_test_results.json`, and `results/publication_results.json` from scratch with no manual step.
+- [x] **Tests pass**: 62/62 unit & integration tests in `pytest` suite pass cleanly.

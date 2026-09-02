@@ -88,7 +88,10 @@ class HybridRetriever:
         dense_retriever: DenseRetriever,
         bm25_retriever: BM25Retriever,
         graph_retriever: GraphRetriever | None = None,
-        hybrid_alpha: float = 0.5,
+        dense_weight: float = 0.40,
+        bm25_weight: float = 0.30,
+        graph_weight: float = 0.30,
+        hybrid_alpha: float | None = None,
     ) -> None:
         """Initialize the hybrid retriever.
 
@@ -96,19 +99,30 @@ class HybridRetriever:
             dense_retriever: Configured ``DenseRetriever``.
             bm25_retriever: Configured (already-indexed) ``BM25Retriever``.
             graph_retriever: Optional ``GraphRetriever``; if ``None``, hybrid
-                retrieval degrades gracefully to dense+BM25 fusion only
-                (used for the "Hybrid Retrieval" baseline vs. the full
-                "GraphRAG"/"Our Proposed Method" configurations).
-            hybrid_alpha: Weight on dense score vs. BM25 score in [0, 1].
-                0.0 = BM25 only, 1.0 = dense only, 0.5 = equal weight.
+                retrieval degrades gracefully to dense+BM25 fusion only.
+            dense_weight: Base weight on dense retrieval (default 0.40).
+            bm25_weight: Base weight on BM25 retrieval (default 0.30).
+            graph_weight: Base weight on graph traversal (default 0.30).
+            hybrid_alpha: Deprecated parameter retained for backwards compatibility.
+                If set, overrides dense_weight=hybrid_alpha, bm25_weight=1-hybrid_alpha.
         """
-        if not 0.0 <= hybrid_alpha <= 1.0:
-            raise RetrievalError("hybrid_alpha must be in [0, 1]")
+        if hybrid_alpha is not None:
+            if not 0.0 <= hybrid_alpha <= 1.0:
+                raise RetrievalError("hybrid_alpha must be in [0, 1]")
+            dense_weight = hybrid_alpha
+            bm25_weight = 1.0 - hybrid_alpha
+            graph_weight = 0.0
+
+        if dense_weight < 0 or bm25_weight < 0 or graph_weight < 0:
+            raise RetrievalError("Retrieval fusion weights must be non-negative")
 
         self.dense_retriever = dense_retriever
         self.bm25_retriever = bm25_retriever
         self.graph_retriever = graph_retriever
-        self.hybrid_alpha = hybrid_alpha
+        self.dense_weight = dense_weight
+        self.bm25_weight = bm25_weight
+        self.graph_weight = graph_weight
+        self.hybrid_alpha = dense_weight
 
     def retrieve(
         self,
@@ -237,14 +251,14 @@ class HybridRetriever:
                 meta_lookup[cid] = {"source_file": "document.pdf"}
 
         # Normalized fusion weights across active components
-        dense_weight = 0.45
-        graph_weight = 0.35 if (use_graph and self.graph_retriever is not None) else 0.0
-        bm25_weight = 0.20 if (self.bm25_retriever is not None and (top_k_bm25 > 0 or bool(bm25_raw))) else 0.0
+        dense_w = self.dense_weight
+        graph_w = self.graph_weight if (use_graph and self.graph_retriever is not None) else 0.0
+        bm25_w = self.bm25_weight if (self.bm25_retriever is not None and (top_k_bm25 > 0 or bool(bm25_raw))) else 0.0
 
-        total_weight = dense_weight + graph_weight + bm25_weight
-        w_d = (dense_weight / total_weight) if total_weight > 0 else 0.0
-        w_g = (graph_weight / total_weight) if total_weight > 0 else 0.0
-        w_b = (bm25_weight / total_weight) if total_weight > 0 else 0.0
+        total_weight = dense_w + graph_w + bm25_w
+        w_d = (dense_w / total_weight) if total_weight > 0 else 0.0
+        w_g = (graph_w / total_weight) if total_weight > 0 else 0.0
+        w_b = (bm25_w / total_weight) if total_weight > 0 else 0.0
 
         fused: list[RetrievedChunk] = []
         for chunk_id in all_chunk_ids:
