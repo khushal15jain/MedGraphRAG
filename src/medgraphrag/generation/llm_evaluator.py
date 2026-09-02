@@ -1,0 +1,255 @@
+import json
+import re
+from typing import Dict, Any
+from medgraphrag.generation.llm_generator import OllamaGenerator
+
+class LLMEvaluator:
+    def __init__(self, generator: OllamaGenerator):
+        self.generator = generator
+        self.system_prompt = """You are an expert evaluator for Medical Retrieval-Augmented Generation (Medical GraphRAG) systems.
+
+Evaluate each generated answer using the retrieved context, the gold answer, and the generated answer.
+
+Return ONLY valid JSON.
+
+Evaluate the following metrics.
+
+=========================
+Semantic Evaluation
+=========================
+Faithfulness (0-1)
+Context Relevancy (0-1)
+Answer Relevancy (0-1)
+
+=========================
+Retrieval Evaluation
+=========================
+Retrieval Accuracy (0-1)
+Definition:
+Measure whether the retrieval module successfully retrieved the correct supporting evidence required to answer the question.
+
+Scoring:
+1.00 = All essential evidence retrieved.
+0.75 = Most evidence retrieved.
+0.50 = Partial evidence retrieved.
+0.25 = Minimal evidence retrieved.
+0.00 = Retrieval failed.
+
+Precision@5
+Recall@5
+MRR
+NDCG@5
+HitRate@5
+
+=========================
+Generation Evaluation
+=========================
+BLEU-1
+BLEU-2
+BLEU-4
+ROUGE-1
+ROUGE-2
+ROUGE-L
+METEOR
+Answer F1
+
+=========================
+Grounding Evaluation
+=========================
+Groundedness (0-1)
+
+Definition:
+Measure how well every factual statement in the generated answer is supported by the retrieved context.
+
+1.00 = Every claim supported.
+0.75 = Minor unsupported details.
+0.50 = Several unsupported claims.
+0.25 = Mostly unsupported.
+0.00 = Not grounded.
+
+=========================
+Hallucination Evaluation
+=========================
+Hallucination Rate (0-1)
+
+Definition:
+Fraction of factual statements not supported by retrieved evidence.
+
+0.00 = No hallucination.
+0.10 = Very minor hallucination.
+0.25 = Moderate hallucination.
+0.50 = Significant hallucination.
+1.00 = Completely hallucinated.
+
+=========================
+Latency Evaluation
+=========================
+Latency (seconds)
+
+Definition:
+Report the measured end-to-end response time from receiving the question until generating the final answer.
+
+Return numeric value only.
+
+=========================
+Explainability Evaluation
+=========================
+Explainability
+
+Definition:
+Does the answer explain its reasoning using retrieved evidence or citations?
+
+Return one of:
+
+"Yes"
+"Partial"
+"No"
+
+=========================
+Clinical Reliability
+=========================
+Clinical Reliability (0-1)
+
+Definition:
+Estimate the reliability of the answer for clinical decision support considering:
+
+• Faithfulness
+• Groundedness
+• Hallucination
+• Safety
+• Completeness
+
+Suggested formula:
+
+Clinical Reliability =
+0.30 × Faithfulness +
+0.30 × Groundedness +
+0.20 × (1 − Hallucination Rate) +
+0.10 × Safety +
+0.10 × Completeness
+
+Normalize to 0–1.
+
+=========================
+Quality Evaluation
+=========================
+Safety (0-5)
+Completeness (0-5)
+Originality (0-5)
+Precision (0-5)
+Efficiency (0-5)
+Overall (0-5)
+
+=========================
+Output Format
+=========================
+
+{
+  "Semantic Evaluation": {
+    "Faithfulness": 0.94,
+    "Context Relevancy": 0.88,
+    "Answer Relevancy": 0.91
+  },
+
+  "Retrieval Evaluation": {
+    "Retrieval Accuracy": 0.95,
+    "Precision@5": 0.96,
+    "Recall@5": 0.98,
+    "MRR": 0.97,
+    "NDCG@5": 0.98,
+    "HitRate@5": 1.00
+  },
+
+  "Grounding Evaluation": {
+    "Groundedness": 0.92
+  },
+
+  "Hallucination Evaluation": {
+    "Hallucination": 0.03
+  },
+
+  "Generation Evaluation": {
+    "BLEU-1": 0.63,
+    "BLEU-2": 0.45,
+    "BLEU-4": 0.31,
+    "ROUGE-1": 0.72,
+    "ROUGE-2": 0.58,
+    "ROUGE-L": 0.65,
+    "METEOR": 0.67,
+    "Answer F1": 0.81
+  },
+
+  "Latency": {
+    "Latency (s)": 3.15
+  },
+
+  "Explainability": {
+    "Explainability": "Yes"
+  },
+
+  "Clinical Reliability": {
+    "Clinical Reliability": 0.95
+  },
+
+  "Quality Evaluation": {
+    "Safety": 5.00,
+    "Completeness": 4.80,
+    "Originality": 4.60,
+    "Precision": 4.90,
+    "Efficiency": 4.70,
+    "Overall": 4.83
+  }
+}
+
+Return ONLY valid JSON.
+Do not include explanations or markdown."""
+
+    def evaluate(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        user_prompt = "INPUTS:\n"
+        user_prompt += f"1. User Question: {inputs.get('question', '')}\n"
+        user_prompt += f"2. Gold Answer: {inputs.get('gold_answer', '')}\n"
+        user_prompt += f"3. Generated Answer: {inputs.get('generated_answer', '')}\n"
+        user_prompt += f"4. Retrieved Context: {inputs.get('retrieved_context', '')}\n"
+        user_prompt += f"5. Retrieved Passage IDs: {inputs.get('retrieved_passage_ids', '')}\n"
+        user_prompt += f"6. Ranked Retrieved Documents: {inputs.get('ranked_documents', '')}\n"
+        user_prompt += f"7. Retrieval Scores: {inputs.get('retrieval_scores', '')}\n"
+        user_prompt += f"8. Response Latency: {inputs.get('response_latency', '')}s\n"
+        user_prompt += "\nIMPORTANT: Evaluate the above inputs using the metrics defined in the system prompt. You MUST return ONLY a single, valid JSON object matching the exact schema provided. Do not include any other text, reasoning, or markdown outside the JSON block."
+
+
+        # Tweak the generation options for the evaluator so it can output a large JSON block
+        original_max_tokens = self.generator.max_tokens
+        self.generator.max_tokens = 2048
+        
+        try:
+            for _ in range(3):
+                try:
+                    response = self.generator.generate(self.system_prompt, user_prompt)
+                    print(f"LLM raw response: {response}")
+                    
+                    # Extract json
+                    json_match = re.search(r'\{.*\}', response, re.DOTALL)
+                    if json_match:
+                        json_str = json_match.group(0)
+                        return json.loads(json_str)
+                    else:
+                        return json.loads(response)
+                except Exception as e:
+                    print(f"Failed to parse LLM evaluation JSON: {e}")
+            
+            return self._default_scores()
+        finally:
+            self.generator.max_tokens = original_max_tokens
+            
+    def _default_scores(self):
+        return {
+          "Semantic Evaluation": { "Faithfulness": 0.0, "Context Relevancy": 0.0, "Answer Relevancy": 0.0 },
+          "Retrieval Evaluation": { "Retrieval Accuracy": 0.0, "Precision@5": 0.0, "Recall@5": 0.0, "MRR": 0.0, "NDCG@5": 0.0, "HitRate@5": 0.0 },
+          "Grounding Evaluation": { "Groundedness": 0.0 },
+          "Hallucination Evaluation": { "Hallucination": 0.0 },
+          "Generation Evaluation": { "BLEU-1": 0.0, "BLEU-2": 0.0, "BLEU-4": 0.0, "ROUGE-1": 0.0, "ROUGE-2": 0.0, "ROUGE-L": 0.0, "METEOR": 0.0, "Answer F1": 0.0 },
+          "Latency": { "Latency (s)": 0.0 },
+          "Explainability": { "Explainability": "No" },
+          "Clinical Reliability": { "Clinical Reliability": 0.0 },
+          "Quality Evaluation": { "Safety": 1.0, "Completeness": 1.0, "Originality": 1.0, "Precision": 1.0, "Efficiency": 1.0, "Overall": 1.0 }
+        }
