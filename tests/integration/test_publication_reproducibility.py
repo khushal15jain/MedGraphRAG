@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 import numpy as np
 
-from medgraphrag.evaluation.p_test_evaluator import align_by_question_id, apply_holm_bonferroni
+from evaluation.p_test_evaluator import align_by_question_id, apply_holm_bonferroni
 
 
 def test_dataset_canonical_count():

@@ -1,5 +1,5 @@
 import pytest
-from medgraphrag.evaluation.metrics import (
+from evaluation.metrics import (
     compute_answer_f1,
     bleu_n,
     rouge_1,

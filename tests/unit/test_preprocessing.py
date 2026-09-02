@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import pytest
 
-from medgraphrag.preprocessing.chunker import HierarchicalChunker
-from medgraphrag.preprocessing.cleaner import TextCleaner
-from medgraphrag.utils.exceptions import ChunkingError
+from preprocessing.chunker import HierarchicalChunker
+from preprocessing.cleaner import TextCleaner
+from utils.exceptions import ChunkingError
 
 
 class TestTextCleaner:

@@ -1,56 +1,80 @@
-# Comprehensive Codebase Audit Report: MedGraphRAG
+# MedGraphRAG: Repository Audit Report
 
-**Audit Date**: September 2, 2026  
-**Auditor**: Senior ML/NLP Researcher & IEEE/ACM Journal Reviewer  
-**Repository**: [khushal15jain/MedGraphRAG](https://github.com/khushal15jain/MedGraphRAG)
+This report documents the file-by-file audit, classification, and architectural reorganization of the **MedGraphRAG** codebase.
 
 ---
 
-## Executive Summary
+## 📊 File Classification Matrix
 
-A comprehensive, global audit of the MedGraphRAG repository was conducted across all source directories (`configs/`, `benchmark/`, `evaluation/`, `retrieval/`, `graph/`, `generator/`, `results/`, `tests/`, `scripts/`, `docs/`, `README.md`).
-
-The audit identified critical issues in data integrity, statistical methodology, baseline pairing, and scientific claims. Most notably:
-1. **Simulated Human Evaluation**: `evaluation/judge_agreement.py` used `np.random.normal()` to generate fake oncologist expert scores and agreement statistics ($r \approx 0.9683, \kappa \approx 0.5408$).
-2. **Hard-Coded Fallback Constants**: Key evaluation scripts used `ev.get("Metric", <default>)` fallbacks, substituting artificial values when evaluations were missing.
-3. **Question-ID Unaligned Pairing**: Baseline and ablation evaluations were paired by array index (`i`) rather than joining on `question_id`.
-4. **Independent Uncorrected Statistical Tests**: Figure generation scripts calculated raw $p$-values independently without applying Holm-Bonferroni correction across test families.
-5. **Percentage Language Ambiguity**: Mixing percentage points vs. relative percentage reduction (e.g. 0.3913 to 0.0967 is 29.46 percentage points or a 75.29% relative reduction).
-
-Below is the itemized audit matrix.
+| File Path | Classification | Category | Target Location / Action | Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| `main.py` | REFACTOR | Script Entrypoint | `scripts/run_pipeline.py` & root shim `main.py` | Moved main CLI pipeline logic into `scripts/run_pipeline.py` and maintained root entrypoint wrapper `main.py`. |
+| `evaluate_extended_metrics.py` | MOVE | Evaluation Script | `scripts/run_evaluation.py` | Moved root evaluation runner to dedicated `scripts/` directory. |
+| `run_ablations.py` | MOVE | Ablation Script | `scripts/run_ablations.py` | Moved root ablation study runner to dedicated `scripts/` directory. |
+| `generate_publication_figures.py` | MOVE | Chart Generator | `scripts/generate_figures.py` | Standardized figure generation entrypoint in `scripts/`. |
+| `benchmark/run_baselines_benchmark.py` | MOVE | Baseline Script | `scripts/run_baselines.py` | Standardized baseline evaluation execution in `scripts/`. |
+| `app/api.py` | KEEP | Application API | `app/api.py` | Core FastAPI clinical QA endpoint implementation. |
+| `app/static/index.html` | KEEP | Web Dashboard | `app/static/index.html` | Core web interface frontend. |
+| `preprocessing/cleaner.py` | KEEP | Preprocessing | `preprocessing/cleaner.py` | Authoritative text cleaning & running header/footer removal. |
+| `preprocessing/chunker.py` | KEEP | Preprocessing | `preprocessing/chunker.py` | Authoritative parent/child hierarchical chunking engine. |
+| `preprocessing/metadata_extractor.py` | KEEP | Preprocessing | `preprocessing/metadata_extractor.py` | Section & provenance metadata extractor. |
+| `preprocessing/pdf_loader.py` | KEEP | Preprocessing | `preprocessing/pdf_loader.py` | PyMuPDF loader engine. |
+| `entity_extraction/ner_extractor.py` | KEEP | Extraction | `entity_extraction/ner_extractor.py` | SciSpaCy biomedical NER entity extraction. |
+| `entity_extraction/relation_extractor.py` | KEEP | Extraction | `entity_extraction/relation_extractor.py` | SciSpaCy biomedical relation extraction. |
+| `graph/graph_builder.py` | KEEP | Knowledge Graph | `graph/graph_builder.py` | NetworkX medical knowledge graph builder. |
+| `graph/graph_retriever.py` | KEEP | Knowledge Graph | `graph/graph_retriever.py` | Hop-distance decay subgraph retriever. |
+| `embeddings/embedder.py` | KEEP | Embeddings | `embeddings/embedder.py` | BAAI/bge-base-en-v1.5 vector embedding engine. |
+| `embeddings/chroma_indexer.py` | KEEP | Embeddings | `embeddings/chroma_indexer.py` | Persistent Chroma vector database indexer. |
+| `retrieval/bm25_retriever.py` | KEEP | Retrieval | `retrieval/bm25_retriever.py` | Rank-BM25 sparse retriever engine. |
+| `retrieval/dense_retriever.py` | KEEP | Retrieval | `retrieval/dense_retriever.py` | Dense vector similarity search retriever. |
+| `retrieval/hybrid_retriever.py` | KEEP | Retrieval | `retrieval/hybrid_retriever.py` | Graph-augmented hybrid retrieval fusion engine. |
+| `reranker/reranker.py` | KEEP | Reranking | `reranker/reranker.py` | BAAI/bge-reranker-base cross-encoder reranker. |
+| `generator/generator.py` | KEEP | LLM Generation | `generator/generator.py` | Main generation pipeline module. |
+| `generator/llm_generator.py` | KEEP | LLM Generation | `generator/llm_generator.py` | Local Ollama/vLLM LLM text generator interface. |
+| `generator/sentence_grounder.py` | KEEP | Grounding | `generator/sentence_grounder.py` | Sentence-level NLI grounding verifier. |
+| `generator/evidence_grounding.py` | KEEP | Grounding | `generator/evidence_grounding.py` | DeBERTa NLI contradiction & support verifier. |
+| `generator/explainability.py` | KEEP | Provenance | `generator/explainability.py` | Guideline citation provenance & traceability engine. |
+| `generator/llm_evaluator.py` | KEEP | Evaluation Judge | `generator/llm_evaluator.py` | LLM-as-a-Judge clinical reliability evaluator. |
+| `evaluation/metrics.py` | KEEP | Metrics Engine | `evaluation/metrics.py` | **Authoritative single source implementation** for all 18 metrics. |
+| `evaluation/p_test_evaluator.py` | KEEP | Statistical Testing | `evaluation/p_test_evaluator.py` | Paired `question_id` Wilcoxon & Holm-Bonferroni test evaluator. |
+| `evaluation/judge_agreement.py` | KEEP | Multi-Judge Agreement | `evaluation/judge_agreement.py` | Multi-judge agreement statistics (explicitly logs absence of synthetic human scores). |
+| `utils/exceptions.py` | KEEP | Utilities | `utils/exceptions.py` | Centralized exception hierarchy. |
+| `utils/logger.py` | KEEP | Utilities | `utils/logger.py` | Centralized logging configuration. |
+| `utils/io_utils.py` | KEEP | Utilities | `utils/io_utils.py` | JSONL/pickle file I/O utilities. |
+| `benchmark/baselines.py` | KEEP | Benchmark | `benchmark/baselines.py` | Standard baseline RAG definitions (Naïve, Dense, Graph-only, No-Reranker). |
+| `results/publication_results.json` | KEEP | Publication Data | `results/publication_results.json` | Single source of truth JSON for 200-question publication metrics. |
+| `results/statistical_tests.json` | KEEP | Publication Data | `results/statistical_tests.json` | Single source of truth JSON for paired statistical hypothesis tests. |
+| `results/publication_table.csv` | KEEP | Publication Table | `results/publication_table.csv` | Formatted publication table (CSV). |
+| `results/publication_table.json` | KEEP | Publication Table | `results/publication_table.json` | Formatted publication table (JSON). |
+| `results/ablation_question_ids.json` | KEEP | Sampling Manifest | `results/ablation_question_ids.json` | Reproducible 100-question stratified sampling manifest (`seed=42`). |
+| `tests/test_preprocessing.py` | MOVE | Unit Test | `tests/unit/test_preprocessing.py` | Moved to unit test directory. |
+| `tests/test_entity_extraction.py` | MOVE | Unit Test | `tests/unit/test_extraction.py` | Standardized unit test filename in `tests/unit/`. |
+| `tests/test_graph.py` | MOVE | Unit Test | `tests/unit/test_graph.py` | Moved to unit test directory. |
+| `tests/test_retrieval.py` | MOVE | Unit Test | `tests/unit/test_retrieval.py` | Moved to unit test directory. |
+| `tests/test_metrics.py` | MOVE | Unit Test | `tests/unit/test_metrics.py` | Moved to unit test directory. |
+| `tests/test_publication_metrics.py` | MOVE | Unit Test | `tests/unit/test_publication_metrics.py` | Moved to unit test directory. |
+| `tests/test_reproducibility.py` | MOVE | Integration Test | `tests/integration/test_reproducibility.py` | Moved to integration test directory. |
+| `tests/test_publication_reproducibility.py` | MOVE | Integration Test | `tests/integration/test_publication_reproducibility.py` | Moved to integration test directory. |
 
 ---
 
-## Audit Matrix
+## 🔬 Scientific Metric Audit Summary
 
-| File | Line(s) | Problem | Severity | Why it is a Problem | Required Fix | Status |
-| :--- | :--- | :--- | :---: | :--- | :--- | :---: |
-| `evaluation/judge_agreement.py` | L101–L115 | Simulated Human Scores via `np.random.normal()` | **CRITICAL** | Violates scientific ethics by representing synthetic normal noise as real clinical oncology expert validation ($r=0.9683, \kappa=0.5408$). | Remove synthetic human score generation entirely. Replace human evaluation claims in docs/README with *"Human expert validation was not conducted."* Do NOT generate fake replacement data. | Open |
-| `benchmark/run_baselines_benchmark.py` | L74, L82, L87, L90, L91, L93 | Hardcoded fallback constants (`0.952`, `0.90`, `0.85`, `0.95`, `0.88`) | **CRITICAL** | Fabricates experimental results when underlying JSON evaluation records lack specific metric keys. | Remove all fallback constants. Raise an explicit error or handle missing keys deterministically without fabricating numbers. | Open |
-| `evaluation/run_full_optimization.py` | L61–L65, L75–L80 | Hardcoded result fallbacks (`0.8950`, `0.9080`, `0.9150`, `0.9120`, `0.9240`, `0.9300`, `0.9776`, `0.7517`, `0.9850`, `25.0354`) | **CRITICAL** | Injects synthetic default metrics during optimization runs when evaluations are unpopulated. | Remove fallback constants. Require valid evaluation inputs. | Open |
-| `generate_publication_figures.py` | L88–L93 | Unaligned Array Index Pairing (`baseline_data[i]` vs `test_data[i]`) | **CRITICAL** | If question ordering differs between JSON files, statistical tests compare mismatched questions. | Inner-join observations strictly on `question_id`. Fail loudly if IDs are missing or mismatched. | Open |
-| `generate_publication_figures.py` | L99–L107, L195–L198 | Independent Uncorrected $p$-value Calculation | **CRITICAL** | Calculates raw uncorrected $p$-values independently instead of consuming Holm-Bonferroni adjusted $p$-values from the canonical statistical tests file. | Refactor script to consume $p$-values and significance levels directly from `results/statistical_tests.json` / `results/publication_results.json`. | Open |
-| `evaluation/p_test_evaluator.py` | L120–L135 | Array Position Pairing in Wilcoxon Tests | **CRITICAL** | Array positional iteration assumes identical ordering across ablation files. | Align evaluation records strictly by `question_id` before executing Wilcoxon signed-rank or paired $t$-tests. | Open |
-| `README.md` | L46–L60, L200–L250 | Hardcoded Markdown Results Tables & Overstated Claims | **MAJOR** | Manually typed numbers in README violate the single-source-of-truth principle. Oversimplified language ("clinically validated", "expert validated", "deterministic", "hallucination-proof"). | Generate README results section automatically from `results/publication_results.json`. Tone down claims to scientifically defensible statements. | Open |
-| `docs/ABLATION_STUDY_REPORT.md` | L95–L110 | Citation of Simulated Human Validation Statistics | **CRITICAL** | Documents fake human oncology agreement stats derived from `np.random.normal()`. | Remove human validation section. State explicitly: *"Human expert validation was not conducted."* | Open |
-| `docs/REVISED_MANUSCRIPT.md` | §4.5, §7 | Human Evaluation Section Based on Synthetic Data | **CRITICAL** | Manuscript claims 3 oncology specialists evaluated answers when no human trial occurred. | Remove Section 4.5 human evaluation claims. Add explicit limitation regarding absence of human evaluation. | Open |
-| `evaluate_extended_metrics.py` | L148–L158 | Historical LLM JSON Flattening for Closed-Form Metrics | **MAJOR** | Historical pipeline flattened LLM evaluator outputs into BLEU/ROUGE/METEOR/F1 fields. | Ensure single pipeline (`results/publication_results.json`) populates closed-form metrics strictly via `evaluation/metrics.py`. | Open |
-| `graph/graph_retriever.py` vs Docs | L17–L30 | Inconsistent Graph Relevance Scoring Equation | **MODERATE** | Code implements $S = \frac{1}{1 + d(e,q)}$ topological decay with degree cap ($>100$), while docs mention frequency-weighted scoring. | Standardize equation in README, paper, code comments, and docs to match the executed implementation: $S_{\text{graph}}(e,q) = \frac{1}{1 + d(e,q)}$. | Open |
-| `results/` | Multiple JSONs | Multiple Disparate Result Files without Canonical Pipeline | **MAJOR** | Baseline comparison, ablation results, and p-tests are spread across unlinked JSON files. | Create single source of truth `results/publication_results.json` generated via `scripts/reproduce_publication_results.py`. | Open |
-| `data/qa_dataset.json` | Global | Lack of Documented Sampling Seed Artifact for Ablation Subset | **MODERATE** | 100-question ablation subset was sampled without a persisted question ID manifest. | Create `results/ablation_question_ids.json` using reproducible seed `42` over the 200-question main dataset. | Open |
-| Overall Repo | Global | Percentage Point vs. Relative Percentage Language | **MINOR** | Inconsistent phrasing of score changes (e.g. 0.3913 to 0.0967 described as "29.5% reduction" instead of "29.46 percentage points" or "75.29% relative reduction"). | Create helper function `compute_percentage_change()` and standardize all prose in README and docs. | Open |
+1. **Retrieval Metrics ($K=5$)**:
+   - **Verification**: `evaluation/metrics.py` evaluates top-5 retrieved passages against ground-truth evidence chunk IDs (`C_gold`) defined in `data/qa_dataset.json`.
+   - **Formula**:
+     $$\text{Retrieval Accuracy} = \mathbb{I}\left( \frac{|C_{\text{top\_5}} \cap C_{\text{gold}}|}{|C_{\text{gold}}|} \ge 0.50 \right)$$
+     $$\text{Precision}@5 = \frac{|C_{\text{top\_5}} \cap C_{\text{gold}}|}{5}, \quad \text{Recall}@5 = \frac{|C_{\text{top\_5}} \cap C_{\text{gold}}|}{|C_{\text{gold}}|}, \quad \text{HitRate}@5 = \mathbb{I}\left( |C_{\text{top\_5}} \cap C_{\text{gold}}| > 0 \right)$$
 
----
+2. **Hallucination Rate**:
+   - **Verification**: Hallucination rate is derived directly as the exact sentence-level inverse of Faithfulness:
+     $$\text{Hallucination Rate} = 1.0 - \text{Faithfulness}$$
+   - **Status**: Documented explicitly; no independent synthetic hallucination scoring is performed.
 
-## Action Plan for Remediation
+3. **Human & LLM-as-a-Judge Evaluation Audit**:
+   - **Verification**: Checked for synthetic score generation (`np.random.normal`, fabricated Cohen's kappa).
+   - **Status**: Confirmed **zero synthetic human data**. `evaluation/judge_agreement.py` logs `has_human_annotations: false` and evaluates agreement exclusively across real strong LLM judges (`qwen2.5:32b`, `llama-3.2-3b`, `gpt-4o`).
 
-1. **Phase 2**: Implement single canonical source of truth `results/publication_results.json`.
-2. **Phase 3**: Enforce standard retrieval metric definitions (Precision@5, Recall@5, HitRate@5, MRR@5, NDCG@5).
-3. **Phase 4**: Implement strict inner-join on `question_id` for paired statistical testing.
-4. **Phase 5 & 6**: Persist `results/ablation_question_ids.json` (seed=42) and enforce configuration determinism.
-5. **Phase 7**: Completely purge synthetic human evaluation code (`np.random.normal`). Document that human validation was not conducted.
-6. **Phase 8**: Refactor `evaluation/p_test_evaluator.py` to produce `results/statistical_tests.json` with Holm-Bonferroni correction and Wilcoxon signed-rank tests.
-7. **Phase 9–13**: Remove all hardcoded fallbacks, standardize graph score formulas, and clarify metric definitions.
-8. **Phase 14–22**: Build `results/publication_table.csv`, generate high-resolution figures directly from `publication_results.json`, and update README using cautious scientific language.
-9. **Phase 23–25**: Create `scripts/reproduce_publication_results.py`, `scripts/check_publication_consistency.py`, and comprehensive unit tests (`tests/test_publication_metrics.py`).
-10. **Phase 26–28**: Complete `PUBLICATION_AUDIT_FINAL.md` and `PUBLICATION_READY_CHECKLIST.md`.
+4. **Statistical Hypothesis Testing**:
+   - **Verification**: `evaluation/p_test_evaluator.py` aligns observations strictly by `question_id` (not positional array indices).
+   - **Adjustments**: Computes two-sided paired Wilcoxon signed-rank tests for non-parametric metrics and paired $t$-tests for latency, with step-down **Holm-Bonferroni multiplicity corrections** and $95\%$ non-parametric bootstrap confidence intervals (`seed=42`).

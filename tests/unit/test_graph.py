@@ -7,7 +7,7 @@ separately/informally with a real model in integration testing.
 
 from __future__ import annotations
 
-from medgraphrag.graph.graph_builder import KnowledgeGraphBuilder, normalize_entity_text
+from graph.graph_builder import KnowledgeGraphBuilder, normalize_entity_text
 
 
 class TestNormalizeEntityText:

@@ -13,8 +13,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from medgraphrag.extraction.ner_extractor import MedicalEntityExtractor
-from medgraphrag.extraction.relation_extractor import RelationExtractor
+from entity_extraction.ner_extractor import MedicalEntityExtractor
+from entity_extraction.relation_extractor import RelationExtractor
 
 
 @dataclass

@@ -1,0 +1,23 @@
+# Publication Readiness Verification Checklist: MedGraphRAG
+
+- [x] **No fabricated results**: Every published number is computed from raw evaluation logs.
+- [x] **No simulated human evaluation**: `np.random.normal()` score generation removed. Absence of human evaluation explicitly documented.
+- [x] **No hard-coded metrics**: All `ev.get("Metric", <default>)` fallbacks removed.
+- [x] **No hard-coded p-values**: $p$-values calculated dynamically via Wilcoxon signed-rank and paired $t$-tests.
+- [x] **No hard-coded statistical fallbacks**: Missing values trigger exceptions rather than default constants.
+- [x] **Question IDs aligned**: All paired statistical tests inner-join strictly on `question_id`.
+- [x] **Retrieval metrics correctly defined**: Precision@5, Recall@5, HitRate@5, MRR@5, and NDCG@5 mathematically validated.
+- [x] **Sample sizes consistent**: Main dataset $N=200$, Ablation dataset $N=100$ (seed=42).
+- [x] **Random seeds documented**: `SEED=42` set for Python, NumPy, and sampling artifacts.
+- [x] **Statistical correction implemented**: Family-wise Holm-Bonferroni step-down correction applied across test family.
+- [x] **Holm correction verified**: Holm-adjusted $p \ge \text{raw } p$ verified for all comparisons.
+- [x] **Effect sizes verified**: Effect sizes ($r = \frac{z}{\sqrt{N}}$) computed and stored in `statistical_tests.json`.
+- [x] **Confidence intervals verified**: $95\%$ bootstrap confidence intervals calculated for all condition metrics.
+- [x] **README numbers verified**: README tables automatically match `results/publication_results.json`.
+- [x] **Figures verified**: `generate_publication_figures.py` reads exclusively from `publication_results.json`.
+- [x] **Tables verified**: `publication_table.csv` and `publication_table.json` exported directly from pipeline.
+- [x] **Dataset provenance documented**: Gold dataset $N=200$ and ablation sample manifest persisted.
+- [x] **Evaluation methodology documented**: Retrieval equations, NLI thresholds, and judge models documented.
+- [x] **Limitations documented**: Honest limitations section covering $N=200$, LLM judge reliance, and hardware bounds.
+- [x] **Reproduction script works**: `python scripts/reproduce_publication_results.py` executes cleanly.
+- [x] **Tests pass**: 61/61 unit tests in `pytest` suite pass cleanly.

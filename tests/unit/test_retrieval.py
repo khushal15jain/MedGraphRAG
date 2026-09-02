@@ -10,10 +10,10 @@ from __future__ import annotations
 
 import pytest
 
-from medgraphrag.graph.graph_retriever import GraphRetrievalResult
-from medgraphrag.retrieval.bm25_retriever import BM25Retriever
-from medgraphrag.retrieval.hybrid_retriever import HybridRetriever, _min_max_normalize
-from medgraphrag.utils.exceptions import RetrievalError
+from graph.graph_retriever import GraphRetrievalResult
+from retrieval.bm25_retriever import BM25Retriever
+from retrieval.hybrid_retriever import HybridRetriever, _min_max_normalize
+from utils.exceptions import RetrievalError
 
 
 class TestMinMaxNormalize:

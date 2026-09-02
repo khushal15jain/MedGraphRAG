@@ -7,7 +7,7 @@ Holm-Bonferroni correction, percentage calculations, and graph scoring.
 import numpy as np
 import pytest
 
-from medgraphrag.evaluation.metrics import (
+from evaluation.metrics import (
     precision_at_k,
     recall_at_k,
     hit_rate_at_k,
@@ -15,8 +15,7 @@ from medgraphrag.evaluation.metrics import (
     ndcg_at_k,
     compute_answer_f1,
 )
-from medgraphrag.evaluation.p_test_evaluator import align_by_question_id, apply_holm_bonferroni
-from scripts.reproduce_results import compute_percentage_change, compute_bootstrap_ci
+from evaluation.p_test_evaluator import align_by_question_id, apply_holm_bonferroni, compute_percentage_change, compute_bootstrap_ci
 
 
 def test_precision_at_k():

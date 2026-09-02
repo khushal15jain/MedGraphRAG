@@ -9,8 +9,8 @@ from pathlib import Path
 import pytest
 import numpy as np
 
-from medgraphrag.evaluation.p_test_evaluator import align_by_question_id, apply_holm_bonferroni
-from medgraphrag.graph.graph_retriever import GraphRetrievalResult, GraphRetriever
+from evaluation.p_test_evaluator import align_by_question_id, apply_holm_bonferroni
+from graph.graph_retriever import GraphRetrievalResult, GraphRetriever
 
 
 def test_dataset_size_and_schema():
