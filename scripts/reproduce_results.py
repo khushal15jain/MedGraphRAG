@@ -358,7 +358,7 @@ def main():
     # 5. Regenerate publication figures
     print("\nRegenerating publication figures...")
     import subprocess
-    ret = subprocess.run([sys.executable, "generate_publication_figures.py"], cwd=BASE_DIR)
+    ret = subprocess.run([sys.executable, os.path.join("scripts", "generate_figures.py")], cwd=BASE_DIR)
     if ret.returncode != 0:
         raise RuntimeError("generate_publication_figures.py failed!")
 

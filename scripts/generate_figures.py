@@ -25,7 +25,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 MODES = [
     ("baseline", "Baseline"),
