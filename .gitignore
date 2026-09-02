@@ -55,3 +55,6 @@ mlruns/
 .coverage
 coverage.xml
 htmlcov/
+
+# Formulas doc (untracked per user request)
+docs/METRIC_FORMULAS.md

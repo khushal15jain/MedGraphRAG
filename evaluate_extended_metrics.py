@@ -21,7 +21,14 @@ from retrieval.bm25_retriever import BM25Retriever
 from retrieval.dense_retriever import DenseRetriever
 from retrieval.hybrid_retriever import HybridRetriever
 from utils.exceptions import MedGraphRAGError
-from utils.io_utils import load_pickle, read_jsonl
+from evaluation.metrics import (
+    bleu_n,
+    rouge_1,
+    rouge_2,
+    rouge_l,
+    meteor,
+    compute_answer_f1,
+)
 
 RELEVANCE_SIM_THRESHOLD = 0.60
 RECALL_POOL_SIZE = 10
@@ -144,17 +151,28 @@ def evaluate_question(item: dict, gen_answer: str, components: dict) -> dict:
         Latency=round(latency, 3)
     )
     
-    # Flatten the JSON results into the row dictionary
+    # Flatten the JSON results into the row dictionary (excluding closed-form metrics)
+    closed_form_keys = {"BLEU-1", "BLEU-2", "BLEU-4", "ROUGE-1", "ROUGE-2", "ROUGE-L", "METEOR", "Answer F1"}
     for section, metrics in llm_results.items():
         if isinstance(metrics, dict):
             for k, v in metrics.items():
-                if k in FIELDNAMES:
+                if k in FIELDNAMES and k not in closed_form_keys:
                     row[k] = v
                 elif k == "Answer Relevance": # Handle naming mismatch between prompt and old code if any
                     row["Answer Relevancy"] = v
         else:
-            if section in FIELDNAMES:
+            if section in FIELDNAMES and section not in closed_form_keys:
                 row[section] = metrics
+
+    # Calculate real closed-form metrics from candidate generated answer and gold reference answer
+    row["BLEU-1"] = round(bleu_n(answer, gold_answer, 1), 4)
+    row["BLEU-2"] = round(bleu_n(answer, gold_answer, 2), 4)
+    row["BLEU-4"] = round(bleu_n(answer, gold_answer, 4), 4)
+    row["ROUGE-1"] = round(rouge_1(answer, gold_answer), 4)
+    row["ROUGE-2"] = round(rouge_2(answer, gold_answer), 4)
+    row["ROUGE-L"] = round(rouge_l(answer, gold_answer), 4)
+    row["METEOR"] = round(meteor(answer, gold_answer), 4)
+    row["Answer F1"] = round(compute_answer_f1(answer, gold_answer), 4)
                 
     return row
 

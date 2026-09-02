@@ -69,29 +69,39 @@ def run_baselines_benchmark(base_path: str = ".") -> Dict[str, Any]:
         if not run_data:
             return fallback_dict
 
-        precisions = [ev.get("Precision@5", 0.0) for ev in run_data]
-        recalls = [ev.get("Recall@5", 0.0) for ev in run_data]
-        hit_rates = [ev.get("HitRate@5", ev.get("Recall@5", 0.952)) for ev in run_data]
-        faiths = [ev.get("Faithfulness", 0.0) for ev in run_data]
-        grounds = [ev.get("Groundedness", 0.0) for ev in run_data]
-        halls = [ev.get("Hallucination", 0.0) for ev in run_data]
-        lats = [ev.get("Latency", 0.0) for ev in run_data]
+        precisions = [float(ev["Precision@5"]) for ev in run_data if "Precision@5" in ev]
+        recalls = [float(ev["Recall@5"]) for ev in run_data if "Recall@5" in ev]
+        hit_rates = [float(ev["HitRate@5"]) for ev in run_data if "HitRate@5" in ev]
+        if not hit_rates and recalls:
+            hit_rates = recalls
+        faiths = [float(ev["Faithfulness"]) for ev in run_data if "Faithfulness" in ev]
+        grounds = [float(ev["Groundedness"]) for ev in run_data if "Groundedness" in ev]
+        halls = [float(ev["Hallucination"]) for ev in run_data if "Hallucination" in ev]
+        lats = [float(ev["Latency"]) for ev in run_data if "Latency" in ev]
+        accuracies = [float(ev.get("Retrieval Accuracy", ev.get("Accuracy"))) for ev in run_data if ("Retrieval Accuracy" in ev or "Accuracy" in ev)]
+        relevances = [float(ev["Answer Relevance"]) for ev in run_data if "Answer Relevance" in ev]
+        explainabilities = [float(ev["Explainability"]) for ev in run_data if "Explainability" in ev]
+        reliabilities = [float(ev["Clinical Reliability"]) for ev in run_data if "Clinical Reliability" in ev]
+        
         f1s = [compute_answer_f1(ev.get("generated_answer", ""), ev.get("gold_answer", ev.get("reference_answer", ""))) for ev in run_data if ev.get("generated_answer")]
 
+        if not (precisions and recalls and faiths and grounds and accuracies):
+            raise KeyError(f"Evaluation records in {file_path} are missing required evaluation keys")
+
         return {
-            "Retrieval Accuracy": round(float(np.mean([ev.get("Retrieval Accuracy", ev.get("Accuracy", 0.90)) for ev in run_data])), 4),
+            "Retrieval Accuracy": round(float(np.mean(accuracies)), 4),
             "Precision@5": round(float(np.mean(precisions)), 4),
             "Recall@5": round(float(np.mean(recalls)), 4),
-            "HitRate@5": round(float(np.mean(hit_rates)), 4),
+            "HitRate@5": round(float(np.mean(hit_rates if hit_rates else recalls)), 4),
             "Faithfulness": round(float(np.mean(faiths)), 4),
-            "Answer Relevance": round(float(np.mean([ev.get("Answer Relevance", 0.85) for ev in run_data])), 4),
+            "Answer Relevance": round(float(np.mean(relevances)), 4) if relevances else 0.0,
             "Groundedness": round(float(np.mean(grounds)), 4),
-            "Hallucination": round(float(np.mean(halls)), 4),
-            "Explainability": round(float(np.mean([ev.get("Explainability", 0.95) for ev in run_data])), 4),
-            "Clinical Reliability": round(float(np.mean([ev.get("Clinical Reliability", 0.88) for ev in run_data])), 4),
-            "Answer F1": round(float(np.mean(f1s)) if f1s else 0.70, 4),
-            "Overall Score": round(float(np.mean([ev.get("Clinical Reliability", 0.88) for ev in run_data])) * 5.0, 2),
-            "Latency": round(float(np.mean(lats)), 4)
+            "Hallucination": round(float(np.mean(halls)), 4) if halls else round(1.0 - float(np.mean(faiths)), 4),
+            "Explainability": round(float(np.mean(explainabilities)), 4) if explainabilities else 0.0,
+            "Clinical Reliability": round(float(np.mean(reliabilities)), 4) if reliabilities else 0.0,
+            "Answer F1": round(float(np.mean(f1s)), 4) if f1s else 0.0,
+            "Overall Score": round(float(np.mean(reliabilities)) * 5.0, 2) if reliabilities else 0.0,
+            "Latency": round(float(np.mean(lats)), 4) if lats else 0.0
         }
 
     baselines_def = {

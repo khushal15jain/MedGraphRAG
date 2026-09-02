@@ -27,17 +27,6 @@ def _lazy_nltk():
         import nltk
         from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
         from nltk.translate.meteor_score import meteor_score
-        for pkg in ("wordnet", "omw-1.4", "punkt", "punkt_tab"):
-            try:
-                nltk.data.find(f"tokenizers/{pkg}")
-            except LookupError:
-                try:
-                    nltk.data.find(f"corpora/{pkg}")
-                except LookupError:
-                    try:
-                        nltk.download(pkg, quiet=True)
-                    except Exception:
-                        pass
         return sentence_bleu, SmoothingFunction, meteor_score
     except ImportError as e:
         raise ImportError("pip install nltk  (required for BLEU/METEOR)") from e
@@ -74,20 +63,114 @@ def compute_bleu(candidate: str, reference: str) -> Dict[str, float]:
     }
 
 
-# --------------------------------------------------------------------------
-# 2. ROUGE-1 / ROUGE-2 / ROUGE-L
-# --------------------------------------------------------------------------
+def _lcs_length(x: List[str], y: List[str]) -> int:
+    m, n = len(x), len(y)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if x[i - 1] == y[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1] + 1
+            else:
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+    return dp[m][n]
+
+
+def _ngram_f1(cand_tokens: List[str], ref_tokens: List[str], n: int) -> float:
+    if len(cand_tokens) < n or len(ref_tokens) < n:
+        return 0.0
+    cand_ngrams: Dict[Tuple[str, ...], int] = {}
+    for i in range(len(cand_tokens) - n + 1):
+        g = tuple(cand_tokens[i : i + n])
+        cand_ngrams[g] = cand_ngrams.get(g, 0) + 1
+    ref_ngrams: Dict[Tuple[str, ...], int] = {}
+    for i in range(len(ref_tokens) - n + 1):
+        g = tuple(ref_tokens[i : i + n])
+        ref_ngrams[g] = ref_ngrams.get(g, 0) + 1
+    overlap = sum(min(cand_ngrams.get(g, 0), c) for g, c in ref_ngrams.items())
+    if overlap == 0:
+        return 0.0
+    precision = overlap / len(cand_tokens) if n == 1 else overlap / (len(cand_tokens) - n + 1)
+    recall = overlap / len(ref_tokens) if n == 1 else overlap / (len(ref_tokens) - n + 1)
+    return 2 * precision * recall / (precision + recall)
 
 
 def compute_rouge(candidate: str, reference: str) -> Dict[str, float]:
-    rouge_scorer = _lazy_rouge()
-    scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
-    scores = scorer.score(reference, candidate)
+    cand_tokens = _tokenize(_extract_clean_text(candidate))
+    ref_tokens = _tokenize(_extract_clean_text(reference))
+    if not cand_tokens or not ref_tokens:
+        return {"rouge1": 0.0, "rouge2": 0.0, "rougeL": 0.0}
+    
+    r1 = _ngram_f1(cand_tokens, ref_tokens, 1)
+    r2 = _ngram_f1(cand_tokens, ref_tokens, 2)
+    lcs = _lcs_length(cand_tokens, ref_tokens)
+    if lcs == 0:
+        rl = 0.0
+    else:
+        prec = lcs / len(cand_tokens)
+        rec = lcs / len(ref_tokens)
+        rl = (2 * prec * rec / (prec + rec)) if (prec + rec) > 0 else 0.0
+        
     return {
-        "rouge1": scores["rouge1"].fmeasure,
-        "rouge2": scores["rouge2"].fmeasure,
-        "rougeL": scores["rougeL"].fmeasure,
+        "rouge1": r1,
+        "rouge2": r2,
+        "rougeL": rl,
     }
+
+
+def rouge_1(candidate: str, reference: str) -> float:
+    return compute_rouge(candidate, reference)["rouge1"]
+
+
+def rouge_2(candidate: str, reference: str) -> float:
+    return compute_rouge(candidate, reference)["rouge2"]
+
+
+def rouge_l(candidate: str, reference: str) -> float:
+    return compute_rouge(candidate, reference)["rougeL"]
+
+
+compute_rouge_1 = rouge_1
+compute_rouge_2 = rouge_2
+compute_rouge_l = rouge_l
+
+
+def bleu_n(candidate: str, reference: str, n: int = 4) -> float:
+    res = compute_bleu(candidate, reference)
+    return res.get(f"bleu{n}", 0.0)
+
+
+def meteor(candidate: str, reference: str) -> float:
+    return compute_meteor(candidate, reference)
+
+
+def answer_f1(candidate: str, reference: str) -> float:
+    return compute_answer_f1(candidate, reference)
+
+
+def precision_at_k(retrieved_ids: Sequence[str], relevant_ids: Sequence[str], k: int = 5) -> float:
+    if not retrieved_ids or k <= 0:
+        return 0.0
+    sub = retrieved_ids[:k]
+    rel_set = set(relevant_ids)
+    return sum(1 for d in sub if d in rel_set) / len(sub)
+
+
+def recall_at_k(retrieved_ids: Sequence[str], relevant_ids: Sequence[str], k: int = 5) -> float:
+    if not relevant_ids:
+        return 0.0
+    sub = set(retrieved_ids[:k])
+    rel_set = set(relevant_ids)
+    return sum(1 for d in rel_set if d in sub) / len(rel_set)
+
+
+def hit_rate_at_k(retrieved_ids: Sequence[str], relevant_ids: Sequence[str], k: int = 5) -> float:
+    sub = set(retrieved_ids[:k])
+    rel_set = set(relevant_ids)
+    return 1.0 if (sub & rel_set) else 0.0
+
+
+def ndcg_at_k(retrieved_ids: Sequence[str], relevant_ids: Sequence[str], k: int = 5) -> float:
+    return compute_ndcg(retrieved_ids, relevant_ids, k=k)
 
 
 # --------------------------------------------------------------------------
@@ -96,11 +179,28 @@ def compute_rouge(candidate: str, reference: str) -> Dict[str, float]:
 
 
 def compute_meteor(candidate: str, reference: str) -> float:
-    _, _, meteor_score = _lazy_nltk()
-    try:
-        return meteor_score([_tokenize(reference)], _tokenize(candidate))
-    except Exception:
+    cand_tokens = _tokenize(_extract_clean_text(candidate))
+    ref_tokens = _tokenize(_extract_clean_text(reference))
+    if not cand_tokens or not ref_tokens:
         return 0.0
+    try:
+        _, _, meteor_score = _lazy_nltk()
+        return meteor_score([ref_tokens], cand_tokens)
+    except Exception:
+        cand_counts: Dict[str, int] = {}
+        for t in cand_tokens:
+            cand_counts[t] = cand_counts.get(t, 0) + 1
+        ref_counts: Dict[str, int] = {}
+        for t in ref_tokens:
+            ref_counts[t] = ref_counts.get(t, 0) + 1
+        matches = sum(min(cand_counts.get(t, 0), c) for t, c in ref_counts.items())
+        if matches == 0:
+            return 0.0
+        p = matches / len(cand_tokens)
+        r = matches / len(ref_tokens)
+        f_mean = (10 * p * r) / (r + 9 * p) if (r + 9 * p) > 0 else 0.0
+        penalty = 0.5 * ((1.0 / matches) ** 3)
+        return float(max(0.0, f_mean * (1.0 - penalty)))
 
 
 # --------------------------------------------------------------------------
@@ -161,6 +261,10 @@ def compute_mrr(retrieved_ids: Sequence[str], relevant_ids: Sequence[str]) -> fl
     return 0.0
 
 
+def mrr_at_k(retrieved_ids: Sequence[str], relevant_ids: Sequence[str], k: int = 5) -> float:
+    return compute_mrr(retrieved_ids[:k], relevant_ids)
+
+
 def compute_ndcg(retrieved_ids: Sequence[str], relevant_ids: Sequence[str], k: Optional[int] = None) -> float:
     relevant_set = set(relevant_ids)
     ids = retrieved_ids[:k] if k else retrieved_ids
@@ -168,8 +272,12 @@ def compute_ndcg(retrieved_ids: Sequence[str], relevant_ids: Sequence[str], k: O
         (1.0 / math.log2(rank + 1)) for rank, doc_id in enumerate(ids, start=1) if doc_id in relevant_set
     )
     ideal_hits = min(len(relevant_set), len(ids))
-    idcg = sum(1.0 / math.log2(rank + 1) for rank in range(1, ideal_hits + 1))
+    idcg = sum((1.0 / math.log2(rank + 1)) for rank in range(1, ideal_hits + 1))
     return dcg / idcg if idcg > 0 else 0.0
+
+
+def ndcg_at_k(retrieved_ids: Sequence[str], relevant_ids: Sequence[str], k: int = 5) -> float:
+    return compute_ndcg(retrieved_ids, relevant_ids, k=k)
 
 
 # --------------------------------------------------------------------------

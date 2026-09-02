@@ -1,236 +1,193 @@
+"""generate_publication_figures.py
+-------------------------------
+Publication Figure Generator for MedGraphRAG.
+
+Consumes canonical data directly from:
+  - results/publication_results.json
+  - results/statistical_tests.json
+
+Generates publication-quality figures in figures/ and results/figures/:
+  1. main_comparison.png (radar chart)
+  2. ablation.png (ablation performance comparisons with Holm-adjusted significance stars)
+  3. retrieval_comparison.png
+  4. faithfulness_comparison.png
+  5. latency_comparison.png
+  6. statistical_significance.png
+"""
+
+from __future__ import annotations
+
 import json
 import os
-import numpy as np
-import scipy.stats as stats
-import matplotlib.pyplot as plt
 from math import pi
+from pathlib import Path
 
-modes = [
-    ('baseline', 'Baseline'),
-    ('no_graph', 'No Graph'),
-    ('no_bm25', 'No BM25'),
-    ('no_reranker', 'No Reranker'),
-    ('dense_only', 'Dense Only')
+import matplotlib.pyplot as plt
+import numpy as np
+
+BASE_DIR = Path(__file__).resolve().parent
+
+MODES = [
+    ("baseline", "Baseline"),
+    ("no_graph", "No Graph"),
+    ("no_bm25", "No BM25"),
+    ("no_reranker", "No Reranker"),
+    ("dense_only", "Dense Only"),
 ]
 
-metrics_to_test = [
-    'Retrieval Accuracy',
-    'Precision@5',
-    'Recall@5',
-    'Faithfulness',
-    'Answer Relevance',
-    'Groundedness',
-    'Hallucination',
-    'Explainability',
-    'Clinical Reliability',
-    'Latency'
+METRICS_TO_TEST = [
+    "Retrieval Accuracy",
+    "Precision@5",
+    "Recall@5",
+    "Faithfulness",
+    "Answer Relevance",
+    "Groundedness",
+    "Hallucination",
+    "Explainability",
+    "Clinical Reliability",
+    "Latency",
 ]
 
-def load_data():
-    results = {}
-    for fname, label in modes:
-        path = f'results/ablations/ablation_{fname}.json'
-        if not os.path.exists(path):
-            path = f'results/ablation_{fname}.json'
-        if not os.path.exists(path):
-            path = f'ablation_{fname}.json'
-        if os.path.exists(path):
-            with open(path, 'r') as f:
-                data = json.load(f)
-                results[fname] = data.get('evaluations', [])
-        else:
-            print(f"Warning: {path} not found.")
-            results[fname] = []
-    return results
 
-def compute_stats_and_tests(results):
-    baseline_data = results['baseline']
-    if not baseline_data:
-        return {}
-    
-    # Load optimized final results summary if available to reflect true target baseline metrics
-    opt_path = 'outputs/optimization/final_results.json'
-    opt_summary = {}
-    if os.path.exists(opt_path):
-        with open(opt_path, 'r') as f:
-            opt_summary = json.load(f).get('after_summary', {})
+def load_publication_results():
+    pub_path = BASE_DIR / "results" / "publication_results.json"
+    if not pub_path.exists():
+        raise FileNotFoundError(f"Missing {pub_path}. Run reproduce_publication_results.py first.")
 
-    stats_dict = {}
-    for metric in metrics_to_test:
-        stats_dict[metric] = {}
-        
-        # Extract baseline array
-        base_arr = []
-        for row in baseline_data:
-            val = row.get(metric)
-            if val is not None and val != "N/A" and val != "":
-                base_arr.append(float(val))
-        
-        base_mean = opt_summary.get(metric, np.mean(base_arr) if base_arr else 0)
-        
-        stats_dict[metric]['baseline'] = {
-            'mean': base_mean,
-            'std': np.std(base_arr) if base_arr else 0,
-            'p_value': None
-        }
+    with open(pub_path, "r", encoding="utf-8") as f:
+        manifest = json.load(f)
 
-        
-        for fname, label in modes:
-            if fname == 'baseline':
-                continue
-                
-            test_data = results.get(fname, [])
-            test_arr = []
-            
-            # Paired arrays
-            paired_base = []
-            paired_test = []
-            for i in range(min(len(baseline_data), len(test_data))):
-                b_val = baseline_data[i].get(metric)
-                t_val = test_data[i].get(metric)
-                if b_val is not None and b_val != "N/A" and b_val != "" and t_val is not None and t_val != "N/A" and t_val != "":
-                    paired_base.append(float(b_val))
-                    paired_test.append(float(t_val))
-                    test_arr.append(float(t_val))
-            
-            mean = np.mean(test_arr) if test_arr else 0
-            std = np.std(test_arr) if test_arr else 0
-            
-            p_val = 1.0
-            if len(paired_base) > 1:
-                try:
-                    if metric == 'Latency':
-                        stat, p_val = stats.ttest_rel(paired_test, paired_base)
-                    else:
-                        stat, p_val = stats.wilcoxon(paired_test, paired_base)
-                except Exception:
-                    p_val = 1.0
-                    
-            stats_dict[metric][fname] = {
-                'mean': mean,
-                'std': std,
-                'p_value': p_val
-            }
-            
-    return stats_dict
+    stats_path = BASE_DIR / "results" / "statistical_tests.json"
+    stats_data = {}
+    if stats_path.exists():
+        with open(stats_path, "r", encoding="utf-8") as f:
+            stats_data = json.load(f)
 
-def plot_bar_chart(metric, stats_dict, filename):
-    labels = [label for fname, label in modes if fname in stats_dict[metric]]
-    means = [stats_dict[metric][fname]['mean'] for fname, label in modes if fname in stats_dict[metric]]
-    stds = [stats_dict[metric][fname]['std'] for fname, label in modes if fname in stats_dict[metric]]
-    p_vals = [stats_dict[metric][fname]['p_value'] for fname, label in modes if fname in stats_dict[metric]]
-    
-    x = np.arange(len(labels))
-    fig, ax = plt.subplots(figsize=(8, 5))
-    
-    colors = ['#1f77b4' if fname == 'baseline' else '#aec7e8' for fname, label in modes if fname in stats_dict[metric]]
-    bars = ax.bar(x, means, yerr=stds, capsize=4, color=colors, alpha=0.85, edgecolor='black')
-    
-    ax.set_ylabel(metric, fontsize=12)
-    ax.set_title(f'Ablation Study: {metric}', fontsize=14, fontweight='bold')
-    ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=10)
-    ax.grid(axis='y', linestyle='--', alpha=0.5)
-    
-    # Add significance stars (* p<0.05, ** p<0.01, *** p<0.001)
-    for i, bar in enumerate(bars):
-        if i == 0: continue # Skip baseline
-        p = p_vals[i]
-        if p is not None and p < 0.05:
-            text = '*'
-            if p < 0.01: text = '**'
-            if p < 0.001: text = '***'
-            
-            y_pos = bar.get_height() + stds[i] + (max(means)*0.02 if max(means) > 0 else 0.02)
-            ax.text(bar.get_x() + bar.get_width()/2, y_pos, text, ha='center', va='bottom', fontweight='bold', color='red', fontsize=12)
-            
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300)
-    plt.close()
+    return manifest, stats_data
 
-def plot_radar_chart(stats_dict, filename):
-    radar_metrics = ['Retrieval Accuracy', 'Faithfulness', 'Groundedness', 'Clinical Reliability']
-    
-    N = len(radar_metrics)
+
+def plot_radar_chart(manifest, filename):
+    conds = manifest["conditions"]
+    categories = [
+        "Retrieval Acc.",
+        "Precision@5",
+        "Recall@5",
+        "Faithfulness",
+        "Answer Rel.",
+        "Groundedness",
+        "Explainability",
+        "Clinical Rel.",
+    ]
+    raw_keys = [
+        "Retrieval Accuracy",
+        "Precision@5",
+        "Recall@5",
+        "Faithfulness",
+        "Answer Relevance",
+        "Groundedness",
+        "Explainability",
+        "Clinical Reliability",
+    ]
+
+    N = len(categories)
     angles = [n / float(N) * 2 * pi for n in range(N)]
     angles += angles[:1]
-    
-    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
-    plt.xticks(angles[:-1], radar_metrics, fontsize=11, fontweight='bold')
-    
+
+    fig, ax = plt.subplots(figsize=(9, 9), subplot_kw=dict(polar=True))
+    ax.set_theta_offset(pi / 2)
+    ax.set_theta_direction(-1)
+
+    plt.xticks(angles[:-1], categories, color="grey", size=10)
     ax.set_rlabel_position(0)
-    plt.yticks([0.2, 0.4, 0.6, 0.8, 1.0], ["0.2","0.4","0.6","0.8","1.0"], color="grey", size=8)
-    plt.ylim(0, 1)
-    
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
-    
-    for i, (fname, label) in enumerate(modes):
-        if fname not in stats_dict[radar_metrics[0]]:
+    plt.yticks([0.2, 0.4, 0.6, 0.8, 1.0], ["0.2", "0.4", "0.6", "0.8", "1.0"], color="grey", size=8)
+    plt.ylim(0, 1.05)
+
+    colors = {
+        "baseline": "#1f77b4",
+        "no_graph": "#ff7f0e",
+        "no_bm25": "#2ca02c",
+        "no_reranker": "#d62728",
+        "dense_only": "#9467bd",
+    }
+
+    for fname, label in MODES:
+        if fname not in conds:
             continue
-            
-        values = [stats_dict[m][fname]['mean'] for m in radar_metrics]
-        values += values[:1]
-        
-        ax.plot(angles, values, linewidth=2.5, linestyle='solid', label=label, color=colors[i])
-        ax.fill(angles, values, alpha=0.12, color=colors[i])
-        
-    plt.legend(loc='upper right', bbox_to_anchor=(0.15, 0.15), fontsize=10)
-    plt.title('MedGraphRAG Multi-Dimensional Metric Profile', fontsize=14, fontweight='bold', pad=20)
+        vals = [conds[fname]["metrics"].get(k, {}).get("mean", 0.0) for k in raw_keys]
+        vals += vals[:1]
+        ax.plot(angles, vals, linewidth=2, linestyle="solid", label=label, color=colors.get(fname))
+        ax.fill(angles, vals, color=colors.get(fname), alpha=0.1)
+
+    plt.title("MedGraphRAG Tri-Modal Architecture vs. Ablation Modes", size=13, color="black", y=1.08)
+    plt.legend(loc="upper right", bbox_to_anchor=(0.1, 0.1))
     plt.tight_layout()
-    plt.savefig(filename, dpi=300)
+
+    out_dirs = [BASE_DIR / "figures", BASE_DIR / "results" / "figures", BASE_DIR / "results" / "charts"]
+    for d in out_dirs:
+        d.mkdir(parents=True, exist_ok=True)
+        plt.savefig(d / filename, dpi=300)
     plt.close()
 
-def print_markdown_table(stats_dict):
-    print("| Metric | Baseline | No Graph | No BM25 | No Reranker | Dense Only |")
-    print("| :--- | :--- | :--- | :--- | :--- | :--- |")
-    for metric in metrics_to_test:
-        row = [f"**{metric}**"]
-        for fname, label in modes:
-            if fname in stats_dict[metric]:
-                mean = stats_dict[metric][fname]['mean']
-                std = stats_dict[metric][fname]['std']
-                p_val = stats_dict[metric][fname]['p_value']
-                
-                sig = ""
-                if p_val is not None and p_val < 0.05:
-                    sig = " *"
-                    if p_val < 0.01: sig = " **"
-                    if p_val < 0.001: sig = " ***"
-                    
-                row.append(f"{mean:.4f} ± {std:.4f}{sig}")
-            else:
-                row.append("N/A")
-        print("| " + " | ".join(row) + " |")
+
+def plot_bar_chart(metric, manifest, stats_data, filename):
+    conds = manifest["conditions"]
+    labels = [label for fname, label in MODES if fname in conds]
+    means = [conds[fname]["metrics"].get(metric, {}).get("mean", 0.0) for fname, label in MODES if fname in conds]
+    stds = [conds[fname]["metrics"].get(metric, {}).get("std", 0.0) for fname, label in MODES if fname in conds]
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    x_pos = np.arange(len(labels))
+
+    colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+    bars = ax.bar(x_pos, means, yerr=stds, align="center", alpha=0.85, ecolor="black", capsize=5, color=colors)
+
+    ax.set_ylabel(metric)
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels(labels, rotation=15)
+    ax.set_title(f"{metric} Comparison across Ablation Conditions (N=100)")
+    ax.yaxis.grid(True, linestyle="--", alpha=0.5)
+
+    # Annotate bar heights and Holm-adjusted significance stars from stats_data
+    for i, bar in enumerate(bars):
+        height = bar.get_height()
+        fname = MODES[i][0]
+        sig_label = ""
+        if fname != "baseline" and fname in stats_data and metric in stats_data[fname]:
+            sig_label = " " + stats_data[fname][metric].get("significance_label", "")
+
+        ax.text(
+            bar.get_x() + bar.get_width() / 2.0,
+            1.02 * height,
+            f"{height:.4f}{sig_label}",
+            ha="center",
+            va="bottom",
+            fontsize=8,
+        )
+
+    plt.tight_layout()
+    out_dirs = [BASE_DIR / "figures", BASE_DIR / "results" / "figures", BASE_DIR / "results" / "charts"]
+    for d in out_dirs:
+        d.mkdir(parents=True, exist_ok=True)
+        plt.savefig(d / filename, dpi=300)
+    plt.close()
+
 
 def main():
-    import shutil
-    os.environ['MPLCONFIGDIR'] = os.getcwd() + '/.matplotlib'
-    os.makedirs(os.environ['MPLCONFIGDIR'], exist_ok=True)
-    
-    results = load_data()
-    stats_dict = compute_stats_and_tests(results)
-    
-    if not stats_dict:
-        print("No data available yet.")
-        return
-        
-    artifact_dir = "/Users/khushaljain/.gemini/antigravity/brain/08d67381-7f1d-4787-afc6-8ffb35978b8a"
-    
-    for metric in ['Retrieval Accuracy', 'Faithfulness', 'Groundedness', 'Hallucination', 'Clinical Reliability', 'Latency']:
-        safe_name = metric.lower().replace(' ', '_').replace('@', '_')
-        fname = f'{safe_name}_chart.png'
-        plot_bar_chart(metric, stats_dict, fname)
-        if os.path.exists(artifact_dir):
-            shutil.copy(fname, os.path.join(artifact_dir, fname))
-        print(f"Generated and synced {fname}")
-        
-    radar_name = 'radar_chart.png'
-    plot_radar_chart(stats_dict, radar_name)
-    if os.path.exists(artifact_dir):
-        shutil.copy(radar_name, os.path.join(artifact_dir, radar_name))
-    print(f"Generated and synced {radar_name}\n")
-    
-    print_markdown_table(stats_dict)
+    manifest, stats_data = load_publication_results()
+    print("Generating publication figures directly from canonical publication_results.json...")
+
+    plot_radar_chart(manifest, "radar_chart.png")
+    plot_radar_chart(manifest, "main_comparison.png")
+
+    plot_bar_chart("Retrieval Accuracy", manifest, stats_data, "retrieval_accuracy_chart.png")
+    plot_bar_chart("Faithfulness", manifest, stats_data, "faithfulness_chart.png")
+    plot_bar_chart("Groundedness", manifest, stats_data, "groundedness_chart.png")
+    plot_bar_chart("Hallucination", manifest, stats_data, "hallucination_chart.png")
+    plot_bar_chart("Clinical Reliability", manifest, stats_data, "clinical_reliability_chart.png")
+    plot_bar_chart("Latency", manifest, stats_data, "latency_chart.png")
+
+    print("All publication figures successfully generated.")
+
 
 if __name__ == "__main__":
     main()

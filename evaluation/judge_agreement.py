@@ -97,41 +97,30 @@ def run_full_judge_agreement_study(base_path: str = ".") -> Dict[str, Any]:
     with open(baseline_path, "r", encoding="utf-8") as fp:
         data = json.load(fp).get("evaluations", [])
 
-    n = len(data)
-    np.random.seed(42)
+    if not data:
+        raise ValueError(f"No evaluation records found in {baseline_path}")
 
-    # Primary judge (3B model) scores from benchmark
-    faith_primary = [ev.get("Faithfulness", 0.70) for ev in data]
-    ground_primary = [ev.get("Groundedness", 0.75) for ev in data]
-
-    # Strong Judge (GPT-4o-mini / Llama-3.1-70B) scores with strong correlation
-    faith_strong = [float(np.clip(val + np.random.normal(0.01, 0.02), 0.0, 1.0)) for val in faith_primary]
-    ground_strong = [float(np.clip(val + np.random.normal(0.008, 0.015), 0.0, 1.0)) for val in ground_primary]
-
-    # Human expert manual subsample (30 items) with strong alignment to Strong Judge
-    subsample_idx = list(range(min(30, n)))
-    faith_human = [float(np.clip(faith_strong[i] + np.random.normal(0.005, 0.015), 0.0, 1.0)) for i in subsample_idx]
-    ground_human = [float(np.clip(ground_strong[i] + np.random.normal(0.004, 0.012), 0.0, 1.0)) for i in subsample_idx]
-
-    faith_agreement = compute_judge_agreement(faith_primary, faith_strong, faith_human)
-    ground_agreement = compute_judge_agreement(ground_primary, ground_strong, ground_human)
+    # Extract primary judge scores without hardcoded fallback constants
+    faith_primary = []
+    ground_primary = []
+    for ev in data:
+        if "Faithfulness" not in ev or "Groundedness" not in ev:
+            raise KeyError(f"Evaluation record {ev.get('id', 'unknown')} missing Faithfulness or Groundedness metric")
+        faith_primary.append(float(ev["Faithfulness"]))
+        ground_primary.append(float(ev["Groundedness"]))
 
     report = {
-        "n_benchmark_samples": n,
-        "n_human_subsample": len(subsample_idx),
+        "n_benchmark_samples": len(data),
         "primary_judge": "Local Qwen2.5-3B-Instruct / Llama-3.2-3B",
-        "strong_judge": "GPT-4o-mini / Llama-3.1-70B-Instruct API",
-        "faithfulness_agreement": faith_agreement,
-        "groundedness_agreement": ground_agreement,
+        "human_expert_validation_status": "Human expert validation was not conducted. No synthetic human scores are generated.",
+        "faithfulness_mean": round(float(np.mean(faith_primary)), 4),
+        "groundedness_mean": round(float(np.mean(ground_primary)), 4),
         "summary": {
-            "faithfulness_inter_judge_pearson_r": round(faith_agreement["pearson_r"], 4),
-            "faithfulness_inter_judge_cohen_kappa": round(faith_agreement["cohen_kappa"], 4),
-            "faithfulness_human_llm_pearson_r": round(faith_agreement.get("human_strong_pearson_r", 0.0), 4),
-            "faithfulness_human_llm_cohen_kappa": round(faith_agreement.get("human_strong_cohen_kappa", 0.0), 4),
-            "groundedness_inter_judge_pearson_r": round(ground_agreement["pearson_r"], 4),
-            "groundedness_inter_judge_cohen_kappa": round(ground_agreement["cohen_kappa"], 4),
-            "groundedness_human_llm_pearson_r": round(ground_agreement.get("human_strong_pearson_r", 0.0), 4),
-            "groundedness_human_llm_cohen_kappa": round(ground_agreement.get("human_strong_cohen_kappa", 0.0), 4)
+            "human_expert_validation": "Human expert validation was not conducted.",
+            "faithfulness_inter_judge_pearson_r": None,
+            "faithfulness_inter_judge_cohen_kappa": None,
+            "groundedness_inter_judge_pearson_r": None,
+            "groundedness_inter_judge_cohen_kappa": None
         }
     }
 

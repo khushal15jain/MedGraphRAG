@@ -1,0 +1,6 @@
+Condition,N,Retrieval Accuracy,Precision@5,Recall@5,Faithfulness,Answer Relevance,Groundedness,Hallucination,Explainability,Clinical Reliability,Answer F1,Latency (s)
+Baseline (Full MedGraphRAG),100,0.9314,0.9005,0.9776,0.9033,0.9143,0.9115,0.0967,0.985,0.9213,,25.5718
+No Graph (Ablation B),100,0.92,0.464,0.97,0.6964,0.8426,0.755,0.3036,0.98,0.894,,25.4019
+No BM25 (Ablation C),100,0.86,0.408,0.9596,0.6738,0.8411,0.6383,0.3262,0.975,0.884,0.746,31.4729
+No Reranker (Ablation D),100,0.85,0.328,0.9716,0.6838,0.8358,0.6842,0.3162,0.97,0.872,0.754,18.1372
+Dense Only (Ablation E),100,0.8,0.41,0.9507,0.6087,0.7341,0.6717,0.3913,0.87,0.784,0.677,14.2173
